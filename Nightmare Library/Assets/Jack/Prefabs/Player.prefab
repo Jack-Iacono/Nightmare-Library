@@ -140,6 +140,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerCont: {fileID: 1162553893588703299}
   cam: {fileID: 1107055803389774387}
+  audioListener: {fileID: 6125053344678350262}
   sensitivity: 100
   collideLayers:
     serializedVersion: 2
@@ -319,7 +320,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 8ab4189270bc4a447a50003644e73757, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -376,7 +377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1188372720
+  GlobalObjectIdHash: 346556275
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -406,6 +407,8 @@ MonoBehaviour:
   environmentLayers:
     serializedVersion: 2
     m_Bits: 0
+  gameController: {fileID: 8809082328625349141, guid: 93d813fc987ec7c43a9bf6faeba80886,
+    type: 3}
 --- !u!143 &6176258763298536126
 CharacterController:
   m_ObjectHideFlags: 0
@@ -445,3 +448,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _serverAuth: 0
+  cameraHolder: {fileID: 4191298382858368170}

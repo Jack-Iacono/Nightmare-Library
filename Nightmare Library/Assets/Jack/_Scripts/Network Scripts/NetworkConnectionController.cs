@@ -42,6 +42,15 @@ public class NetworkConnectionController : NetworkBehaviour
     public bool isServer = false;
     public bool isRunning = false;
 
+    // TEMPORARY!!!!
+    public GameObject gameCont;
+    public static GameObject gameController;
+
+    private void Start()
+    {
+        gameController = gameCont;
+    }
+
     private void Update()
     {
         isServer = NetworkManager.Singleton.IsServer;
@@ -84,6 +93,15 @@ public class NetworkConnectionController : NetworkBehaviour
             }
             
             await CheckConnectionStart();
+
+            // TEMPORARY!!!
+            if (NetworkManager.Singleton.IsServer)
+            {
+                GameObject playerPrefab = Instantiate(gameController);
+
+                playerPrefab.name = "GameController " + instance.OwnerClientId;
+                playerPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
+            }
         }
     }
 

@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.VisualScripting;
+using UnityEditor.Build.Content;
 using UnityEngine;
 
 public class PlayerNetworkState : NetworkBehaviour
@@ -11,7 +12,9 @@ public class PlayerNetworkState : NetworkBehaviour
     public static PlayerNetworkState ownerInstance;
 
     [SerializeField] private bool _serverAuth;
+
     private PlayerController playerCont;
+    [SerializeField] private GameObject cameraHolder;
 
     private NetworkVariable<PlayerContinuousNetworkData> playerContinuousState;
     private NetworkVariable<PlayerIntermittentNetworkData> playerIntermittentState;
@@ -25,7 +28,6 @@ public class PlayerNetworkState : NetworkBehaviour
         playerContinuousState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);
         playerIntermittentState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
 
-        // Temporary
         playerCont = GetComponent<PlayerController>();
     }
 
@@ -69,7 +71,8 @@ public class PlayerNetworkState : NetworkBehaviour
         var state = new PlayerContinuousNetworkData
         {
             Position = transform.position,
-            Rotation = transform.rotation.eulerAngles
+            Rotation = transform.rotation.eulerAngles,
+            CamRotation = cameraHolder.transform.rotation.eulerAngles
         };
 
         /// This is not asking if we are a server, but if this
@@ -118,23 +121,14 @@ public class PlayerNetworkState : NetworkBehaviour
         ConsumeIntermittentStateClientRpc();
     }
 
-    [ServerRpc]
-    public void TransmitPlayerEventServerRpc(string s)
-    {
-        ConsumePlayerEventClientRpc(s);
-    }
-    [ClientRpc]
-    public void ConsumePlayerEventClientRpc(string s)
-    {
-        // Do nothing for now
-    }
-
     private void ConsumeContinuousState()
     {
         // No interpolation, just using this for testing
         // Movement will not be smooth, but accurate
         transform.position = Vector3.Slerp(transform.position, playerContinuousState.Value.Position, Time.deltaTime * 60);
         transform.rotation = Quaternion.Euler(playerContinuousState.Value.Rotation);
+
+        cameraHolder.transform.localRotation = Quaternion.Euler(playerContinuousState.Value.CamRotation);
     }
     [ClientRpc]
     private void ConsumeIntermittentStateClientRpc()
@@ -160,6 +154,7 @@ public class PlayerNetworkState : NetworkBehaviour
     {
         private float _x, _y, _z;
         private short _yRot;
+        private short _camXRot;
 
         internal Vector3 Position
         {
@@ -176,6 +171,11 @@ public class PlayerNetworkState : NetworkBehaviour
             get => new Vector3(0, _yRot, 0);
             set => _yRot = (short)value.y;
         }
+        internal Vector3 CamRotation
+        {
+            get => new Vector3(_camXRot, 0, 0);
+            set => _camXRot = (short)value.x;
+        }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -184,6 +184,8 @@ public class PlayerNetworkState : NetworkBehaviour
             serializer.SerializeValue(ref _z);
 
             serializer.SerializeValue(ref _yRot);
+
+            serializer.SerializeValue(ref _camXRot);
         }
     }
     private struct PlayerIntermittentNetworkData : INetworkSerializable

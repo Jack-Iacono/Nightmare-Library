@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class PlayerController : NetworkBehaviour
 {
 
-    // MOdify to use ownership
+    // Modify to use ownership
 
     public static List<PlayerController> playerInstances = new List<PlayerController>();
 
@@ -60,6 +61,12 @@ public class PlayerController : NetworkBehaviour
     {
         charCont = GetComponent<CharacterController>();
         camCont = GetComponentInChildren<CameraController>();
+
+        if (!IsOwner)
+        {
+            camCont.SetEnabled(false);
+            enabled = false;
+        }
     }
 
     // Update is called once per frame
@@ -122,10 +129,12 @@ public class PlayerController : NetworkBehaviour
         charCont.Move(currentMove * Time.deltaTime);
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
         //Takes itself out of the player array
         playerInstances.Remove(this);
+
+        base.OnDestroy();
     }
 
     private void OnTriggerEnter(Collider other)

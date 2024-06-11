@@ -8,6 +8,7 @@ public class CameraController : MonoBehaviour
     [Header("GameObjects")]
     public PlayerController playerCont;
     public Camera cam;
+    public AudioListener audioListener;
 
     //Static instance of this camera
     public static CameraController camCont;
@@ -43,7 +44,7 @@ public class CameraController : MonoBehaviour
         }
     }
 
-    #region Camera Movement Methods
+    #region Camera Function Methods
 
     private void MoveCamera()
     {
@@ -63,6 +64,12 @@ public class CameraController : MonoBehaviour
 
         //Rotates the player to always be facing the direction of the camera
         playerCont.transform.localRotation = Quaternion.Euler(0f, yRotation, 0f);
+    }
+    public void SetEnabled(bool b)
+    {
+        cam.enabled = b;
+        audioListener.enabled = b;
+        enabled = b;
     }
 
     #endregion

@@ -35,12 +35,15 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        MoveCamera();
-
-        // TEMPORARY!!!!
-        if (Input.GetKeyDown(KeyCode.E))
+        if (!GameController.gamePaused.Value)
         {
-            Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ? CursorLockMode.None : CursorLockMode.Locked;
+            MoveCamera();
+
+            // TEMPORARY!!!!
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ? CursorLockMode.None : CursorLockMode.Locked;
+            }
         }
     }
 

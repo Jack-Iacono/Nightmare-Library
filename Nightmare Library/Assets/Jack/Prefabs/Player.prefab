@@ -40,7 +40,7 @@ Camera:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2837254379018476201}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_ClearFlags: 1
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
@@ -91,7 +91,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2837254379018476201}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!1 &4191298382858368170
 GameObject:
   m_ObjectHideFlags: 0
@@ -133,7 +133,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4191298382858368170}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24a853dd836935c4d873620c1e0e3ac7, type: 3}
   m_Name: 
@@ -377,7 +377,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 346556275
+  GlobalObjectIdHash: 1188372720
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -407,8 +407,6 @@ MonoBehaviour:
   environmentLayers:
     serializedVersion: 2
     m_Bits: 0
-  gameController: {fileID: 8809082328625349141, guid: 93d813fc987ec7c43a9bf6faeba80886,
-    type: 3}
 --- !u!143 &6176258763298536126
 CharacterController:
   m_ObjectHideFlags: 0

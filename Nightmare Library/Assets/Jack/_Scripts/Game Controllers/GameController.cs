@@ -1,17 +1,40 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class GameController : NetworkBehaviour
 {
+    public static GameController instance;
+
+    // Network Variables
     private NetworkVariable<ContinuousData> contState;
+    public static NetworkVariable<bool> gamePaused;
     float timer = 0;
+
+    // Events
+    private const string onGamePauseEventKey = "GamePauseEventKey";
+    public static event EventHandler OnGamePause;
+
+    private static Dictionary<string, EventHandler> eventDict = new Dictionary<string, EventHandler>() 
+    {
+        { onGamePauseEventKey, OnGamePause }
+    };
 
     private void Awake()
     {
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(this);
+
         var permission = NetworkVariableWritePermission.Owner;
+
         contState = new NetworkVariable<ContinuousData>(writePerm: permission);
+        gamePaused = new NetworkVariable<bool>(writePerm: permission);
     }
 
     // Update is called once per frame
@@ -21,6 +44,11 @@ public class GameController : NetworkBehaviour
         {
             timer += Time.deltaTime;
             TransmitContinuousState();
+
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                TransmitPauseState();
+            }
         }
         else
         {
@@ -28,15 +56,23 @@ public class GameController : NetworkBehaviour
         }
     }
 
+    private void TransmitPauseState()
+    {
+        if (IsOwner)
+        {
+            gamePaused.Value = !gamePaused.Value;
+            EventNotifyClientRpc(onGamePauseEventKey);
+        }
+        else
+        {
+            //TransmitContinuousStateServerRpc(state);
+        }
+    }
+
     private void TransmitContinuousState()
     {
         var state = new ContinuousData(timer);
 
-        /// This is not asking if we are a server, but if this
-        /// script is set to 'server authoritative' mode.
-        /// a better name would have been UsingServerAuthority
-
-        // Needed because we are not able to change info if server has authority
         if (IsOwner)
         {
             contState.Value = state;
@@ -57,6 +93,15 @@ public class GameController : NetworkBehaviour
         contState.Value = state;
     }
 
+    /// <summary>
+    /// Allows the GameController to call events across the network
+    /// </summary>
+    /// <param name="s">The key of the event that needs to be called</param>
+    [ClientRpc]
+    private void EventNotifyClientRpc(string s)
+    {
+        eventDict[s]?.Invoke(this, EventArgs.Empty);
+    }
 
     private struct ContinuousData : INetworkSerializable
     {
@@ -72,4 +117,5 @@ public class GameController : NetworkBehaviour
             serializer.SerializeValue(ref timer);
         }
     }
+
 }

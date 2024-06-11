@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -54,6 +55,13 @@ public class PlayerController : NetworkBehaviour
     private void Awake()
     {
         playerInstances.Add(this);
+
+        GameController.OnGamePause += OnGamePause;
+    }
+
+    private void OnGamePause(object sender, EventArgs e)
+    {
+        Debug.Log("Event Received");
     }
 
     // Start is called before the first frame update
@@ -64,17 +72,23 @@ public class PlayerController : NetworkBehaviour
 
         if (!IsOwner)
         {
-            camCont.SetEnabled(false);
             enabled = false;
+        }
+        else
+        {
+            camCont.SetEnabled(true);
         }
     }
 
     // Update is called once per frame
     void Update()
     {
-        GetInput();
-        CalculateNormalPlayerMove();
-        MovePlayer();
+        if (!GameController.gamePaused.Value)
+        {
+            GetInput();
+            CalculateNormalPlayerMove();
+            MovePlayer();
+        }
     }
     private void FixedUpdate()
     {

@@ -7,6 +7,7 @@ using Unity.VisualScripting;
 using UnityEditor.Build.Content;
 using UnityEngine;
 
+[RequireComponent(typeof(PlayerController))]
 public class PlayerNetworkState : NetworkBehaviour
 {
     public static PlayerNetworkState ownerInstance;
@@ -39,6 +40,11 @@ public class PlayerNetworkState : NetworkBehaviour
         if(IsOwner)
         {
             ownerInstance = this;
+            playerCont.ActivatePlayer(true);
+        }
+        else
+        {
+            playerCont.ActivatePlayer(false);
         }
 
         players.Add(this);

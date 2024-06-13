@@ -1,18 +1,19 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using Unity.Netcode;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
-public class PlayerController : NetworkBehaviour
+public class PlayerController : MonoBehaviour
 {
 
     // Modify to use ownership
 
     public static List<PlayerController> playerInstances = new List<PlayerController>();
 
-    public CameraController camCont { get; private set; }
+    public CameraController camCont;
 
     [Header("Movement Variables")]
     [SerializeField]
@@ -55,35 +56,13 @@ public class PlayerController : NetworkBehaviour
     private void Awake()
     {
         playerInstances.Add(this);
-
-        GameController.OnGamePause += OnGamePause;
-    }
-
-    private void OnGamePause(object sender, EventArgs e)
-    {
-        Debug.Log("Event Received");
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
         charCont = GetComponent<CharacterController>();
-        camCont = GetComponentInChildren<CameraController>();
-
-        if (!IsOwner)
-        {
-            enabled = false;
-        }
-        else
-        {
-            camCont.SetEnabled(true);
-        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!GameController.gamePaused.Value)
+        if (!GameController.gamePaused)
         {
             GetInput();
             CalculateNormalPlayerMove();
@@ -143,12 +122,10 @@ public class PlayerController : NetworkBehaviour
         charCont.Move(currentMove * Time.deltaTime);
     }
 
-    public override void OnDestroy()
+    public void OnDestroy()
     {
         //Takes itself out of the player array
         playerInstances.Remove(this);
-
-        base.OnDestroy();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -157,6 +134,18 @@ public class PlayerController : NetworkBehaviour
         {
             charCont.enabled = false;
             charCont.enabled = true;
+        }
+    }
+
+    public void ActivatePlayer(bool b)
+    {
+        if (!b)
+        {
+            enabled = false;
+        }
+        else
+        {
+            camCont.SetEnabled(true);
         }
     }
 }

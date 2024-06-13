@@ -20,6 +20,11 @@ public class UIController : MonoBehaviour
         
     }
 
+    public void StartOfflineGame()
+    {
+        gameObject.SetActive(false);
+        PlayerController.playerInstances[0].ActivatePlayer(true);
+    }
     public async void JoinGame()
     {
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.JOIN;

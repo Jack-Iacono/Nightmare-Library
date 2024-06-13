@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3642388634786413618}
   - component: {fileID: 4452895409139815246}
   - component: {fileID: 7713113781258777057}
+  - component: {fileID: 3214879533957388035}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -45,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3656858483
+  GlobalObjectIdHash: 2897657652
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -63,5 +64,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fbafe0d98bd7b894f9a85203486bf6a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timer: 0
+--- !u!114 &3214879533957388035
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8809082328625349141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d9eea7b3fae42f4d847bfd789c0231d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

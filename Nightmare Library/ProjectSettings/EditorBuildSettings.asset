@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Jack/Scenes/JackTestingMenu.unity
     guid: ca2a41e7de38f324a89bb4c71f65b1a0
   - enabled: 1
-    path: Assets/Jack/Scenes/JackTestingGame.unity
+    path: Assets/Jack/Scenes/JackGameOffline.unity
     guid: 720d5639d50aa2a4aa33b67d3e90b24a
+  - enabled: 1
+    path: Assets/Jack/Scenes/JackGameOnline.unity
+    guid: 3ead0ef480f5cdc4483c990f1b0a322b
   m_configObjects: {}

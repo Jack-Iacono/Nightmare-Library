@@ -10,26 +10,42 @@ using System.Collections;
 
 public abstract class LobbyController : NetworkBehaviour
 {
-    public static LobbyController Instance { get; protected set; }
+    public static LobbyController instance { get; protected set; }
     public static List<MonoBehaviour> observers = new List<MonoBehaviour>();
 
     public const int MAX_PLAYERS = 12;
     public const int MIN_PLAYERS = 2;
 
-    protected async virtual void Start()
-    {
-        if (Instance != null && Instance != this)
-            Destroy(this);
-        else
-            Instance = this;
+    public static event EventHandler<ulong> OnClientEnter;
+    public static event EventHandler<ulong> OnServerEnter;
 
+    protected virtual void Awake()
+    {
+        if (instance != null)
+        {
+            Destroy(instance);
+            instance = this;
+        }
+        else
+        {
+            instance = this;
+        }
+    }
+
+    #region Connection Methods
+
+    public async virtual Task<bool> StartConnection()
+    {
         // Attempts to join a lobby, if that doesn't work, leave
         if (!NetworkConnectionController.connectedToLobby)
         {
             if (await NetworkConnectionController.ConnectToLobby())
                 await NetworkConnectionController.StartConnection();
             else
+            {
                 Disconnect();
+                return false;
+            }
         }
 
         // Both the server-host and client(s) register the custom named message.
@@ -39,15 +55,34 @@ public abstract class LobbyController : NetworkBehaviour
             ServerEntryAction();
         else
             ClientEntryAction();
+
+        return true;
     }
+
     protected virtual void ServerEntryAction()
     {
-        Debug.Log("Run Server Entry");
+        OnServerEnter?.Invoke(this, NetworkManager.Singleton.LocalClientId);
     }
     protected virtual void ClientEntryAction()
     {
-        Debug.Log("Run Client Entry");
+        OnClientEnter?.Invoke(this, NetworkManager.Singleton.LocalClientId);
     }
+
+    protected async virtual void Disconnect()
+    {
+        try
+        {
+            UnRegisterCallbacks();
+        }
+        catch
+        {
+            Debug.Log("Failed to Unregister Callbacks");
+        }
+
+        await NetworkConnectionController.StopConnection();
+    }
+
+    #endregion
 
     #region Callbacks
 
@@ -102,36 +137,11 @@ public abstract class LobbyController : NetworkBehaviour
 
     #region Lobby Moving
 
-    /*public virtual async void TransferLobby(SceneController.Scene scene)
-    {
-        await NetworkConnectionController.StopLobby();
-
-        // Sends the lobby transfer message to everyone
-        if (NetworkConnectionController.instance.isServer)
-        {
-            SendLobbyMessage(LobbyTransferMessage, new LobbyTransferData(scene));
-        }
-    }*/
     public virtual void TransferLobby(int index)
     {
         StartCoroutine(delay(index));
     }
 
-    protected virtual async void Disconnect()
-    {
-        try
-        {
-            UnRegisterCallbacks();
-        }
-        catch
-        {
-            Debug.Log("Failed to Unregister Callbacks");
-        }
-
-        await NetworkConnectionController.StopConnection();
-
-        //SceneController.LoadScene(SceneController.Scene.MAIN_MENU);
-    }
     private IEnumerator delay(int index)
     {
         yield return new WaitForSeconds(1.5f);
@@ -145,8 +155,8 @@ public abstract class LobbyController : NetworkBehaviour
     public override void OnDestroy()
     {
         // Should never not be this, but just better to check
-        if (Instance == this)
-            Instance = null;
+        if (instance == this)
+            instance = null;
     }
     private void OnApplicationQuit()
     {
@@ -154,4 +164,5 @@ public abstract class LobbyController : NetworkBehaviour
     }
 
     #endregion
+
 }

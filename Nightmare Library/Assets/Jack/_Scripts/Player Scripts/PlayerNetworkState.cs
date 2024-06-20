@@ -36,6 +36,8 @@ public class PlayerNetworkState : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
+        Debug.Log(IsOwner);
+
         // Changes the player data for all versions of this gameobject
         if(IsOwner)
         {

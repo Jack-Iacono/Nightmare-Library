@@ -1,54 +1,77 @@
-using System.Collections;
 using System.Collections.Generic;
-using TMPro;
-using Unity.Netcode;
 using UnityEngine;
 
-public class UIController : MonoBehaviour
+public abstract class UIController : MonoBehaviour
 {
-    public TMP_InputField inputField;
+    public static UIController instance;
 
-    // Start is called before the first frame update
-    void Start()
+    public List<ScreenController> screens = new List<ScreenController>();
+    protected int currentScreen = 0;
+    protected int nextScreen;
+
+    private void Awake()
     {
-        
+        if (instance != null)
+            Destroy(this);
+        else
+            instance = this;
     }
-
-    // Update is called once per frame
-    void Update()
+    protected virtual void Start()
     {
-        
-    }
-
-    public void StartOfflineGame()
-    {
-        gameObject.SetActive(false);
-        PlayerController.playerInstances[0].ActivatePlayer(true);
-    }
-    public async void JoinGame()
-    {
-        NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.JOIN;
-        NetworkConnectionController.joinCode = inputField.text;
-
-        if (!NetworkConnectionController.connectedToLobby)
+        // Initializes every screen and hides all but the currently active screen
+        for (int i = 0; i < screens.Count; i++)
         {
-            if (await NetworkConnectionController.ConnectToLobby())
-                await NetworkConnectionController.StartConnection();
+            screens[i].Initialize(this);
+
+            if (i == 0)
+                screens[i].ShowScreen();
+            else
+                screens[i].HideScreen();
         }
 
-        gameObject.SetActive(false);
-    }
-    public async void CreateGame()
-    {
-        NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.CREATE;
+        screens[0].ShowScreen();
 
-        if (!NetworkConnectionController.connectedToLobby)
+        // Registers this script with the OnGamePause event
+        GameController.OnGamePause += OnGamePause;
+    }
+
+    private void OnDestroy()
+    {
+        instance = null;
+    }
+
+    /// <summary>
+    /// Changes the currently active UI screen
+    /// </summary>
+    /// <param name="i">The index of the screen to change to</param>
+    public void ChangeToScreen(int i)
+    {
+        nextScreen = i;
+
+        // Ensures that the current screen isn't null
+        if (currentScreen != -1)
         {
-            if (await NetworkConnectionController.ConnectToLobby())
-                await NetworkConnectionController.StartConnection();
+            // Hides the previous screen and shows the new screen
+            screens[currentScreen].HideScreen();
         }
 
-        Debug.Log(NetworkConnectionController.joinCode);
-        gameObject.SetActive(false);
+        screens[nextScreen].ShowScreen();
+
+        // sets the current screen to the new screen
+        currentScreen = nextScreen;
+        nextScreen = -1;
     }
+
+    #region Events
+
+    protected virtual void OnGamePause(object sender, bool e)
+    {
+        // Shows the pause menu if paused, else show the hud
+        if (e)
+            ChangeToScreen(1);
+        else
+            ChangeToScreen(0);
+    }
+
+    #endregion
 }

@@ -142,9 +142,11 @@ public class PlayerController : MonoBehaviour
         if (!b)
         {
             enabled = false;
+            camCont.SetEnabled(false);
         }
         else
         {
+            enabled = true;
             camCont.SetEnabled(true);
         }
     }

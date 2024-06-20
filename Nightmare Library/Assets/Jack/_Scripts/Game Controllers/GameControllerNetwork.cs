@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 [RequireComponent(typeof(GameController))]
@@ -82,10 +83,7 @@ public class GameControllerNetwork : NetworkBehaviour
     private void ConsumePauseStateClientRpc(bool b)
     {
         if (!IsOwner)
-        {
-            Debug.Log("Test");
             parent.PauseGame(b);
-        }
     }
 
     private struct ContinuousData : INetworkSerializable

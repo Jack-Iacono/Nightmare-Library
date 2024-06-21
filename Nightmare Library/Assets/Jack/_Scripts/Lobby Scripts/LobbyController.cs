@@ -122,6 +122,7 @@ public abstract class LobbyController : NetworkBehaviour
     }
     protected async Task CheckClientDisconnect(ulong clientId)
     {
+        /*
         if (!NetworkManager.Singleton.ConnectedClientsIds.Contains(clientId))
         {
             return;
@@ -131,21 +132,7 @@ public abstract class LobbyController : NetworkBehaviour
             await Task.Delay(1000);
             await CheckClientDisconnect(clientId);
         }
-    }
-
-    #endregion
-
-    #region Lobby Moving
-
-    public virtual void TransferLobby(int index)
-    {
-        StartCoroutine(delay(index));
-    }
-
-    private IEnumerator delay(int index)
-    {
-        yield return new WaitForSeconds(1.5f);
-        //TransferLobby((SceneController.Scene)index);
+        */
     }
 
     #endregion

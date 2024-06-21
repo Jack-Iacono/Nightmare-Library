@@ -56,4 +56,44 @@ public class GameLobbyController : LobbyController
         pPrefab.name = "Player " + clientId;
         pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
     }
+
+
+    IEnumerator CheckClientLeave()
+    {
+        while(true)
+        {
+            Debug.Log("Clients Connected: " + NetworkManager.ConnectedClients.Count);
+            if (NetworkManager.ConnectedClients.Count == 1)
+            {
+                StopAllCoroutines();
+                LeaveLobby();
+            }
+
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+    [ClientRpc]
+    public void LeaveLobbyClientRpc()
+    {
+        if(!IsServer)
+        {
+            LeaveLobby();
+        }
+    }
+    public async void LeaveLobby()
+    {
+        if (IsServer && NetworkManager.ConnectedClients.Count != 1)
+        {
+            LeaveLobbyClientRpc();
+            StartCoroutine(CheckClientLeave());
+        }
+        else
+        {
+            // TEMPORARY!!!
+            Cursor.lockState = CursorLockMode.None;
+
+            await NetworkConnectionController.StopConnection();
+            OfflineSceneController.ChangeScene(0);
+        }
+    }
 }

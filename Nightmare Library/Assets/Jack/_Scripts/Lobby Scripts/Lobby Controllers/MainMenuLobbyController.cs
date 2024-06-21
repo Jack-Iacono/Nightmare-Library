@@ -12,7 +12,10 @@ public class MainMenuLobbyController : LobbyController
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.CREATE;
 
         if (!await StartConnection())
+        {
             Debug.LogWarning("Connection Failure");
+            await NetworkConnectionController.StopConnection();
+        }
 
         Debug.Log(NetworkConnectionController.joinCode);
     }
@@ -30,7 +33,11 @@ public class MainMenuLobbyController : LobbyController
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.JOIN;
         NetworkConnectionController.joinCode = joinCode;
 
-        await StartConnection();
+        if (!await StartConnection())
+        {
+            Debug.LogWarning("Connection Failure");
+            await NetworkConnectionController.StopConnection();
+        }
     }
 
 }

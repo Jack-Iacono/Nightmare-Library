@@ -122,6 +122,7 @@ public abstract class LobbyController : NetworkBehaviour
     }
     protected async Task CheckClientDisconnect(ulong clientId)
     {
+        await Task.Delay(1);
         /*
         if (!NetworkManager.Singleton.ConnectedClientsIds.Contains(clientId))
         {

@@ -144,10 +144,10 @@ MonoBehaviour:
   sensitivity: 100
   collideLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
   interactLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
 --- !u!1 &4651719490929783947
 GameObject:
   m_ObjectHideFlags: 0
@@ -267,7 +267,7 @@ GameObject:
   - component: {fileID: 5474594209864994712}
   - component: {fileID: 1162553893588703299}
   - component: {fileID: 6176258763298536126}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Offline Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}

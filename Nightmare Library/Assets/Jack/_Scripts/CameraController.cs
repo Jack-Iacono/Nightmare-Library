@@ -78,6 +78,7 @@ public class CameraController : MonoBehaviour
     #endregion
 
     #region Get Methods
+
     public bool GetCameraSight(Collider col, float dist)
     {
         float distance = Vector3.SqrMagnitude(col.transform.position - (transform.position - transform.up * -0.15f));
@@ -95,6 +96,21 @@ public class CameraController : MonoBehaviour
                 {
                     return true;
                 }
+            }
+        }
+
+        return false;
+    }
+    public bool GetCameraSight(Collider col)
+    {
+        Ray ray = new Ray(cam.transform.position, cam.transform.forward);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, 1000, collideLayers))
+        {
+            if (hit.collider == col)
+            {
+                return true;
             }
         }
 

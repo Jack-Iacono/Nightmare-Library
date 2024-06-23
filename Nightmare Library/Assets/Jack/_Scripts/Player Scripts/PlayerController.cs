@@ -8,8 +8,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-
-    // Modify to use ownership
+    public static PlayerController ownerInstance;
 
     public static List<PlayerController> playerInstances = new List<PlayerController>();
 
@@ -53,10 +52,15 @@ public class PlayerController : MonoBehaviour
 
     private CharacterController charCont;
 
+    public static KeyCode keyInteract = KeyCode.R;
+
     private void Awake()
     {
         playerInstances.Add(this);
         charCont = GetComponent<CharacterController>();
+
+        if(!TryGetComponent<PlayerNetworkState>(out var g))
+            ownerInstance = this;
     }
 
     // Update is called once per frame
@@ -148,6 +152,7 @@ public class PlayerController : MonoBehaviour
         {
             enabled = true;
             camCont.SetEnabled(true);
+            ownerInstance = this;
         }
     }
 }

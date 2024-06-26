@@ -92,6 +92,7 @@ public class NetworkConnectionController : NetworkBehaviour
         if(NetworkManager.Singleton.IsConnectedClient)
         {
             currentConnectionTimer = 0;
+            Debug.Log("Connection Successful");
             return;
         }
         else
@@ -105,6 +106,7 @@ public class NetworkConnectionController : NetworkBehaviour
             }
             else
             {
+                Debug.Log("Connection Timed Out");
                 return;
             }
         }

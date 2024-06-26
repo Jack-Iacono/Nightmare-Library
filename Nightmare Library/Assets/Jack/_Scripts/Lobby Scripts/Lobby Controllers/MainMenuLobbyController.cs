@@ -22,14 +22,18 @@ public class MainMenuLobbyController : LobbyController
 
     public void PlayOnlineCreate()
     {
+        GameController.isNetworkGame = true;
         OnlineSceneController.instance.LoadScene("j_OnlineGame");
     }
     public void PlayOffline()
     {
+        GameController.isNetworkGame = false;
         OfflineSceneController.ChangeScene(OfflineSceneController.m_Scene.OFFLINE_GAME);
     }
     public async void PlayOnlineJoin(string joinCode)
     {
+        GameController.isNetworkGame = true;
+
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.JOIN;
         NetworkConnectionController.joinCode = joinCode;
 

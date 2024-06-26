@@ -11,6 +11,9 @@ public class GameControllerNetwork : NetworkBehaviour
     public static GameControllerNetwork instance;
     private GameController parent;
 
+    public GameObject onlinePlayerPrefab;
+    public GameObject onlineEnemyPrefab;
+
     // Network Variables
     private NetworkVariable<ContinuousData> contState;
     public static NetworkVariable<bool> gamePaused;
@@ -23,12 +26,14 @@ public class GameControllerNetwork : NetworkBehaviour
             Destroy(this);
 
         GameController.OnNetworkGamePause += OnParentPause;
+        LobbyController.OnLobbyEnter += OnLobbyEnter;
 
         var permission = NetworkVariableWritePermission.Owner;
 
         contState = new NetworkVariable<ContinuousData>(writePerm: permission);
         gamePaused = new NetworkVariable<bool>(writePerm: permission);
     }
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -54,6 +59,48 @@ public class GameControllerNetwork : NetworkBehaviour
     private void OnParentPause(object sender, bool e)
     {
         ConsumePauseStateClientRpc(e);
+    }
+
+    private void OnLobbyEnter(ulong clientId, bool isServer)
+    {
+        SpawnNetworkObjects();
+    }
+
+    public void SpawnNetworkObjects()
+    {
+        Debug.Log("Spawning Players");
+        if (NetworkManager.Singleton.IsServer)
+            ServerSpawn();
+        else
+            ClientSpawn();
+    }
+    private void ServerSpawn()
+    {
+        GameObject pPrefab = Instantiate(onlinePlayerPrefab);
+
+        pPrefab.name = "Player " + instance.OwnerClientId;
+        pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
+
+        /* Re-enable this to spawn enemies, this was just annoying for testing
+        GameObject ePrefab = Instantiate(onlineEnemyPrefab);
+
+        ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
+        ePrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
+        */
+
+        Debug.Log("Server");
+    }
+    private void ClientSpawn()
+    {
+        ClientEntryActionServerRpc(NetworkManager.LocalClientId);
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void ClientEntryActionServerRpc(ulong clientId)
+    {
+        GameObject pPrefab = Instantiate(onlinePlayerPrefab);
+
+        pPrefab.name = "Player " + clientId;
+        pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
     }
 
     private void TransmitContinuousState()
@@ -99,5 +146,15 @@ public class GameControllerNetwork : NetworkBehaviour
         {
             serializer.SerializeValue(ref timer);
         }
+    }
+
+    public override void OnDestroy()
+    {
+        // Should never not be this, but just better to check
+        if (instance == this)
+            instance = null;
+
+        GameController.OnNetworkGamePause -= OnParentPause;
+        LobbyController.OnLobbyEnter -= OnLobbyEnter;
     }
 }

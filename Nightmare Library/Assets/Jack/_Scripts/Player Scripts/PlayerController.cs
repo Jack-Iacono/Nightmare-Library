@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     public static PlayerController ownerInstance;
 
     public static List<PlayerController> playerInstances = new List<PlayerController>();
+    public static LayerMask playerLayerMask;
 
     public CameraController camCont;
 
@@ -61,6 +62,8 @@ public class PlayerController : MonoBehaviour
 
         if(!TryGetComponent<PlayerNetworkState>(out var g))
             ownerInstance = this;
+
+        playerLayerMask = gameObject.layer;
     }
 
     // Update is called once per frame
@@ -152,6 +155,7 @@ public class PlayerController : MonoBehaviour
         {
             enabled = true;
             camCont.SetEnabled(true);
+            name = "My Player";
             ownerInstance = this;
         }
     }

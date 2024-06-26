@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class GameController : MonoBehaviour
 {
@@ -12,12 +9,16 @@ public class GameController : MonoBehaviour
 
     public static bool gamePaused = false;
 
+    public GameObject offlinePlayerPrefab;
+    public GameObject offlineEnemyPrefab;
+
     public float timer = 0;
+    public Transform[] patrolPoints;
 
     // Local Events
     public static event EventHandler<bool> OnGamePause;
 
-    private bool isNetworkGame = true;
+    public static bool isNetworkGame = true;
 
     // Multiplayer Events
     public static event EventHandler<bool> OnNetworkGamePause;
@@ -29,6 +30,17 @@ public class GameController : MonoBehaviour
         else
             Destroy(this);
     }
+    private void Start()
+    {
+        if (!NetworkManager.Singleton.IsServer)
+            SpawnPlayer();
+    }
+
+    private void SpawnPlayer()
+    {
+        Instantiate(offlinePlayerPrefab);
+    }
+
 
     // Update is called once per frame
     void Update()
@@ -49,6 +61,5 @@ public class GameController : MonoBehaviour
         gamePaused = b;
         OnGamePause?.Invoke(this, b);
     }
-
 
 }

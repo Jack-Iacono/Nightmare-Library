@@ -16,8 +16,8 @@ public abstract class LobbyController : NetworkBehaviour
     public const int MAX_PLAYERS = 12;
     public const int MIN_PLAYERS = 2;
 
-    public static event EventHandler<ulong> OnClientEnter;
-    public static event EventHandler<ulong> OnServerEnter;
+    public delegate void LobbyEnterDelegate(ulong clientId, bool isServer);
+    public static event LobbyEnterDelegate OnLobbyEnter;
 
     protected virtual void Awake()
     {
@@ -43,7 +43,7 @@ public abstract class LobbyController : NetworkBehaviour
                 await NetworkConnectionController.StartConnection();
             else
             {
-                Disconnect();
+                LeaveLobby();
                 return false;
             }
         }
@@ -51,24 +51,52 @@ public abstract class LobbyController : NetworkBehaviour
         // Both the server-host and client(s) register the custom named message.
         RegisterCallbacks();
 
+        /*
         if (NetworkManager.Singleton.IsServer)
             ServerEntryAction();
         else
             ClientEntryAction();
+        */
 
         return true;
     }
 
     protected virtual void ServerEntryAction()
     {
-        OnServerEnter?.Invoke(this, NetworkManager.Singleton.LocalClientId);
+        OnLobbyEnter?.Invoke(NetworkManager.LocalClientId, true);
     }
     protected virtual void ClientEntryAction()
     {
-        OnClientEnter?.Invoke(this, NetworkManager.Singleton.LocalClientId);
+        OnLobbyEnter?.Invoke(NetworkManager.LocalClientId, false);
     }
 
-    protected async virtual void Disconnect()
+    #endregion
+
+    #region Lobby Leaving
+
+    IEnumerator CheckClientLeave()
+    {
+        while (true)
+        {
+            Debug.Log("Clients Connected: " + NetworkManager.ConnectedClients.Count);
+            if (NetworkManager.ConnectedClients.Count == 1)
+            {
+                StopAllCoroutines();
+                LeaveLobby();
+            }
+
+            yield return new WaitForSeconds(0.5f);
+        }
+    }
+    [ClientRpc]
+    public void LeaveLobbyClientRpc()
+    {
+        if (!IsServer)
+        {
+            LeaveLobby();
+        }
+    }
+    public virtual async void LeaveLobby()
     {
         try
         {
@@ -79,7 +107,19 @@ public abstract class LobbyController : NetworkBehaviour
             Debug.Log("Failed to Unregister Callbacks");
         }
 
-        await NetworkConnectionController.StopConnection();
+        if (IsServer && NetworkManager.ConnectedClients.Count != 1)
+        {
+            LeaveLobbyClientRpc();
+            StartCoroutine(CheckClientLeave());
+        }
+        else
+        {
+            // TEMPORARY!!!
+            Cursor.lockState = CursorLockMode.None;
+
+            await NetworkConnectionController.StopConnection();
+            OfflineSceneController.ChangeScene(0);
+        }
     }
 
     #endregion
@@ -117,7 +157,7 @@ public abstract class LobbyController : NetworkBehaviour
         // Host Disconnect
         if (NetworkManager.ServerClientId == obj)
         {
-            Disconnect();
+            LeaveLobby();
         }
     }
     protected async Task CheckClientDisconnect(ulong clientId)
@@ -148,7 +188,7 @@ public abstract class LobbyController : NetworkBehaviour
     }
     private void OnApplicationQuit()
     {
-        Disconnect();
+        LeaveLobby();
     }
 
     #endregion

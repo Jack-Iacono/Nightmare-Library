@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3131128105750626201
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2796021658733578478}
+  - component: {fileID: 8277916014497907763}
+  m_Layer: 0
+  m_Name: Game Controller Offline
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2796021658733578478
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3131128105750626201}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -9.9589205, y: -0.9989491, z: 2.0506837}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8277916014497907763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3131128105750626201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbafe0d98bd7b894f9a85203486bf6a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  offlinePlayerPrefab: {fileID: 8304355550611021137, guid: cd83bc9e5856e324085ffec44549aa1e,
+    type: 3}
+  onlinePlayerPrefab: {fileID: 1951103587740149481, guid: d9edf957516b2e142bfa15336a84d0b1,
+    type: 3}
+  offlineEnemyPrefab: {fileID: 1289455882946623128, guid: 3693b8fad534778459dd9dbae0fd1532,
+    type: 3}
+  onlineEnemyPrefab: {fileID: 6076354374733784215, guid: 56cb585b0c12a6f43bcc76003d82cac7,
+    type: 3}
+  timer: 0
+  patrolPoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}

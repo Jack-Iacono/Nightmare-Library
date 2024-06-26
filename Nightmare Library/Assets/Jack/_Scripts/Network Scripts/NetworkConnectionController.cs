@@ -42,15 +42,6 @@ public class NetworkConnectionController : NetworkBehaviour
     public bool isServer = false;
     public bool isRunning = false;
 
-    // TEMPORARY!!!!
-    public GameObject gameCont;
-    public static GameObject gameController;
-
-    private void Start()
-    {
-        gameController = gameCont;
-    }
-
     private void Update()
     {
         isServer = NetworkManager.Singleton.IsServer;
@@ -93,15 +84,6 @@ public class NetworkConnectionController : NetworkBehaviour
             }
             
             await CheckConnectionStart();
-
-            // TEMPORARY!!!
-            if (NetworkManager.Singleton.IsServer)
-            {
-                GameObject playerPrefab = Instantiate(gameController);
-
-                playerPrefab.name = "GameController " + instance.OwnerClientId;
-                playerPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
-            }
         }
     }
 
@@ -110,6 +92,7 @@ public class NetworkConnectionController : NetworkBehaviour
         if(NetworkManager.Singleton.IsConnectedClient)
         {
             currentConnectionTimer = 0;
+            Debug.Log("Connection Successful");
             return;
         }
         else
@@ -123,6 +106,7 @@ public class NetworkConnectionController : NetworkBehaviour
             }
             else
             {
+                Debug.Log("Connection Timed Out");
                 return;
             }
         }

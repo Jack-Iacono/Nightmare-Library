@@ -85,11 +85,11 @@ public class Interactable : MonoBehaviour
 
     protected virtual void OnEnterRange()
     {
-        Debug.Log("Enter Range");
+        //Debug.Log("Enter Range");
     }
     protected virtual void OnExitRange()
     {
-        Debug.Log("Exit Range");
+        //Debug.Log("Exit Range");
     }
 
     private void OnDrawGizmos()

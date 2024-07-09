@@ -24,7 +24,7 @@ public class BasicEnemyBT : BehaviorTree.Tree
         {
             new Sequence(new List<Node>
             {
-                new CheckPlayerInSight(owner, owner.fovRange, -0.4f),
+                new CheckPlayerInSightChase(owner, owner.fovRange, -0.4f),
                 new TaskChasePlayer(owner.transform, owner.navAgent),
                 new CheckArea(owner, PlayerController.playerInstances[0].gameObject.transform)
             }),

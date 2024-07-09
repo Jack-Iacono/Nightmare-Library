@@ -1,53 +1,35 @@
-using BehaviorTree;
-using Unity.Services.Lobbies.Models;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class CheckPlayerInSight : Node
+using BehaviorTree;
+
+public class CheckPlayerInSightRush : Node
 {
     private Enemy user;
-
-    private float playerSightTime = 1f;
-    private float playerSightTimer;
 
     private float fovRange;
     private float sightAngle;
 
-    private const string SIGHT_KEY = "playerSightBuffer";
+    public const string PLAYER_KEY = "playerKnownPosition";
 
     private Transform currentTarget;
 
-    public CheckPlayerInSight(Enemy user, float fovRange, float sightAngle)
+    public CheckPlayerInSightRush(Enemy user, float fovRange, float sightAngle)
     {
         this.user = user;
 
         this.fovRange = fovRange;
         this.sightAngle = sightAngle;
-
-        playerSightTimer = playerSightTime;
     }
 
     public override Status Check(float dt)
     {
-        if (GetData(SIGHT_KEY) == null)
-            parent.parent.SetData(SIGHT_KEY, false);
-
-        bool playerSightBuffer = (bool)GetData(SIGHT_KEY);
-
-        // Decrement the timer for the player sight buffer
-        if (playerSightBuffer)
-        {
-            playerSightTimer -= Time.deltaTime;
-
-            // If the timer ends, stop the detection of the player
-            if (playerSightTimer <= 0)
-                SetPlayerSightBuffer(false);
-        }
-
         // Check if the player is close enough to the user
         PriorityQueue<Transform> queue = new PriorityQueue<Transform>();
 
         // Eliminate the players that are too far from the scan range and place them in closest to furtherst order
-        foreach(PlayerController p in PlayerController.playerInstances)
+        foreach (PlayerController p in PlayerController.playerInstances)
         {
             float dist = Vector3.Distance(p.transform.position, user.transform.position);
 
@@ -74,10 +56,11 @@ public class CheckPlayerInSight : Node
                     {
                         currentTarget = player;
 
-                        SetPlayerSightBuffer(true);
-                        playerSightTimer = playerSightTime;
-
                         SetPlayerPosition();
+
+                        //user.navAgent.destination = user.transform.position;
+
+                        user.navAgent.speed = 0;
 
                         status = Status.SUCCESS;
                         return status;
@@ -86,17 +69,8 @@ public class CheckPlayerInSight : Node
             }
         }
 
-        // Check if the enemy can still see player due to the buffer
-        if (playerSightBuffer)
-        {
-            SetPlayerPosition();
-
-            status = Status.SUCCESS;
-            return status;
-        }
-
         // Check if there is still a known position
-        if(GetData("playerKnownPosition") != null)
+        if (GetData(PLAYER_KEY) != null)
         {
             status = Status.SUCCESS;
             return status;
@@ -109,11 +83,11 @@ public class CheckPlayerInSight : Node
 
     public void SetPlayerPosition()
     {
-        parent.parent.SetData("playerKnownPosition", currentTarget.position);
+        Debug.Log("Update Player Position");
+        Ray ray = new Ray(user.transform.position, (currentTarget.position - user.transform.position).normalized);
+        RaycastHit hit;
+        Physics.Raycast(ray, out hit, 1000, 1);
+        Debug.DrawRay(ray.origin, ray.direction * 1000, Color.cyan, 0.1f);
+        parent.parent.SetData(PLAYER_KEY, hit.point);
     }
-    public void SetPlayerSightBuffer(bool b)
-    {
-        parent.parent.SetData(SIGHT_KEY, b);
-    }
-
 }

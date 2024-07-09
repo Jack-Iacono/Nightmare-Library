@@ -3,53 +3,67 @@ using BehaviorTree;
 
 public class TaskWait : Node
 {
-    private float waitTime;
-    private float waitTimer;
+    protected float waitTime { get; private set; }
+    protected float waitTimer { get; private set; }
+    protected float waitDiff { get; private set; }
 
-    private string waitLabel;
+    protected string waitLabel { get; private set; }
 
-    public TaskWait(string waitLabel, float waitTime)
+    public TaskWait(string waitLabel, float waitTime, float waitDiff = 0)
     {
         this.waitLabel = waitLabel;
         this.waitTime = waitTime;
+        this.waitDiff = waitDiff;
     }
 
     public override Status Check(float dt)
     {
-        if (GetData(waitLabel) == null)
-            parent.SetData(waitLabel, false);
-
-        if ((bool)GetData(waitLabel))
+        if (TickCondition())
         {
-            waitTimer -= dt;
-            if (waitTimer > 0)
+            if (GetData(waitLabel) == null)
+                parent.SetData(waitLabel, false);
+
+            if ((bool)GetData(waitLabel))
             {
-                OnTick(waitTimer);
+                waitTimer -= dt;
+                if (waitTimer > 0)
+                {
+                    OnTick(waitTimer);
+
+                    status = Status.RUNNING;
+                    return status;
+                }
+
+                OnEnd();
+                parent.SetData(waitLabel, false);
+
+                status = Status.SUCCESS;
+                return status;
+            }
+            else
+            {
+                // Gets a random time within the given contraints
+                waitTimer = Random.Range(waitTime + waitDiff / 2, waitTime - waitDiff / 2);
+                parent.SetData(waitLabel, true);
+
+                OnStart();
 
                 status = Status.RUNNING;
                 return status;
             }
-
-            OnEnd();
-            parent.SetData(waitLabel, false);
-
-            status = Status.SUCCESS;
-            return status;
         }
-        else
-        {
-            waitTimer = waitTime;
-            parent.SetData(waitLabel, true);
 
-            OnStart();
+        parent.SetData(waitLabel, false);
+        waitTimer = 0;
 
-            status = Status.RUNNING;
-            return status;
-        }
+        status = Status.FAILURE;
+        return status;
     }
 
     protected virtual void OnStart() { }
     protected virtual void OnEnd() { }
     protected virtual void OnTick(float time) { }
+
+    protected virtual bool TickCondition() { return true; }
 
 }

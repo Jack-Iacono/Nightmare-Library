@@ -32,13 +32,14 @@ public class GameController : MonoBehaviour
     }
     private void Start()
     {
-        if (!NetworkManager.Singleton.IsServer)
-            SpawnPlayer();
+        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+            SpawnPrefabs();
     }
 
-    private void SpawnPlayer()
+    private void SpawnPrefabs()
     {
         Instantiate(offlinePlayerPrefab);
+        Instantiate(offlineEnemyPrefab);
     }
 
 

@@ -25,6 +25,8 @@ public class TaskPatrol : Node
     }
     public override Status Check(float dt)
     {
+        Debug.Log("Patrolling");
+
         // check if the agent is waiting
         if (waiting)
         {

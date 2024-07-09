@@ -4,23 +4,33 @@ using UnityEngine.AI;
 
 using BehaviorTree;
 using UnityEditor.Timeline;
+using System.Collections.Generic;
 
 public abstract class Enemy : MonoBehaviour
 {
     [Header("Nightmare Characteristics")]
     [SerializeField]
     public float moveSpeed = 10;
-    public float fovRange = 30;
+    public float fovRange = 100;
     public float attackRange = 2;
 
-    [Header("NavMesh Objects")]
     [NonSerialized]
     public NavMeshAgent navAgent;
 
     protected Vector3 spawnLocation;
     protected Vector3 targetLocation = Vector3.zero;
 
-    protected BehaviorTree.Tree currentTree;
+    public enum aAttackEnum { RUSH };
+    public enum pAttackEnum { IDOLS };
+
+    [Header("Attack Variables")]
+    [SerializeField]
+    public aAttackEnum aAttack;
+    [SerializeField]
+    public pAttackEnum pAttack;
+
+    protected BehaviorTree.Tree activeAttackTree;
+    protected BehaviorTree.Tree passiveAttackTree;
 
     #region Initialization
 
@@ -32,6 +42,24 @@ public abstract class Enemy : MonoBehaviour
         GameController.OnGamePause += OnGamePause;
 
         navAgent.Warp(spawnLocation);
+
+        // Assigning Attacks
+        switch (aAttack)
+        {
+            case aAttackEnum.RUSH:
+                activeAttackTree = new aa_Rush(this);
+                break;
+        }
+
+        switch (pAttack)
+        {
+            case pAttackEnum.IDOLS:
+                passiveAttackTree = new pa_Idols(this);
+                break;
+        }
+
+        activeAttackTree.Initialize();
+        passiveAttackTree.Initialize();
     }
     public virtual void Spawn()
     {
@@ -44,9 +72,12 @@ public abstract class Enemy : MonoBehaviour
     public virtual void PlayerDamageSwing() { }
     public virtual void PlayerDamageShoot() { }
 
-    protected virtual void Update()
+    protected void Update()
     {
-        currentTree.UpdateTree(Time.deltaTime);
+        float dt = Time.deltaTime;
+
+        activeAttackTree.UpdateTree(dt);
+        passiveAttackTree.UpdateTree(dt);
     }
 
     public void Activate(bool b)

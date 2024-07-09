@@ -41,6 +41,20 @@ namespace BehaviorTree
         {
             sharedData[key] = value;
         }
+
+        /// <summary>
+        /// Sets data for the root of the Behavior Tree i.e. makes a global variable
+        /// </summary>
+        /// <param name="key">The key for the dictionary</param>
+        /// <param name="value">The value to store</param>
+        public void SetRootData(string key, object value)
+        {
+            if(parent != null)
+                parent.SetRootData(key, value);
+            else
+                SetData(key, value);
+        }
+
         public object GetData(string key)
         {
             object value = null;

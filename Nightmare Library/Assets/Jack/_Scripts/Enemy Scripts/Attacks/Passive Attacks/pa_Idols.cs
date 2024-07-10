@@ -1,15 +1,27 @@
 using BehaviorTree;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class pa_Idols : PassiveAttack
 {
-    public float avgIdolPlaceTime = 20;
-    private int idolsPlaced;
+    TaskSpawnIdols idolSpawner;
+    private int maxIdolCount = 7;
+
+    private List<GameObject> idolObjects = new List<GameObject>();
 
     public pa_Idols(Enemy owner) : base(owner)
     {
+        idolSpawner = new TaskSpawnIdols(3, 0.5f);
+        idolSpawner.OnIdolCountChanged += OnIdolCountChanged;
 
+        idolObjects = DeskController.instance.SpawnIdols(maxIdolCount, idolSpawner);
+
+        foreach (GameObject obj in idolObjects)
+        {
+            obj.SetActive(false);
+        }
     }
 
     protected override Node SetupTree()
@@ -17,20 +29,28 @@ public class pa_Idols : PassiveAttack
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
         {
-            new Sequence(new List<Node>
+            new Sequence(new List<Node>()
             {
-                new TaskWait("idolPlace", avgIdolPlaceTime, 4)
+                new CheckIdolCount(maxIdolCount)
             }),
-            new TaskWait("idolPlace", avgIdolPlaceTime, 4)
+            idolSpawner
         });
-
-        root.SetData("speed", owner.moveSpeed);
 
         return root;
     }
 
-    public void RemoveIdol()
+    private void OnIdolCountChanged(object sender, int e)
     {
-        idolsPlaced--;
+        for(int i = 0; i < idolObjects.Count; i++)
+        {
+            if(i < e)
+            {
+                idolObjects[i].SetActive(true);
+            }
+            else
+            {
+                idolObjects[i].SetActive(false);
+            }
+        }
     }
 }

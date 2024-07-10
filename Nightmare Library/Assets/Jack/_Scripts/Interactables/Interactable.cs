@@ -26,7 +26,7 @@ public class Interactable : MonoBehaviour
     void Update()
     {
         if(
-            inRange && 
+            inRange &&
             Input.GetKeyDown(PlayerController.keyInteract) && 
             PlayerController.ownerInstance.camCont.GetCameraSight(interactCollider)
         )

@@ -5,7 +5,6 @@ using UnityEngine;
 
 public abstract class PassiveAttack : EnemyAttack
 {
-
     public PassiveAttack(Enemy owner) : base(owner)
     {
 

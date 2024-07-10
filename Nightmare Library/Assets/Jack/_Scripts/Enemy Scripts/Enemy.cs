@@ -29,8 +29,8 @@ public abstract class Enemy : MonoBehaviour
     [SerializeField]
     public pAttackEnum pAttack;
 
-    protected BehaviorTree.Tree activeAttackTree;
-    protected BehaviorTree.Tree passiveAttackTree;
+    protected ActiveAttack activeAttackTree;
+    protected PassiveAttack passiveAttackTree;
 
     #region Initialization
 

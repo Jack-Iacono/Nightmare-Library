@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ProBuilder Default URP
-  m_Shader: {fileID: 4800000, guid: 60c226f4736d0d74484e53fe708ea0b1, type: 3}
+  m_Name: wall
+  m_Shader: {fileID: 4800000, guid: 1de8dab9692efa14ca8cd9fc5906e589, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []

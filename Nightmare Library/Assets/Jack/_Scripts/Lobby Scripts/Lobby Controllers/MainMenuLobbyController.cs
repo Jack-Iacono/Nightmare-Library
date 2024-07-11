@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class MainMenuLobbyController : LobbyController
 {
-
     public async void Connect()
     {
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.CREATE;
@@ -16,6 +15,11 @@ public class MainMenuLobbyController : LobbyController
             Debug.LogWarning("Connection Failure");
             await NetworkConnectionController.StopConnection();
         }
+
+        TextEditor te = new TextEditor();
+        te.text = NetworkConnectionController.joinCode;
+        te.SelectAll();
+        te.Copy();
 
         Debug.Log(NetworkConnectionController.joinCode);
     }

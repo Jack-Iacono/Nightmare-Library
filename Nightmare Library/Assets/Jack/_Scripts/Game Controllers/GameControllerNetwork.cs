@@ -80,15 +80,12 @@ public class GameControllerNetwork : NetworkBehaviour
 
         pPrefab.name = "Player " + instance.OwnerClientId;
         pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
+        pPrefab.transform.position += Vector3.up * 10;
 
-        /* Re-enable this to spawn enemies, this was just annoying for testing
         GameObject ePrefab = Instantiate(onlineEnemyPrefab);
 
         ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
         ePrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
-        */
-
-        Debug.Log("Server");
     }
     private void ClientSpawn()
     {

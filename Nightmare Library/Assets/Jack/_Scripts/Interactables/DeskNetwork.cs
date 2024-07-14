@@ -18,16 +18,17 @@ public class DeskNetwork : NetworkBehaviour
         parent = GetComponent<DeskController>();
     }
 
-    public List<GameObject> SpawnIdols(int count, TaskSpawnIdols idolSpawner)
+    public List<IdolController> SpawnIdols(int count, TaskSpawnIdols idolSpawner)
     {
-        List<GameObject> list = new List<GameObject>();
+        List<IdolController> list = new List<IdolController>();
         for (int i = 0; i < count; i++)
         {
             GameObject idol = Instantiate(onlineIdolPrefab, parent.idolSpawnLocations[i].position, Quaternion.identity, transform);
             idol.name = "Online Idol";
             idol.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-            idol.GetComponent<IdolController>().Initialize(idolSpawner);
-            list.Add(idol);
+            IdolController iCont = idol.GetComponent<IdolController>();
+            iCont.Initialize(idolSpawner);
+            list.Add(iCont);
         }
         return list;
     }

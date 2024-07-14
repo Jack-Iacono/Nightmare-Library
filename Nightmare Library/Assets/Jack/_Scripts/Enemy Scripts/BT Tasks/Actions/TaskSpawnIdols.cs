@@ -14,7 +14,8 @@ public class TaskSpawnIdols : Node
     private float spawnTimeDeviation;
     private float currentSpawnTimer = 0;
 
-    public event EventHandler<int> OnIdolCountChanged;
+    public delegate void IdolCountChange(int idolCount);
+    public static event IdolCountChange OnIdolCountChanged;
 
     public TaskSpawnIdols(float avgSpawnTime, float spawnTimeDeviation)
     {
@@ -45,18 +46,16 @@ public class TaskSpawnIdols : Node
         return status;
     }
 
-    public void AddIdol()
+    public static void AddIdol()
     {
         currentIdolCount++;
-        SetRootData(IDOL_KEY, currentIdolCount);
 
-        OnIdolCountChanged?.Invoke(this, currentIdolCount);
+        OnIdolCountChanged?.Invoke(currentIdolCount);
     }
-    public void RemoveIdol()
+    public static void RemoveIdol()
     {
         currentIdolCount--;
-        SetRootData(IDOL_KEY, currentIdolCount);
 
-        OnIdolCountChanged?.Invoke(this, currentIdolCount);
+        OnIdolCountChanged?.Invoke(currentIdolCount);
     }
 }

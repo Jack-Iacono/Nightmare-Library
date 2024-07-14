@@ -9,11 +9,9 @@ public class CheckInAttackRange : Node
     private float attackRange;
     private float sightAngle;
     private Transform transform;
-    private Transform target;
     
-    public CheckInAttackRange(Transform target, Transform attacker, float attackRange, float sightAngle)
+    public CheckInAttackRange(Transform attacker, float attackRange, float sightAngle)
     {
-        this.target = target;
         transform = attacker;
         this.attackRange = attackRange;
         this.sightAngle = sightAngle;
@@ -21,6 +19,8 @@ public class CheckInAttackRange : Node
 
     public override Status Check(float dt)
     {
+        Vector3 target = transform.position;
+
         // If the player is currently attacking, bypass this check
         if (GetData("attacking") != null && (bool)GetData("attacking"))
         {
@@ -29,10 +29,10 @@ public class CheckInAttackRange : Node
         }
 
         // Check if the player is close enough to the user
-        if (Vector3.Distance(target.position, transform.position) <= attackRange)
+        if (Vector3.Distance(target, transform.position) <= attackRange)
         {
             // Check if the player is within the vision arc
-            if (Vector3.Dot(transform.forward, (target.position - transform.position).normalized) >= sightAngle)
+            if (Vector3.Dot(transform.forward, (target - transform.position).normalized) >= sightAngle)
             {
                 status = Status.SUCCESS;
                 return status;

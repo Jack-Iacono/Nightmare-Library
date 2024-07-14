@@ -47,16 +47,17 @@ public class DeskController : MonoBehaviour
         }
     }
 
-    public List<GameObject> SpawnIdols(int count, TaskSpawnIdols idolSpawner)
+    public List<IdolController> SpawnIdols(int count, TaskSpawnIdols idolSpawner)
     {
         if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
         {
-            List<GameObject> list = new List<GameObject>();
+            List<IdolController> list = new List<IdolController>();
             for (int i = 0; i < count; i++)
             {
                 GameObject idol = Instantiate(offlineIdolPrefab, idolSpawnLocations[i].position, Quaternion.identity, transform);
-                idol.GetComponent<IdolController>().Initialize(idolSpawner);
-                list.Add(idol);
+                IdolController temp = idol.GetComponent<IdolController>();
+                temp.Initialize(idolSpawner);
+                list.Add(temp);
             }
             return list;
         }

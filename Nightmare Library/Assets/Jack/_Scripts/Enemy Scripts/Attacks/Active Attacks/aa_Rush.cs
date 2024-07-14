@@ -23,6 +23,10 @@ public class aa_Rush : ActiveAttack
         Node root = new Selector(new List<Node>()
         {
             new TaskRushCooldown("RushCooldownTimer", postRushPause, owner),
+            new Sequence(new List<Node>()
+            {
+
+            }),
             new Sequence(new List<Node>
             {
                 new CheckIsRushing(),

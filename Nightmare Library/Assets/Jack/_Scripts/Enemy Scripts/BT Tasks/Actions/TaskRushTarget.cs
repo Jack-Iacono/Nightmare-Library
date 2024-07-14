@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.AI;
 
 using BehaviorTree;
-using System.Buffers;
 
 public class TaskRushTarget : Node
 {
@@ -25,19 +24,20 @@ public class TaskRushTarget : Node
 
     public override Status Check(float dt)
     {
-        Debug.Log("Rushing Target");
-
         // Get the current target node
         Vector3 target = (Vector3)GetData(CheckPlayerInSightChase.PLAYER_KEY);
 
-        // Check if the agent is still not at the target
-        if (Vector3.Distance(transform.position, target) > 0.5f)
+        if(navAgent.pathStatus == NavMeshPathStatus.PathComplete)
         {
-            navAgent.speed = speedStore * 3;
+            // Check if the agent is still not at the target
+            if (Vector3.Distance(transform.position, target) > 0.5f)
+            {
+                navAgent.speed = speedStore * 10;
 
-            navAgent.destination = target;
-            status = Status.RUNNING;
-            return status;
+                navAgent.destination = target;
+                status = Status.RUNNING;
+                return status;
+            }
         }
 
         navAgent.speed = speedStore;

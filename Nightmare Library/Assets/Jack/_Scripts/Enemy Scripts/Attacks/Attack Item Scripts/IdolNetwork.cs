@@ -9,20 +9,15 @@ public class IdolNetwork : NetworkBehaviour
 {
     private IdolController parent;
 
-    private void Awake()
+    private void Start()
     {
         parent = GetComponent<IdolController>();
 
         parent.OnHit += OnHit;
         parent.OnClick += OnClick;
 
-        parent.OnInitialized += OnParentInitialized;
-    }
-
-    private void OnParentInitialized(object sender, EventArgs e)
-    {
         if (IsOwner)
-            parent.idolSpawner.OnIdolCountChanged += OnIdolCountChanged;
+            TaskSpawnIdols.OnIdolCountChanged += OnIdolCountChanged;
     }
 
     private void OnClick(object sender, EventArgs e)
@@ -35,7 +30,7 @@ public class IdolNetwork : NetworkBehaviour
         throw new NotImplementedException();
     }
 
-    private void OnIdolCountChanged(object sender, int e)
+    private void OnIdolCountChanged(int idolCount)
     {
         if (IsOwner)
         {

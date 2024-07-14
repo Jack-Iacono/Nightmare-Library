@@ -86,8 +86,10 @@ public class CheckPlayerInSightRush : Node
         Debug.Log("Update Player Position");
         Ray ray = new Ray(user.transform.position, (currentTarget.position - user.transform.position).normalized);
         RaycastHit hit;
+
         Physics.Raycast(ray, out hit, 1000, 1);
         Debug.DrawRay(ray.origin, ray.direction * 1000, Color.cyan, 0.1f);
+
         parent.parent.SetData(PLAYER_KEY, hit.point);
     }
 }

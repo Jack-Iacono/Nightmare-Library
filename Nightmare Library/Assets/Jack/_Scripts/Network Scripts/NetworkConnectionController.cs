@@ -42,6 +42,11 @@ public class NetworkConnectionController : NetworkBehaviour
     public bool isServer = false;
     public bool isRunning = false;
 
+    public static bool IsOnline
+    {
+        get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
+    }
+
     private void Update()
     {
         isServer = NetworkManager.Singleton.IsServer;

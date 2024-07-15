@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
@@ -11,9 +12,13 @@ public class PlayerController : MonoBehaviour
     public static PlayerController ownerInstance;
 
     public static List<PlayerController> playerInstances = new List<PlayerController>();
+    private int myPlayerIndex;
     public static LayerMask playerLayerMask;
 
     public CameraController camCont;
+
+    [SerializeField]
+    private bool isAlive = true;
 
     [Header("Movement Variables")]
     [SerializeField]
@@ -34,14 +39,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float airDeceleration = 1;
 
-    /*
-    [Header("Movement Contstraints", order = 2)]
-    [SerializeField]
-    private float maxNormalSpeed = 10;
-    [SerializeField]
-    private float maxCapSpeed = 100;
-    */
-
     [Header("Interaction Variables")]
     public LayerMask environmentLayers;
 
@@ -55,9 +52,15 @@ public class PlayerController : MonoBehaviour
 
     public static KeyCode keyInteract = KeyCode.R;
 
+    public event EventHandler OnPlayerAttacked;
+
+    private static int currentlySpectating;
+
     private void Awake()
     {
         playerInstances.Add(this);
+        myPlayerIndex = playerInstances.Count - 1;
+
         charCont = GetComponent<CharacterController>();
 
         if(!TryGetComponent<PlayerNetworkState>(out var g))
@@ -90,6 +93,7 @@ public class PlayerController : MonoBehaviour
                 Input.GetButtonDown("Jump") ? 1 : 0,
                 Input.GetAxis("Vertical")
             );
+        
     }
     private void CalculateNormalPlayerMove()
     {
@@ -144,6 +148,23 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void AttackPlayer()
+    {
+        if (!NetworkConnectionController.IsOnline)
+        {
+            KillPlayer();
+        }
+        OnPlayerAttacked?.Invoke(this, EventArgs.Empty);
+    }
+    public void KillPlayer()
+    {
+        ActivatePlayer(false);
+        isAlive = false;
+        Debug.Log("Player Died");
+
+        SpectatePlayer(0);
+    }
+
     public void ActivatePlayer(bool b)
     {
         if (!b)
@@ -157,6 +178,16 @@ public class PlayerController : MonoBehaviour
             camCont.SetEnabled(true);
             name = "My Player";
             ownerInstance = this;
+        }
+    }
+
+    public static void SpectatePlayer(int index)
+    {
+        if (playerInstances[index].isAlive)
+        {
+            playerInstances[currentlySpectating].camCont.Spectate(false);
+            playerInstances[index].camCont.Spectate(true);
+            currentlySpectating = index;
         }
     }
 }

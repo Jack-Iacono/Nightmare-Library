@@ -76,13 +76,13 @@ public class GameControllerNetwork : NetworkBehaviour
     }
     private void ServerSpawn()
     {
-        GameObject pPrefab = Instantiate(onlinePlayerPrefab);
+        // TEMPORARY: Remove the spawn coordinates from this line
+        GameObject pPrefab = Instantiate(onlinePlayerPrefab, new Vector3(-20,10,0), Quaternion.identity);
 
         pPrefab.name = "Player " + instance.OwnerClientId;
         pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
-        pPrefab.transform.position += Vector3.up * 10;
 
-        GameObject ePrefab = Instantiate(onlineEnemyPrefab);
+        GameObject ePrefab = Instantiate(onlineEnemyPrefab, new Vector3(20, 10, 0), Quaternion.identity);
 
         ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
         ePrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
@@ -94,7 +94,7 @@ public class GameControllerNetwork : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void ClientEntryActionServerRpc(ulong clientId)
     {
-        GameObject pPrefab = Instantiate(onlinePlayerPrefab);
+        GameObject pPrefab = Instantiate(onlinePlayerPrefab, new Vector3(-20, 10, 0), Quaternion.identity);
 
         pPrefab.name = "Player " + clientId;
         pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);

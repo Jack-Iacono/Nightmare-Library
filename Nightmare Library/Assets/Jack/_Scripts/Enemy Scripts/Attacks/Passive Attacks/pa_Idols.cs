@@ -27,7 +27,8 @@ public class pa_Idols : PassiveAttack
         {
             new Sequence(new List<Node>()
             {
-                new CheckIdolCount(maxIdolCount)
+                new CheckIdolCount(maxIdolCount),
+                new TaskAttackPlayerPassive()
             }),
             idolSpawner
         });

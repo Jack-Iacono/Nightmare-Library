@@ -30,6 +30,7 @@ public class PlayerNetworkState : NetworkBehaviour
         playerIntermittentState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
 
         playerCont = GetComponent<PlayerController>();
+        playerCont.OnPlayerAttacked += OnPlayerAttacked;
     }
 
     public override void OnNetworkSpawn()
@@ -69,6 +70,17 @@ public class PlayerNetworkState : NetworkBehaviour
         {
             TransmitIntermittentState();
         }
+    }
+
+    public void OnPlayerAttacked(object sender, EventArgs e)
+    {
+        playerCont.KillPlayer();
+        OnPlayerAttackedClientRpc();
+    }
+    [ClientRpc]
+    private void OnPlayerAttackedClientRpc()
+    {
+        playerCont.KillPlayer();
     }
 
     #region Server Data Transfers

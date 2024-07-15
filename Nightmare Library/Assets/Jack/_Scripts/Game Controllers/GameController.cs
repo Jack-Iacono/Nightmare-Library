@@ -38,7 +38,7 @@ public class GameController : MonoBehaviour
 
     private void SpawnPrefabs()
     {
-        Instantiate(offlinePlayerPrefab);
+        Instantiate(offlinePlayerPrefab, new Vector3(0,10,0), Quaternion.identity);
         Instantiate(offlineEnemyPrefab);
     }
 

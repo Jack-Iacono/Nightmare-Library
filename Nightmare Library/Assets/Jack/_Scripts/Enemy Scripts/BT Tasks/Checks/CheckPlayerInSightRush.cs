@@ -83,7 +83,6 @@ public class CheckPlayerInSightRush : Node
 
     public void SetPlayerPosition()
     {
-        Debug.Log("Update Player Position");
         Ray ray = new Ray(user.transform.position, (currentTarget.position - user.transform.position).normalized);
         RaycastHit hit;
 

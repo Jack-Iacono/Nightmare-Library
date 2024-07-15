@@ -30,8 +30,10 @@ public class TaskRushTarget : Node
         if(navAgent.pathStatus == NavMeshPathStatus.PathComplete)
         {
             // Check if the agent is still not at the target
-            if (Vector3.Distance(transform.position, target) > 0.5f)
+            if (Vector3.Distance(TrimVector(transform.position), TrimVector(target)) > 0.5f)
             {
+                Debug.Log(TrimVector(transform.position) + " -> " + TrimVector(target));
+
                 navAgent.speed = speedStore * 10;
 
                 navAgent.destination = target;
@@ -44,5 +46,14 @@ public class TaskRushTarget : Node
 
         status = Status.SUCCESS;
         return status;
+    }
+
+    /// <summary>
+    /// Trims the y axis out of a vector3
+    /// </summary>
+    /// <returns>The given Vector3 without the y component</returns>
+    private Vector3 TrimVector(Vector3 org)
+    {
+        return new Vector3(org.x, 1, org.z);
     }
 }

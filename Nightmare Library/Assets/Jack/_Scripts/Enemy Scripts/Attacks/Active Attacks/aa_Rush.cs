@@ -25,7 +25,8 @@ public class aa_Rush : ActiveAttack
             new TaskRushCooldown("RushCooldownTimer", postRushPause, owner),
             new Sequence(new List<Node>()
             {
-
+                new CheckInAttackRange(owner),
+                new TaskAttackPlayerQuick("Attacking Player Timer", 3, owner)
             }),
             new Sequence(new List<Node>
             {

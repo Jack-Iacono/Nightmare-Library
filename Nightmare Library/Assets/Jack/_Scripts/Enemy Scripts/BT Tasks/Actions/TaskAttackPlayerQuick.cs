@@ -5,33 +5,41 @@ using UnityEngine;
 using BehaviorTree;
 using UnityEngine.AI;
 
-public class TaskAttackPlayer : TaskWait
+public class TaskAttackPlayerQuick : TaskWait
 {
-    private PlayerController player;
-    BasicEnemy owner;
+    Enemy owner;
     NavMeshAgent navAgent;
+    Transform currentTarget;
 
     private bool hasAttacked = false;
 
-    public TaskAttackPlayer(string waitLabel, float waitTimer, PlayerController player, BasicEnemy owner) : base(waitLabel, waitTimer)
+    public TaskAttackPlayerQuick(string waitLabel, float waitTimer, Enemy owner) : base(waitLabel, waitTimer)
     {
         this.owner = owner;
         navAgent = owner.navAgent;
-        this.player = player;
     }
 
     protected override void OnStart()
     {
         hasAttacked = false;
 
-        navAgent.destination = navAgent.transform.position;
+        PlayerController player = (PlayerController)GetData(CheckInAttackRange.ATTACK_TARGET_KEY);
+        if(player != null)
+        {
+            player.AttackPlayer();
+        }
+
     }
     protected override void OnEnd()
     {
         hasAttacked = false;
+
+        ClearData(CheckInAttackRange.ATTACKING_KEY);
+        ClearData(CheckInAttackRange.ATTACK_TARGET_KEY);
     }
     protected override void OnTick(float time)
     {
+        /*
         if (!hasAttacked && time < 0.6)
         {
             // Check if the player is still close enough to the user
@@ -44,5 +52,6 @@ public class TaskAttackPlayer : TaskWait
                 }
             }
         }
+        */
     }
 }

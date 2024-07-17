@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEditor.PackageManager;
 using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(GameController))]
 public class GameControllerNetwork : NetworkBehaviour
@@ -26,6 +27,7 @@ public class GameControllerNetwork : NetworkBehaviour
             Destroy(this);
 
         GameController.OnNetworkGamePause += OnParentPause;
+        GameController.OnGameEnd += OnGameEnd;
         LobbyController.OnLobbyEnter += OnLobbyEnter;
 
         var permission = NetworkVariableWritePermission.Owner;
@@ -60,6 +62,11 @@ public class GameControllerNetwork : NetworkBehaviour
     {
         ConsumePauseStateClientRpc(e);
     }
+    private void OnGameEnd(object sender, EventArgs e)
+    {
+        GameController.OnGameEnd -= OnGameEnd;
+        OnlineSceneController.instance.LoadScene("j_Menu");
+    }
 
     private void OnLobbyEnter(ulong clientId, bool isServer)
     {
@@ -77,12 +84,12 @@ public class GameControllerNetwork : NetworkBehaviour
     private void ServerSpawn()
     {
         // TEMPORARY: Remove the spawn coordinates from this line
-        GameObject pPrefab = Instantiate(onlinePlayerPrefab, new Vector3(-20,10,0), Quaternion.identity);
+        GameObject pPrefab = Instantiate(onlinePlayerPrefab);
 
         pPrefab.name = "Player " + instance.OwnerClientId;
         pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
 
-        GameObject ePrefab = Instantiate(onlineEnemyPrefab, new Vector3(20, 10, 0), Quaternion.identity);
+        GameObject ePrefab = Instantiate(onlineEnemyPrefab);
 
         ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
         ePrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
@@ -94,7 +101,7 @@ public class GameControllerNetwork : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void ClientEntryActionServerRpc(ulong clientId)
     {
-        GameObject pPrefab = Instantiate(onlinePlayerPrefab, new Vector3(-20, 10, 0), Quaternion.identity);
+        GameObject pPrefab = Instantiate(onlinePlayerPrefab);
 
         pPrefab.name = "Player " + clientId;
         pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);

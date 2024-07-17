@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1529,6 +1529,7 @@ GameObject:
   - component: {fileID: 1476229078}
   - component: {fileID: 1476229079}
   - component: {fileID: 1476229081}
+  - component: {fileID: 1476229082}
   m_Layer: 0
   m_Name: Network Connection Controller
   m_TagString: Untagged
@@ -1597,6 +1598,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d7b0f7368adc654c9c2c0666514d9ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1476229082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1476229077}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 787e5f7ebb04b5f46b13179272897fd3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneNames:
+  - j_Menu
+  - j_OnlineGame
+  - j_OfflineGame
 --- !u!1 &1537759757
 GameObject:
   m_ObjectHideFlags: 0
@@ -2182,6 +2199,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1739833768}
   - component: {fileID: 1739833767}
+  - component: {fileID: 1739833769}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -2266,6 +2284,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!114 &1739833769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1739833766}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &1915074686
 GameObject:
   m_ObjectHideFlags: 0
@@ -2400,75 +2441,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1915074686}
   m_CullTransparentMesh: 1
---- !u!1 &2060037858
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2060037861}
-  - component: {fileID: 2060037859}
-  - component: {fileID: 2060037860}
-  m_Layer: 0
-  m_Name: Online Scene Controller
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2060037859
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2060037858}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3552430700
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
---- !u!114 &2060037860
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2060037858}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 787e5f7ebb04b5f46b13179272897fd3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sceneNames:
-  - j_Menu
-  - j_OnlineGame
-  - j_OfflineGame
---- !u!4 &2060037861
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2060037858}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 41.60402, y: 13.335026, z: 14.563549}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &6454246569364621029
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2553,4 +2525,3 @@ SceneRoots:
   - {fileID: 61009761}
   - {fileID: 1476229080}
   - {fileID: 6454246569364621029}
-  - {fileID: 2060037861}

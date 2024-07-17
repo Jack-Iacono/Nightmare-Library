@@ -32,8 +32,6 @@ public class TaskRushTarget : Node
             // Check if the agent is still not at the target
             if (Vector3.Distance(TrimVector(transform.position), TrimVector(target)) > 0.5f)
             {
-                Debug.Log(TrimVector(transform.position) + " -> " + TrimVector(target));
-
                 navAgent.speed = speedStore * 10;
 
                 navAgent.destination = target;

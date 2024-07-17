@@ -78,13 +78,11 @@ public class CheckInAttackRange : Node
             {
                 if (hit.collider.tag == "Player")
                 {
-                    Debug.Log("Player Found");
                     return player.gameObject.GetComponent<PlayerController>();
                 }
             }
         }
 
-        Debug.Log("Player Not Found");
         return null;
     }
 

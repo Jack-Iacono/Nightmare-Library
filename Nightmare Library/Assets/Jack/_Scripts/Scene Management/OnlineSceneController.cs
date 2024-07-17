@@ -11,8 +11,8 @@ public class OnlineSceneController : NetworkBehaviour
     [SerializeField]
     private string[] sceneNames = { "j_Menu", "j_OnlineGame", "j_OfflineGame" };
 
-    private Scene loadedScene;
-    private Scene unloadBuffer;
+    private static Scene loadedScene;
+    private static Scene unloadBuffer;
 
     public bool SceneIsLoaded
     {
@@ -29,14 +29,16 @@ public class OnlineSceneController : NetworkBehaviour
     private void Awake()
     {
         if (instance == null)
-        {
             instance = this;
-        }
+        else
+            Destroy(this);
     }
 
     public override void OnNetworkSpawn()
     {
         loadedScene = SceneManager.GetActiveScene();
+
+        NetworkManager.SceneManager.OnSceneEvent += SceneManager_OnSceneEvent;
 
         base.OnNetworkSpawn();
     }
@@ -58,7 +60,7 @@ public class OnlineSceneController : NetworkBehaviour
     {
         // Used for denoting in warning message
         var clientOrServer = sceneEvent.ClientId == NetworkManager.ServerClientId ? "server" : "client";
-
+        
         switch (sceneEvent.SceneEventType)
         {
             case SceneEventType.LoadComplete:
@@ -71,6 +73,8 @@ public class OnlineSceneController : NetworkBehaviour
                         unloadBuffer = loadedScene;
 
                     loadedScene = sceneEvent.Scene;
+
+                    Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
                 }
                 Debug.Log($"Loaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
                 break;
@@ -79,6 +83,7 @@ public class OnlineSceneController : NetworkBehaviour
                 break;
             case SceneEventType.LoadEventCompleted:
                 Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
+                Debug.Log("Unload");
 
                 if(unloadBuffer != null)
                     UnloadScene();
@@ -102,7 +107,6 @@ public class OnlineSceneController : NetworkBehaviour
         // Check if you are running the server and if the scene to be loaded is not null
         if (IsServer && !string.IsNullOrEmpty(s))
         {
-            NetworkManager.SceneManager.OnSceneEvent += SceneManager_OnSceneEvent;
             var status = NetworkManager.SceneManager.LoadScene(s, LoadSceneMode.Additive);
             CheckStatus(status);
         }
@@ -111,6 +115,7 @@ public class OnlineSceneController : NetworkBehaviour
     {
         // Assure only the server calls this when the NetworkObject is
         // spawned and the scene is loaded.
+        Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
         Debug.Log(!IsServer + " || " + !IsSpawned + " || " + !loadedScene.IsValid() + " || " + !loadedScene.isLoaded);
         if (!IsServer || !IsSpawned || !loadedScene.IsValid() || !loadedScene.isLoaded)
         {
@@ -119,7 +124,7 @@ public class OnlineSceneController : NetworkBehaviour
 
         // Unload the scene
         //var status = NetworkManager.SceneManager.UnloadScene(loadedScene);
-        var status = NetworkManager.SceneManager.UnloadScene(SceneManager.GetSceneByName("j_Menu"));
+        var status = NetworkManager.SceneManager.UnloadScene(SceneManager.GetSceneByName(unloadBuffer.name));
         CheckStatus(status, false);
     }
 

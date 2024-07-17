@@ -80,7 +80,8 @@ public class PlayerNetworkState : NetworkBehaviour
     [ClientRpc]
     private void OnPlayerAttackedClientRpc()
     {
-        playerCont.KillPlayer();
+        if(!IsServer)
+            playerCont.KillPlayer();
     }
 
     #region Server Data Transfers

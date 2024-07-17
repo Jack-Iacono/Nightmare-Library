@@ -6,7 +6,7 @@ using BehaviorTree;
 using UnityEditor.Timeline;
 using System.Collections.Generic;
 
-public abstract class Enemy : MonoBehaviour
+public class Enemy : MonoBehaviour
 {
     [Header("Nightmare Characteristics")]
     [SerializeField]
@@ -17,6 +17,7 @@ public abstract class Enemy : MonoBehaviour
     [NonSerialized]
     public NavMeshAgent navAgent;
 
+    [SerializeField]
     protected Vector3 spawnLocation;
     protected Vector3 targetLocation = Vector3.zero;
 

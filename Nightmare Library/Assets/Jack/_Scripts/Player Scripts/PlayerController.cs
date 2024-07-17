@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     public CameraController camCont;
 
     [SerializeField]
-    private bool isAlive = true;
+    public bool isAlive = true;
 
     [Header("Movement Variables")]
     [SerializeField]
@@ -53,6 +53,7 @@ public class PlayerController : MonoBehaviour
     public static KeyCode keyInteract = KeyCode.R;
 
     public event EventHandler OnPlayerAttacked;
+    public static event EventHandler OnPlayerKilled;
 
     private static int currentlySpectating;
 
@@ -62,6 +63,11 @@ public class PlayerController : MonoBehaviour
         myPlayerIndex = playerInstances.Count - 1;
 
         charCont = GetComponent<CharacterController>();
+
+        // TEMPORARY
+        charCont.enabled = false;
+        transform.position = new Vector3(-20, 1, 0);
+        charCont.enabled = true;
 
         if(!TryGetComponent<PlayerNetworkState>(out var g))
             ownerInstance = this;
@@ -160,7 +166,8 @@ public class PlayerController : MonoBehaviour
     {
         ActivatePlayer(false);
         isAlive = false;
-        Debug.Log("Player Died");
+
+        OnPlayerKilled?.Invoke(this, EventArgs.Empty);
 
         SpectatePlayer(0);
     }

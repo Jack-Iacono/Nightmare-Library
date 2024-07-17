@@ -8,6 +8,11 @@ public class mui_MainScreenController : ScreenController
     [Header("Menu Specific Variables")]
     public TMP_InputField joinInputField;
 
+    private void Start()
+    {
+        Cursor.lockState = CursorLockMode.None;
+    }
+
     public void PlayOnlineCreate()
     {
         ((MainMenuLobbyController)LobbyController.instance).PlayOnlineCreate();

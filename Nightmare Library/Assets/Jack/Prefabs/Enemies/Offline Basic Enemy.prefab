@@ -125,6 +125,7 @@ MonoBehaviour:
   moveSpeed: 4
   fovRange: 20
   attackRange: 2
+  spawnLocation: {x: 20, y: 1, z: 0}
   aAttack: 0
   pAttack: 0
 --- !u!195 &6364429912731168215

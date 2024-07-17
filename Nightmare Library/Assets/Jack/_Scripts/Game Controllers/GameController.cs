@@ -22,6 +22,7 @@ public class GameController : MonoBehaviour
 
     // Multiplayer Events
     public static event EventHandler<bool> OnNetworkGamePause;
+    public static event EventHandler OnGameEnd;
 
     private void Awake()
     {
@@ -29,7 +30,10 @@ public class GameController : MonoBehaviour
             instance = this;
         else
             Destroy(this);
+
+        PlayerController.OnPlayerKilled += OnPlayerKilled;
     }
+
     private void Start()
     {
         if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
@@ -38,8 +42,8 @@ public class GameController : MonoBehaviour
 
     private void SpawnPrefabs()
     {
-        Instantiate(offlinePlayerPrefab, new Vector3(0,10,0), Quaternion.identity);
-        Instantiate(offlineEnemyPrefab);
+        Instantiate(offlinePlayerPrefab, new Vector3(-20,1,0), Quaternion.identity);
+        Instantiate(offlineEnemyPrefab, new Vector3(-20, 1, 0), Quaternion.identity);
     }
 
 
@@ -54,6 +58,36 @@ public class GameController : MonoBehaviour
             
             if(isNetworkGame)
                 OnNetworkGamePause?.Invoke(this, gamePaused);
+        }
+    }
+
+    private void OnPlayerKilled(object sender, EventArgs e)
+    {
+        bool gameEnd = true;
+        foreach(PlayerController p in PlayerController.playerInstances)
+        {
+            if (p.isAlive)
+            {
+                gameEnd = false;
+                break;
+            }
+        }
+
+        if (gameEnd)
+        {
+            EndGame();
+        }
+    }
+
+    private void EndGame()
+    {
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        {
+            OnGameEnd?.Invoke(this, EventArgs.Empty);
+        }
+        else
+        {
+            OfflineSceneController.ChangeScene(OfflineSceneController.m_Scene.MAIN_MENU);
         }
     }
 

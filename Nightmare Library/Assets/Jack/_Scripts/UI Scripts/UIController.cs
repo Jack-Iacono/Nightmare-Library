@@ -11,6 +11,7 @@ public abstract class UIController : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("UI Controller Awake");
         if (instance != null)
             Destroy(this);
         else

@@ -69,9 +69,6 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(-20, 1, 0);
         charCont.enabled = true;
 
-        if(!TryGetComponent<PlayerNetworkState>(out var g))
-            ownerInstance = this;
-
         playerLayerMask = gameObject.layer;
     }
 
@@ -84,6 +81,8 @@ public class PlayerController : MonoBehaviour
             CalculateNormalPlayerMove();
             MovePlayer();
         }
+
+        Debug.Log(ownerInstance != null);
     }
     private void FixedUpdate()
     {

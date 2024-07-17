@@ -9,7 +9,7 @@ public class IdolController : Interactable
     [NonSerialized]
     public TaskSpawnIdols idolSpawner;
 
-    public event EventHandler OnInitialized;
+    public event EventHandler<bool> OnIdolActivated;
 
     private void Start()
     {
@@ -19,7 +19,6 @@ public class IdolController : Interactable
     public void Initialize(TaskSpawnIdols idolSpawner)
     {
         this.idolSpawner = idolSpawner;
-        OnInitialized?.Invoke(this, EventArgs.Empty);
     }
 
     public override void Click()
@@ -33,10 +32,12 @@ public class IdolController : Interactable
     public void AddIdol()
     {
         gameObject.SetActive(true);
+        OnIdolActivated?.Invoke(this, true);
     }
     public void RemoveIdol()
     {
         gameObject.SetActive(false);
+        OnIdolActivated?.Invoke(this, false);
         TaskSpawnIdols.RemoveIdol();
     }
 }

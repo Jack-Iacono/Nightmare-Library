@@ -17,24 +17,31 @@ public class IdolNetwork : NetworkBehaviour
         parent.OnClick += OnClick;
 
         if (IsOwner)
-            TaskSpawnIdols.OnIdolCountChanged += OnIdolCountChanged;
+            parent.OnIdolActivated += OnIdolActivated;
+
+        Debug.Log(IsOwner);
     }
 
+    private void OnHit(object sender, EventArgs e)
+    {
+        throw new NotImplementedException();
+    }
     private void OnClick(object sender, EventArgs e)
     {
         if (!IsOwner)
             TransmitClickServerRpc(NetworkManager.LocalClientId);
     }
-    private void OnHit(object sender, EventArgs e)
+    [ServerRpc(RequireOwnership = false)]
+    private void TransmitClickServerRpc(ulong sender)
     {
-        throw new NotImplementedException();
+        parent.RemoveIdol();
     }
 
-    private void OnIdolCountChanged(int idolCount)
+    private void OnIdolActivated(object sender, bool b)
     {
         if (IsOwner)
         {
-            ConsumeIdolCountChangeClientRpc(gameObject.activeInHierarchy);
+            ConsumeIdolCountChangeClientRpc(b);
         }
     }
     [ClientRpc]
@@ -44,10 +51,10 @@ public class IdolNetwork : NetworkBehaviour
     }
 
 
-    [ServerRpc(RequireOwnership = false)]
-    private void TransmitClickServerRpc(ulong sender)
+    
+
+    public override void OnDestroy()
     {
-        parent.RemoveIdol();
-        //ConsumeClickClientRpc(sender);
+        base.OnDestroy();
     }
 }

@@ -95,6 +95,12 @@ public class Enemy : MonoBehaviour
             navAgent.isStopped = e;
     }
 
+    private void OnDestroy()
+    {
+        activeAttackTree.OnDestroy();
+        passiveAttackTree.OnDestroy();
+    }
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;

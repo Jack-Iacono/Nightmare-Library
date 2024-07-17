@@ -23,12 +23,14 @@ public class DeskNetwork : NetworkBehaviour
         List<IdolController> list = new List<IdolController>();
         for (int i = 0; i < count; i++)
         {
-            GameObject idol = Instantiate(onlineIdolPrefab, parent.idolSpawnLocations[i].position, Quaternion.identity, transform);
+            GameObject idol = Instantiate(onlineIdolPrefab, parent.idolGameObjects[i].transform.position, Quaternion.identity, transform);
             idol.name = "Online Idol";
             idol.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
             IdolController iCont = idol.GetComponent<IdolController>();
             iCont.Initialize(idolSpawner);
             list.Add(iCont);
+
+            GameControllerNetwork.instance.spawnedPrefabs.Add(idol);
         }
         return list;
     }

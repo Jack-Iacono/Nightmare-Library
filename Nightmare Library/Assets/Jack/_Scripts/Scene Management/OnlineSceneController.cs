@@ -28,6 +28,7 @@ public class OnlineSceneController : NetworkBehaviour
 
     private void Awake()
     {
+        Debug.Log("Online Screen Controller Awake");
         if (instance == null)
             instance = this;
         else
@@ -74,16 +75,15 @@ public class OnlineSceneController : NetworkBehaviour
 
                     loadedScene = sceneEvent.Scene;
 
-                    Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
+                    //Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
                 }
-                Debug.Log($"Loaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
+                //Debug.Log($"Loaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
                 break;
             case SceneEventType.UnloadComplete:
-                Debug.Log($"Unloaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
+                //Debug.Log($"Unloaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
                 break;
             case SceneEventType.LoadEventCompleted:
-                Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
-                Debug.Log("Unload");
+                //Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
 
                 if(unloadBuffer != null)
                     UnloadScene();
@@ -93,7 +93,7 @@ public class OnlineSceneController : NetworkBehaviour
 
                 break;
             case SceneEventType.UnloadEventCompleted:
-                Debug.Log($"Unload event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
+                //Debug.Log($"Unload event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
 
                 if (sceneEvent.ClientsThatTimedOut.Count > 0)
                     Debug.LogWarning($"Unload event timed out for the following client identifiers:({sceneEvent.ClientsThatTimedOut})");
@@ -115,8 +115,8 @@ public class OnlineSceneController : NetworkBehaviour
     {
         // Assure only the server calls this when the NetworkObject is
         // spawned and the scene is loaded.
-        Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
-        Debug.Log(!IsServer + " || " + !IsSpawned + " || " + !loadedScene.IsValid() + " || " + !loadedScene.isLoaded);
+        //Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
+        //Debug.Log(!IsServer + " || " + !IsSpawned + " || " + !loadedScene.IsValid() + " || " + !loadedScene.isLoaded);
         if (!IsServer || !IsSpawned || !loadedScene.IsValid() || !loadedScene.isLoaded)
         {
             return;

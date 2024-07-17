@@ -31,6 +31,9 @@ public class PlayerNetworkState : NetworkBehaviour
 
         playerCont = GetComponent<PlayerController>();
         playerCont.OnPlayerAttacked += OnPlayerAttacked;
+
+        if (IsOwner)
+            PlayerController.ownerInstance = playerCont;
     }
 
     public override void OnNetworkSpawn()

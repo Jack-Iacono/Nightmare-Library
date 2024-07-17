@@ -17,7 +17,7 @@ public class pa_Idols : PassiveAttack
         idolSpawner = new TaskSpawnIdols(3, 0.5f);
         TaskSpawnIdols.OnIdolCountChanged += OnIdolCountChanged;
 
-        idolObjects = DeskController.instance.SpawnIdols(maxIdolCount, idolSpawner);
+        idolObjects = DeskController.instance.GetIdolControllers(idolSpawner);
     }
 
     protected override Node SetupTree()
@@ -33,6 +33,11 @@ public class pa_Idols : PassiveAttack
             idolSpawner
         });
 
+        foreach(IdolController i in idolObjects)
+        {
+            Debug.Log(i == null);
+        }
+
         return root;
     }
 
@@ -42,6 +47,8 @@ public class pa_Idols : PassiveAttack
         {
             for (int i = 0; i < idolObjects.Count; i++)
             {
+                Debug.Log("i: " + i);
+                Debug.Log(idolObjects[i] == null);
                 if (!idolObjects[i].gameObject.activeInHierarchy)
                 {
                     idolObjects[i].AddIdol();
@@ -51,5 +58,13 @@ public class pa_Idols : PassiveAttack
         }
 
         activeIdolObjects = e;
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        Debug.Log("Unregistering");
+        TaskSpawnIdols.OnIdolCountChanged -= OnIdolCountChanged;
     }
 }

@@ -22,6 +22,8 @@ public class TaskSpawnIdols : Node
         this.avgSpawnTime = avgSpawnTime;
         this.spawnTimeDeviation = spawnTimeDeviation;
 
+        currentIdolCount = 0;
+
         currentSpawnTimer = UnityEngine.Random.Range(avgSpawnTime - spawnTimeDeviation, avgSpawnTime + spawnTimeDeviation);
     }
 
@@ -49,6 +51,9 @@ public class TaskSpawnIdols : Node
     public static void AddIdol()
     {
         currentIdolCount++;
+
+        if (OnIdolCountChanged.GetInvocationList() != null)
+            Debug.Log(OnIdolCountChanged.GetInvocationList().Length);
 
         OnIdolCountChanged?.Invoke(currentIdolCount);
     }

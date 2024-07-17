@@ -10,26 +10,20 @@ public class DeskController : MonoBehaviour
     public static List<PlayerController> playersAtDesk = new List<PlayerController>();
 
     public GameObject offlineIdolPrefab;
-    public List<Transform> idolSpawnLocations = new List<Transform>();
+    public List<GameObject> idolGameObjects = new List<GameObject>();
 
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
-        else
-            Destroy(this);
+        if (instance != null)
+            Destroy(instance);
+
+        instance = this;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        playersAtDesk = new List<PlayerController>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -47,23 +41,21 @@ public class DeskController : MonoBehaviour
         }
     }
 
-    public List<IdolController> SpawnIdols(int count, TaskSpawnIdols idolSpawner)
+    public List<IdolController> GetIdolControllers(TaskSpawnIdols idolSpawner)
     {
-        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
+        List<IdolController> idols = new List<IdolController>();
+        foreach(GameObject g in idolGameObjects)
         {
-            List<IdolController> list = new List<IdolController>();
-            for (int i = 0; i < count; i++)
-            {
-                GameObject idol = Instantiate(offlineIdolPrefab, idolSpawnLocations[i].position, Quaternion.identity, transform);
-                IdolController temp = idol.GetComponent<IdolController>();
-                temp.Initialize(idolSpawner);
-                list.Add(temp);
-            }
-            return list;
+            IdolController iCont = g.GetComponent<IdolController>();
+            iCont.Initialize(idolSpawner);
+            idols.Add(iCont);
         }
-        else
-        {
-            return GetComponent<DeskNetwork>().SpawnIdols(count, idolSpawner);
-        }
+        return idols;
+    }
+
+    private void OnDestroy()
+    {
+        if(instance == this)
+            instance = null;
     }
 }

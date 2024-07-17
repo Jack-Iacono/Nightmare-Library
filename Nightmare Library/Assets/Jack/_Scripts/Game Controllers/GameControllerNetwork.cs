@@ -19,6 +19,8 @@ public class GameControllerNetwork : NetworkBehaviour
     private NetworkVariable<ContinuousData> contState;
     public static NetworkVariable<bool> gamePaused;
 
+    public List<GameObject> spawnedPrefabs = new List<GameObject>();
+
     private void Awake()
     {
         if (instance == null)
@@ -75,7 +77,6 @@ public class GameControllerNetwork : NetworkBehaviour
 
     public void SpawnNetworkObjects()
     {
-        Debug.Log("Spawning Players");
         if (NetworkManager.Singleton.IsServer)
             ServerSpawn();
         else
@@ -93,6 +94,9 @@ public class GameControllerNetwork : NetworkBehaviour
 
         ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
         ePrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
+
+        spawnedPrefabs.Add(pPrefab);
+        spawnedPrefabs.Add(ePrefab);
     }
     private void ClientSpawn()
     {
@@ -105,6 +109,8 @@ public class GameControllerNetwork : NetworkBehaviour
 
         pPrefab.name = "Player " + clientId;
         pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
+
+        spawnedPrefabs.Add(pPrefab);
     }
 
     private void TransmitContinuousState()
@@ -160,5 +166,10 @@ public class GameControllerNetwork : NetworkBehaviour
 
         GameController.OnNetworkGamePause -= OnParentPause;
         LobbyController.OnLobbyEnter -= OnLobbyEnter;
+
+        foreach(GameObject g in spawnedPrefabs)
+        {
+            g.GetComponent<NetworkObject>().Despawn();
+        }
     }
 }

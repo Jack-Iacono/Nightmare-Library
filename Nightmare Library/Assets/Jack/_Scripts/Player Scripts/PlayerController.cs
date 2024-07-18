@@ -12,10 +12,17 @@ public class PlayerController : MonoBehaviour
     public static PlayerController ownerInstance;
 
     public static List<PlayerController> playerInstances = new List<PlayerController>();
+
+    private static int currentlySpectating;
     private int myPlayerIndex;
+
     public static LayerMask playerLayerMask;
 
     public CameraController camCont;
+
+    private Collider playerCollider;
+    [SerializeField]
+    private List<MeshRenderer> playerMeshes;
 
     [SerializeField]
     public bool isAlive = true;
@@ -55,7 +62,7 @@ public class PlayerController : MonoBehaviour
     public event EventHandler OnPlayerAttacked;
     public static event EventHandler OnPlayerKilled;
 
-    private static int currentlySpectating;
+    
 
     private void Awake()
     {
@@ -63,6 +70,7 @@ public class PlayerController : MonoBehaviour
         myPlayerIndex = playerInstances.Count - 1;
 
         charCont = GetComponent<CharacterController>();
+        playerCollider = GetComponent<Collider>();
 
         // TEMPORARY
         charCont.enabled = false;
@@ -81,8 +89,6 @@ public class PlayerController : MonoBehaviour
             CalculateNormalPlayerMove();
             MovePlayer();
         }
-
-        Debug.Log(ownerInstance != null);
     }
     private void FixedUpdate()
     {
@@ -166,6 +172,13 @@ public class PlayerController : MonoBehaviour
         ActivatePlayer(false);
         isAlive = false;
 
+        playerCollider.enabled = false;
+        charCont.enabled = false;
+        foreach(MeshRenderer r in playerMeshes)
+        {
+            r.enabled = false;
+        }
+
         OnPlayerKilled?.Invoke(this, EventArgs.Empty);
 
         SpectatePlayer(0);
@@ -173,15 +186,12 @@ public class PlayerController : MonoBehaviour
 
     public void ActivatePlayer(bool b)
     {
-        if (!b)
+        enabled = b;
+        camCont.SetEnabled(b);
+        charCont.enabled = b;
+
+        if (b)
         {
-            enabled = false;
-            camCont.SetEnabled(false);
-        }
-        else
-        {
-            enabled = true;
-            camCont.SetEnabled(true);
             name = "My Player";
             ownerInstance = this;
         }

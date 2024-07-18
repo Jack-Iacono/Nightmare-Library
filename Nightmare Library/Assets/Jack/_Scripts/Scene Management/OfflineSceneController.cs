@@ -9,6 +9,9 @@ public static class OfflineSceneController
 {
     public static m_Scene currentScene;
 
+    private static Scene loadedScene;
+    private static Scene unloadSceneBuffer;
+
     public enum m_Scene { MAIN_MENU, OFFLINE_GAME, ONLINE_GAME };
     public static Dictionary<m_Scene, int> scenes = new Dictionary<m_Scene, int>
         {
@@ -19,23 +22,12 @@ public static class OfflineSceneController
 
     public static void ChangeScene(m_Scene scene)
     {
-        SceneManager.LoadScene(scenes[scene]);
+        SceneManager.LoadScene(scenes[scene], LoadSceneMode.Additive);
         currentScene = scene;
     }
     public static void ChangeScene(int scene)
     {
         SceneManager.LoadScene(scene);
-        currentScene = FindSceneByIndex(scene);
-    }
-
-    public static void ChangeSceneAsync(m_Scene scene)
-    {
-        SceneManager.LoadSceneAsync(scenes[scene]);
-        currentScene = scene;
-    }
-    public static void ChangeSceneAsync(int scene)
-    {
-        SceneManager.LoadSceneAsync(scene);
         currentScene = FindSceneByIndex(scene);
     }
 

@@ -11,7 +11,7 @@ PrefabInstance:
     - target: {fileID: 1289455882946623128, guid: 3693b8fad534778459dd9dbae0fd1532,
         type: 3}
       propertyPath: m_Name
-      value: Basic Enemy Online Variant
+      value: Online Basic Enemy Variant
       objectReference: {fileID: 0}
     - target: {fileID: 4804153572825486784, guid: 3693b8fad534778459dd9dbae0fd1532,
         type: 3}
@@ -94,7 +94,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 331569328
+  GlobalObjectIdHash: 3367138143
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0

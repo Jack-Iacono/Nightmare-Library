@@ -75,6 +75,13 @@ public class PlayerNetworkState : NetworkBehaviour
         }
     }
 
+    #region Player Enable / Disable
+
+    
+
+    #endregion
+
+    #region Player Attacked
     public void OnPlayerAttacked(object sender, EventArgs e)
     {
         playerCont.KillPlayer();
@@ -86,6 +93,7 @@ public class PlayerNetworkState : NetworkBehaviour
         if(!IsServer)
             playerCont.KillPlayer();
     }
+    #endregion
 
     #region Server Data Transfers
     private void TransmitContinuousState()
@@ -167,6 +175,7 @@ public class PlayerNetworkState : NetworkBehaviour
         else
             players.Remove(this);
 
+        Debug.Log("Destroying Player");
         base.OnDestroy();
     }
 

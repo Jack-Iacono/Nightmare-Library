@@ -18,8 +18,6 @@ public class IdolNetwork : NetworkBehaviour
 
         if (IsOwner)
             parent.OnIdolActivated += OnIdolActivated;
-
-        Debug.Log(IsOwner);
     }
 
     private void OnHit(object sender, EventArgs e)
@@ -49,9 +47,6 @@ public class IdolNetwork : NetworkBehaviour
     {
         gameObject.SetActive(activeState);
     }
-
-
-    
 
     public override void OnDestroy()
     {

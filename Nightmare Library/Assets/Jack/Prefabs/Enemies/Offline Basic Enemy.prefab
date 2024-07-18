@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 3132783056801117334}
   - component: {fileID: 1587738742970712365}
   - component: {fileID: 2194417126017986403}
-  - component: {fileID: 3869378503036913869}
   - component: {fileID: 6364429912731168215}
+  - component: {fileID: 2939300708000621172}
   m_Layer: 0
   m_Name: Offline Basic Enemy
   m_TagString: Untagged
@@ -110,24 +110,6 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3869378503036913869
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1289455882946623128}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d587f7a8148587941b8fc5370dc5be1c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 4
-  fovRange: 20
-  attackRange: 2
-  spawnLocation: {x: 20, y: 1, z: 0}
-  aAttack: 0
-  pAttack: 0
 --- !u!195 &6364429912731168215
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -150,6 +132,24 @@ NavMeshAgent:
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!114 &2939300708000621172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289455882946623128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c2689943d416b14598b2b5c3b2a908a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 4
+  fovRange: 20
+  attackRange: 2
+  spawnLocation: {x: 20, y: 1, z: 0}
+  aAttack: 0
+  pAttack: 0
 --- !u!1 &3566560211629083487
 GameObject:
   m_ObjectHideFlags: 0

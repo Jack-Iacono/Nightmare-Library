@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -14,6 +15,9 @@ public class OnlineSceneController : NetworkBehaviour
     private static Scene loadedScene;
     private static Scene unloadBuffer;
 
+    public static event EventHandler<Scene> OnSceneUnload;
+    public static event EventHandler<Scene> OnSceneLoad;
+
     public bool SceneIsLoaded
     {
         get
@@ -28,7 +32,6 @@ public class OnlineSceneController : NetworkBehaviour
 
     private void Awake()
     {
-        Debug.Log("Online Screen Controller Awake");
         if (instance == null)
             instance = this;
         else
@@ -107,6 +110,7 @@ public class OnlineSceneController : NetworkBehaviour
         // Check if you are running the server and if the scene to be loaded is not null
         if (IsServer && !string.IsNullOrEmpty(s))
         {
+            OnSceneLoad?.Invoke(this, SceneManager.GetSceneByName(s));
             var status = NetworkManager.SceneManager.LoadScene(s, LoadSceneMode.Additive);
             CheckStatus(status);
         }
@@ -123,7 +127,7 @@ public class OnlineSceneController : NetworkBehaviour
         }
 
         // Unload the scene
-        //var status = NetworkManager.SceneManager.UnloadScene(loadedScene);
+        OnSceneUnload?.Invoke(this, unloadBuffer);
         var status = NetworkManager.SceneManager.UnloadScene(SceneManager.GetSceneByName(unloadBuffer.name));
         CheckStatus(status, false);
     }

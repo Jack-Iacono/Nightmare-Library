@@ -35,6 +35,10 @@ public class Enemy : MonoBehaviour
 
     #region Initialization
 
+    private void Start()
+    {
+        Initialize();
+    }
     public virtual void Initialize()
     {
         navAgent = GetComponent<NavMeshAgent>();
@@ -59,6 +63,7 @@ public class Enemy : MonoBehaviour
                 break;
         }
 
+        Debug.Log("Initializing Tree");
         activeAttackTree.Initialize();
         passiveAttackTree.Initialize();
     }
@@ -97,8 +102,10 @@ public class Enemy : MonoBehaviour
 
     private void OnDestroy()
     {
-        activeAttackTree.OnDestroy();
-        passiveAttackTree.OnDestroy();
+        if(activeAttackTree != null)
+            activeAttackTree.OnDestroy();
+        if(passiveAttackTree != null)
+            passiveAttackTree.OnDestroy();
     }
 
     private void OnDrawGizmos()

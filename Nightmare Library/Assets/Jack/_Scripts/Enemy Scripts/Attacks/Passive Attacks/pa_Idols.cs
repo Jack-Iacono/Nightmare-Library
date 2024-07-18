@@ -32,12 +32,6 @@ public class pa_Idols : PassiveAttack
             }),
             idolSpawner
         });
-
-        foreach(IdolController i in idolObjects)
-        {
-            Debug.Log(i == null);
-        }
-
         return root;
     }
 

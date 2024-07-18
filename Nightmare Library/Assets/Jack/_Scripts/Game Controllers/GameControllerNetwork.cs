@@ -66,6 +66,12 @@ public class GameControllerNetwork : NetworkBehaviour
     }
     private void OnGameEnd(object sender, EventArgs e)
     {
+        // Unload Spawned Objects
+        foreach (GameObject g in spawnedPrefabs)
+        {
+            g.GetComponent<NetworkObject>().Despawn();
+        }
+
         GameController.OnGameEnd -= OnGameEnd;
         OnlineSceneController.instance.LoadScene("j_Menu");
     }
@@ -158,18 +164,17 @@ public class GameControllerNetwork : NetworkBehaviour
         }
     }
 
+    
     public override void OnDestroy()
     {
         // Should never not be this, but just better to check
         if (instance == this)
             instance = null;
 
-        GameController.OnNetworkGamePause -= OnParentPause;
-        LobbyController.OnLobbyEnter -= OnLobbyEnter;
+        Debug.Log("Destroying GameController");
 
-        foreach(GameObject g in spawnedPrefabs)
-        {
-            g.GetComponent<NetworkObject>().Despawn();
-        }
+        GameController.OnNetworkGamePause -= OnParentPause;
+        GameController.OnGameEnd -= OnGameEnd;
+        LobbyController.OnLobbyEnter -= OnLobbyEnter;
     }
 }

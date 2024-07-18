@@ -27,4 +27,9 @@ public abstract class ScreenController : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
+
+    public void GoToScreen(int i)
+    {
+        parentController.ChangeToScreen(i);
+    }
 }

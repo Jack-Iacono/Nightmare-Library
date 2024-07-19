@@ -56,7 +56,6 @@ public class pa_Idols : PassiveAttack
     {
         base.OnDestroy();
 
-        Debug.Log("Unregistering");
         TaskSpawnIdols.OnIdolCountChanged -= OnIdolCountChanged;
     }
 }

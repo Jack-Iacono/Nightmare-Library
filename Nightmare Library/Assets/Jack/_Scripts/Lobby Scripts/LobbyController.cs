@@ -118,7 +118,7 @@ public abstract class LobbyController : NetworkBehaviour
             Cursor.lockState = CursorLockMode.None;
 
             await NetworkConnectionController.StopConnection();
-            OfflineSceneController.ChangeScene(0);
+            SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
         }
     }
 

@@ -175,7 +175,6 @@ public class PlayerNetworkState : NetworkBehaviour
         else
             players.Remove(this);
 
-        Debug.Log("Destroying Player");
         base.OnDestroy();
     }
 

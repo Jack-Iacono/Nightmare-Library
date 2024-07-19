@@ -87,7 +87,7 @@ public class GameController : MonoBehaviour
         }
         else
         {
-            OfflineSceneController.ChangeScene(OfflineSceneController.m_Scene.MAIN_MENU);
+            SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
         }
     }
 

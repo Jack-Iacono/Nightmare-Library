@@ -73,7 +73,7 @@ public class GameControllerNetwork : NetworkBehaviour
         }
 
         GameController.OnGameEnd -= OnGameEnd;
-        OnlineSceneController.instance.LoadScene("j_Menu");
+        SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
     }
 
     private void OnLobbyEnter(ulong clientId, bool isServer)

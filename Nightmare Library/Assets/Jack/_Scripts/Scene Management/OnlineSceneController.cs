@@ -8,27 +8,10 @@ using UnityEngine.SceneManagement;
 public class OnlineSceneController : NetworkBehaviour
 {
     public static OnlineSceneController instance { get; private set; }
-
-    [SerializeField]
-    private string[] sceneNames = { "j_Menu", "j_OnlineGame", "j_OfflineGame" };
-
-    private static Scene loadedScene;
-    private static Scene unloadBuffer;
+    private OfflineSceneController parent;
 
     public static event EventHandler<Scene> OnSceneUnload;
     public static event EventHandler<Scene> OnSceneLoad;
-
-    public bool SceneIsLoaded
-    {
-        get
-        {
-            if (loadedScene.IsValid() && loadedScene.isLoaded)
-            {
-                return true;
-            }
-            return false;
-        }
-    }
 
     private void Awake()
     {
@@ -36,12 +19,12 @@ public class OnlineSceneController : NetworkBehaviour
             instance = this;
         else
             Destroy(this);
+
+        parent = GetComponent<OfflineSceneController>();
     }
 
     public override void OnNetworkSpawn()
     {
-        loadedScene = SceneManager.GetActiveScene();
-
         NetworkManager.SceneManager.OnSceneEvent += SceneManager_OnSceneEvent;
 
         base.OnNetworkSpawn();
@@ -71,13 +54,6 @@ public class OnlineSceneController : NetworkBehaviour
                 // We want to handle this for only the server-side
                 if (sceneEvent.ClientId == NetworkManager.ServerClientId)
                 {
-                    // *** IMPORTANT ***
-                    // Keep track of the loaded scene, you need this to unload it
-                    if (loadedScene != null)
-                        unloadBuffer = loadedScene;
-
-                    loadedScene = sceneEvent.Scene;
-
                     //Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
                 }
                 //Debug.Log($"Loaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
@@ -86,10 +62,10 @@ public class OnlineSceneController : NetworkBehaviour
                 //Debug.Log($"Unloaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
                 break;
             case SceneEventType.LoadEventCompleted:
-                //Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
+                Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
 
-                if(unloadBuffer != null)
-                    UnloadScene();
+                UnloadScene();
+                OfflineSceneController.loadedScene = sceneEvent.Scene;
 
                 if (sceneEvent.ClientsThatTimedOut.Count > 0)
                     Debug.LogWarning($"Load event timed out for the following client identifiers:({sceneEvent.ClientsThatTimedOut})");
@@ -120,16 +96,15 @@ public class OnlineSceneController : NetworkBehaviour
         // Assure only the server calls this when the NetworkObject is
         // spawned and the scene is loaded.
         //Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
-        //Debug.Log(!IsServer + " || " + !IsSpawned + " || " + !loadedScene.IsValid() + " || " + !loadedScene.isLoaded);
-        if (!IsServer || !IsSpawned || !loadedScene.IsValid() || !loadedScene.isLoaded)
+        Debug.Log(!IsServer + " || " + !IsSpawned + " || " + !OfflineSceneController.loadedScene.IsValid() + " || " + !OfflineSceneController.loadedScene.isLoaded);
+        if (!IsServer || !IsSpawned || !OfflineSceneController.loadedScene.IsValid() || !OfflineSceneController.loadedScene.isLoaded)
         {
             return;
         }
 
         // Unload the scene
-        OnSceneUnload?.Invoke(this, unloadBuffer);
-        var status = NetworkManager.SceneManager.UnloadScene(SceneManager.GetSceneByName(unloadBuffer.name));
+        OnSceneUnload?.Invoke(this, OfflineSceneController.loadedScene);
+        var status = NetworkManager.SceneManager.UnloadScene(SceneManager.GetSceneByName(OfflineSceneController.loadedScene.name));
         CheckStatus(status, false);
     }
-
 }

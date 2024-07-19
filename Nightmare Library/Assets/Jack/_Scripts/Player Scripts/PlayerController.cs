@@ -62,8 +62,6 @@ public class PlayerController : MonoBehaviour
     public event EventHandler OnPlayerAttacked;
     public static event EventHandler OnPlayerKilled;
 
-    
-
     private void Awake()
     {
         playerInstances.Add(this);
@@ -76,6 +74,9 @@ public class PlayerController : MonoBehaviour
         charCont.enabled = false;
         transform.position = new Vector3(-20, 1, 0);
         charCont.enabled = true;
+
+        if (!NetworkConnectionController.IsOnline)
+            ownerInstance = this;
 
         playerLayerMask = gameObject.layer;
     }

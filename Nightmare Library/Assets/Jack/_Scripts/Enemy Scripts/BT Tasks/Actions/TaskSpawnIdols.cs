@@ -52,9 +52,6 @@ public class TaskSpawnIdols : Node
     {
         currentIdolCount++;
 
-        if (OnIdolCountChanged.GetInvocationList() != null)
-            Debug.Log(OnIdolCountChanged.GetInvocationList().Length);
-
         OnIdolCountChanged?.Invoke(currentIdolCount);
     }
     public static void RemoveIdol()

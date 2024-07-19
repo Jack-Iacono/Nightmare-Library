@@ -41,8 +41,6 @@ public class pa_Idols : PassiveAttack
         {
             for (int i = 0; i < idolObjects.Count; i++)
             {
-                Debug.Log("i: " + i);
-                Debug.Log(idolObjects[i] == null);
                 if (!idolObjects[i].gameObject.activeInHierarchy)
                 {
                     idolObjects[i].AddIdol();

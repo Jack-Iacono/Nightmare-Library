@@ -9,7 +9,7 @@ public abstract class UIController : MonoBehaviour
     protected int currentScreen = 0;
     protected int nextScreen;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         if (instance != null)
             Destroy(this);

@@ -39,6 +39,12 @@ public class NetworkConnectionController : NetworkBehaviour
 
     public static event EventHandler<string> OnJoinCodeChanged;
 
+    public delegate void ProcessActiveDelegate(bool inProgress);
+    public static event ProcessActiveDelegate OnProcessActive;
+
+    public delegate void ProcessCompleteDelegate();
+    public static event ProcessCompleteDelegate OnConnected;
+
     public bool isServer = false;
     public bool isRunning = false;
 
@@ -57,6 +63,8 @@ public class NetworkConnectionController : NetworkBehaviour
     {
         bool connected = false;
 
+        OnProcessActive?.Invoke(true);
+
         if(!NetworkManager.Singleton.IsConnectedClient && !NetworkManager.Singleton.IsServer)
         {
             switch (connectionType)
@@ -67,9 +75,13 @@ public class NetworkConnectionController : NetworkBehaviour
                 case ConnectionType.JOIN:
                     connected = await JoinLobby();
                     break;
-                default: return false;
+                default:
+                    connected = false;
+                    break;
             }
         }
+
+        OnProcessActive?.Invoke(false);
 
         connectedToLobby = connected;
         return connected;
@@ -96,13 +108,18 @@ public class NetworkConnectionController : NetworkBehaviour
     {
         if(NetworkManager.Singleton.IsConnectedClient)
         {
+            OnProcessActive?.Invoke(false);
+            OnConnected?.Invoke();
+
             currentConnectionTimer = 0;
             Debug.Log("Connection Successful");
             return;
         }
         else
         {
-            if(currentConnectionTimer <= ConnectionTimeoutTimer)
+            OnProcessActive?.Invoke(false);
+
+            if (currentConnectionTimer <= ConnectionTimeoutTimer)
             {
                 Debug.Log("Connection Not Started, Trying Again in 1 Second");
                 await Task.Delay(ConnectionRetryTimer);

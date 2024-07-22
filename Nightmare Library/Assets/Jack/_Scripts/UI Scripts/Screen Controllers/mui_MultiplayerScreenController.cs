@@ -11,17 +11,44 @@ public class mui_MultiplayerScreen : ScreenController
     private GameObject joinInputObj;
     public GameObject createRoomButton;
     public GameObject joinRoomButton;
-    public GameObject startGameButton;
 
-    private void Start()
+    public GameObject startGameButton;
+    public TMP_Text playerJoinText;
+
+
+    public override void Initialize(UIController parent)
     {
+        base.Initialize(parent);
         joinInputObj = joinInputField.gameObject;
 
-        createRoomButton.SetActive(true);
-        joinRoomButton.SetActive(true);
-        joinInputObj.SetActive(true);
+        NetworkConnectionController.OnConnected += OnNetworkConnected;
+        LobbyController.OnPlayerListChange += OnPlayerListChange;
+    }
 
-        startGameButton.SetActive(false);
+    public override void ShowScreen()
+    {
+        base.ShowScreen();
+
+        if(NetworkConnectionController.IsOnline)
+        {
+            if(NetworkConnectionController.instance.IsHost)
+                startGameButton.SetActive(true);
+
+            playerJoinText.gameObject.SetActive(true);
+
+            createRoomButton.SetActive(false);
+            joinRoomButton.SetActive(false);
+            joinInputObj.SetActive(false);
+        }
+        else
+        {
+            startGameButton.SetActive(false);
+            playerJoinText.gameObject.SetActive(false);
+
+            createRoomButton.SetActive(true);
+            joinRoomButton.SetActive(true);
+            joinInputObj.SetActive(true);
+        }
     }
 
     public void PlayOnlineCreate()
@@ -35,9 +62,43 @@ public class mui_MultiplayerScreen : ScreenController
     public void Connect()
     {
         ((MainMenuLobbyController)LobbyController.instance).Connect();
-
-        createRoomButton.SetActive(false);
-        startGameButton.SetActive(true);
     }
 
+    private void OnNetworkConnected()
+    {
+        if (NetworkConnectionController.IsOnline)
+        {
+            if (NetworkConnectionController.instance.IsHost)
+                startGameButton.SetActive(true);
+
+            playerJoinText.gameObject.SetActive(true);
+
+            createRoomButton.SetActive(false);
+            joinRoomButton.SetActive(false);
+            joinInputObj.SetActive(false);
+        }
+        else
+        {
+            startGameButton.SetActive(false);
+            playerJoinText.gameObject.SetActive(false);
+
+            createRoomButton.SetActive(true);
+            joinRoomButton.SetActive(true);
+            joinInputObj.SetActive(true);
+        }
+    }
+    public void OnPlayerListChange()
+    {
+        playerJoinText.text = string.Empty;
+        foreach(ulong clientId in LobbyController.playerDictionary.Keys)
+        {
+            playerJoinText.text += LobbyController.playerDictionary[clientId].username + "\n";
+        }
+    }
+
+    private void OnDestroy()
+    {
+        NetworkConnectionController.OnConnected -= OnNetworkConnected;
+        LobbyController.OnPlayerListChange -= OnPlayerListChange;
+    }
 }

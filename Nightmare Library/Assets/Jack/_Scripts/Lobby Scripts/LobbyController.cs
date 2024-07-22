@@ -19,6 +19,11 @@ public abstract class LobbyController : NetworkBehaviour
     public delegate void LobbyEnterDelegate(ulong clientId, bool isServer);
     public static event LobbyEnterDelegate OnLobbyEnter;
 
+    public delegate void UsernameListDelegate();
+    public static event UsernameListDelegate OnPlayerListChange;
+
+    public static Dictionary<ulong, PlayerInfo> playerDictionary = new Dictionary<ulong, PlayerInfo>();
+
     protected virtual void Awake()
     {
         if (instance != null)
@@ -31,6 +36,27 @@ public abstract class LobbyController : NetworkBehaviour
             instance = this;
         }
     }
+
+    [ServerRpc (RequireOwnership = false)]
+    public void PlayerDictUpdateServerRpc(ulong sender, PlayerInfo playerInfo, bool inList = true)
+    {
+        PlayerDictUpdateClientRpc(sender, playerInfo, inList);
+    }
+    [ClientRpc]
+    public void PlayerDictUpdateClientRpc(ulong sender, PlayerInfo playerInfo, bool inList = true)
+    {
+        // If the dictionary containing the key does not match what we want, change it
+        if (playerDictionary.ContainsKey(sender) != inList)
+        {
+            if (inList)
+                playerDictionary.Add(sender, playerInfo);
+            else
+                playerDictionary.Remove(sender);
+        }
+
+        OnPlayerListChange?.Invoke();
+    }
+
 
     #region Connection Methods
 
@@ -51,12 +77,12 @@ public abstract class LobbyController : NetworkBehaviour
         // Both the server-host and client(s) register the custom named message.
         RegisterCallbacks();
 
-        /*
-        if (NetworkManager.Singleton.IsServer)
-            ServerEntryAction();
+        if (!NetworkManager.Singleton.IsServer)
+            PlayerDictUpdateServerRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo), true);
         else
-            ClientEntryAction();
-        */
+            PlayerDictUpdateClientRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo), true);
+
+        OnPlayerListChange?.Invoke();
 
         return true;
     }
@@ -140,6 +166,8 @@ public abstract class LobbyController : NetworkBehaviour
     protected virtual void OnClientConnected(ulong obj)
     {
         Debug.Log("Client " + obj + " Connected");
+
+        OnPlayerListChange?.Invoke();
     }
     protected virtual async void OnClientDisconnected(ulong obj)
     {
@@ -150,8 +178,6 @@ public abstract class LobbyController : NetworkBehaviour
         {
             await CheckClientDisconnect(obj);
 
-            // Runs after the player leaves
-            //lobbyData.playerCount = NetworkManager.Singleton.ConnectedClients.Count;
         }
 
         // Host Disconnect
@@ -163,9 +189,14 @@ public abstract class LobbyController : NetworkBehaviour
     protected async Task CheckClientDisconnect(ulong clientId)
     {
         await Task.Delay(1);
-        /*
+        
         if (!NetworkManager.Singleton.ConnectedClientsIds.Contains(clientId))
         {
+            if (!NetworkManager.Singleton.IsServer)
+                PlayerDictUpdateServerRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo), true);
+            else
+                PlayerDictUpdateClientRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo), true);
+
             return;
         }
         else
@@ -173,7 +204,6 @@ public abstract class LobbyController : NetworkBehaviour
             await Task.Delay(1000);
             await CheckClientDisconnect(clientId);
         }
-        */
     }
 
     #endregion
@@ -192,5 +222,40 @@ public abstract class LobbyController : NetworkBehaviour
     }
 
     #endregion
+
+    #region Helper Methods
+
+    private List<string> GetConnectedUsernames()
+    {
+        List<string> usernames = new List<string>();
+        foreach(ulong client in NetworkManager.ConnectedClients.Keys)
+        {
+            usernames.Add(NetworkManager.ConnectedClients[client].ClientId.ToString());
+        }
+        return usernames;
+    }
+
+    #endregion
+
+    public struct PlayerInfo : INetworkSerializable
+    {
+        public string username;
+        public string id;
+
+        public PlayerInfo(Unity.Services.Authentication.PlayerInfo info)
+        {
+            if(info.Username != null)
+                username = info.Username;
+            else
+                username = "Null Username";
+            id = info.Id;
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref username);
+            serializer.SerializeValue(ref id);
+        }
+    }
 
 }

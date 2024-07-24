@@ -90,9 +90,12 @@ public class mui_MultiplayerScreen : ScreenController
     public void OnPlayerListChange()
     {
         playerJoinText.text = string.Empty;
-        foreach(ulong clientId in LobbyController.playerDictionary.Keys)
+
+        Dictionary<ulong, LobbyController.PlayerInfo> dict = LobbyController.playerList.GetDictionary();
+
+        foreach(ulong clientId in dict.Keys)
         {
-            playerJoinText.text += LobbyController.playerDictionary[clientId].username + "\n";
+            playerJoinText.text += dict[clientId].username + "\n";
         }
     }
 

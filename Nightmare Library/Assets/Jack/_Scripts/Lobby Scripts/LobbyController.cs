@@ -7,6 +7,9 @@ using Unity.VisualScripting;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections;
+using static UnityEngine.Rendering.DebugUI;
+using UnityEditorInternal.Profiling.Memory.Experimental;
+using UnityEditor.PackageManager;
 
 public abstract class LobbyController : NetworkBehaviour
 {
@@ -22,7 +25,7 @@ public abstract class LobbyController : NetworkBehaviour
     public delegate void UsernameListDelegate();
     public static event UsernameListDelegate OnPlayerListChange;
 
-    public static Dictionary<ulong, PlayerInfo> playerDictionary = new Dictionary<ulong, PlayerInfo>();
+    public static PlayerList playerList = new PlayerList();
 
     protected virtual void Awake()
     {
@@ -36,27 +39,6 @@ public abstract class LobbyController : NetworkBehaviour
             instance = this;
         }
     }
-
-    [ServerRpc (RequireOwnership = false)]
-    public void PlayerDictUpdateServerRpc(ulong sender, PlayerInfo playerInfo, bool inList = true)
-    {
-        PlayerDictUpdateClientRpc(sender, playerInfo, inList);
-    }
-    [ClientRpc]
-    public void PlayerDictUpdateClientRpc(ulong sender, PlayerInfo playerInfo, bool inList = true)
-    {
-        // If the dictionary containing the key does not match what we want, change it
-        if (playerDictionary.ContainsKey(sender) != inList)
-        {
-            if (inList)
-                playerDictionary.Add(sender, playerInfo);
-            else
-                playerDictionary.Remove(sender);
-        }
-
-        OnPlayerListChange?.Invoke();
-    }
-
 
     #region Connection Methods
 
@@ -77,14 +59,37 @@ public abstract class LobbyController : NetworkBehaviour
         // Both the server-host and client(s) register the custom named message.
         RegisterCallbacks();
 
-        if (!NetworkManager.Singleton.IsServer)
-            PlayerDictUpdateServerRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo), true);
+        if (NetworkManager.Singleton.IsServer)
+        {
+            playerList.Add(new PlayerListItem(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo)));
+        }
         else
-            PlayerDictUpdateClientRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo), true);
+            AddPlayerInfoServerRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo));
 
         OnPlayerListChange?.Invoke();
 
         return true;
+    }
+
+    
+
+    [ServerRpc(RequireOwnership = false)]
+    protected void AddPlayerInfoServerRpc(ulong sender, PlayerInfo playerInfo)
+    {
+        playerList.Add(new PlayerListItem(sender, playerInfo));
+        UpdatePlayerInfoClientRpc(playerList);
+    }
+    [ClientRpc]
+    protected void UpdatePlayerInfoClientRpc(PlayerList pList)
+    {
+        playerList = pList;
+        OnPlayerListChange?.Invoke();
+    }
+
+    private void Update()
+    {
+        if(playerList != null)    
+            Debug.Log(playerList.Count);
     }
 
     protected virtual void ServerEntryAction()
@@ -122,6 +127,7 @@ public abstract class LobbyController : NetworkBehaviour
             LeaveLobby();
         }
     }
+
     public virtual async void LeaveLobby()
     {
         try
@@ -140,9 +146,6 @@ public abstract class LobbyController : NetworkBehaviour
         }
         else
         {
-            // TEMPORARY!!!
-            Cursor.lockState = CursorLockMode.None;
-
             await NetworkConnectionController.StopConnection();
             SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
         }
@@ -177,7 +180,6 @@ public abstract class LobbyController : NetworkBehaviour
         if (NetworkConnectionController.instance.isServer)
         {
             await CheckClientDisconnect(obj);
-
         }
 
         // Host Disconnect
@@ -192,10 +194,8 @@ public abstract class LobbyController : NetworkBehaviour
         
         if (!NetworkManager.Singleton.ConnectedClientsIds.Contains(clientId))
         {
-            if (!NetworkManager.Singleton.IsServer)
-                PlayerDictUpdateServerRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo), true);
-            else
-                PlayerDictUpdateClientRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo), true);
+            playerList.Remove(NetworkManager.LocalClientId);
+            UpdatePlayerInfoClientRpc(playerList);
 
             return;
         }
@@ -223,20 +223,6 @@ public abstract class LobbyController : NetworkBehaviour
 
     #endregion
 
-    #region Helper Methods
-
-    private List<string> GetConnectedUsernames()
-    {
-        List<string> usernames = new List<string>();
-        foreach(ulong client in NetworkManager.ConnectedClients.Keys)
-        {
-            usernames.Add(NetworkManager.ConnectedClients[client].ClientId.ToString());
-        }
-        return usernames;
-    }
-
-    #endregion
-
     public struct PlayerInfo : INetworkSerializable
     {
         public string username;
@@ -247,8 +233,53 @@ public abstract class LobbyController : NetworkBehaviour
             if(info.Username != null)
                 username = info.Username;
             else
-                username = "Null Username";
+                username = "Null User " + info.Id.ToString();
+
             id = info.Id;
+        }
+
+        public override string ToString()
+        {
+            return username + " " + id;
+        }
+
+        public static bool operator ==(PlayerInfo left, PlayerInfo right)
+        {
+            return left.id == right.id && left.username == right.username;
+        }
+        public static bool operator !=(PlayerInfo left, PlayerInfo right)
+        {
+            return left.id != right.id || left.username != right.username;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return this == (PlayerInfo)obj;
+        }
+        public override int GetHashCode()
+        {
+            int hash = 0;
+            hash ^= username.GetHashCode();
+            hash ^= id.GetHashCode();
+            return hash;
+        }
+
+        public class EqualityComparer : IEqualityComparer<PlayerInfo>
+        {
+            public bool Equals(PlayerInfo x, PlayerInfo y)
+            {
+                if (x.username == null && y.username == null)
+                    return x.username == y.username;
+                return x.username == y.username && x.id == y.id;
+            }
+            public int GetHashCode(PlayerInfo obj)
+            {
+                int hash = 0;
+                if (obj.username != null)
+                    hash ^= obj.username.GetHashCode();
+                hash ^= obj.id.GetHashCode();
+                return hash;
+            }
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -256,6 +287,138 @@ public abstract class LobbyController : NetworkBehaviour
             serializer.SerializeValue(ref username);
             serializer.SerializeValue(ref id);
         }
+    }
+    public struct PlayerListItem : INetworkSerializable
+    {
+        public ulong key;
+        public PlayerInfo value;
+
+        public PlayerListItem(ulong key, PlayerInfo value)
+        {
+            this.key = key;
+            this.value = value;
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref value);
+            serializer.SerializeValue(ref key);
+        }
+
+        public override string ToString()
+        {
+            return key.ToString() + ": " + value.ToString();
+        }
+    }
+    public class PlayerList : INetworkSerializable
+    {
+        private PlayerListItem[] items;
+
+        public int Count
+        {
+            get => items.Length;
+        }
+
+        public PlayerList()
+        {
+            items = new PlayerListItem[0];
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref items);
+        }
+
+        public void Add(ulong clientId, PlayerInfo playerInfo)
+        {
+            Add(new PlayerListItem(clientId, playerInfo));
+        }
+        public void Add(PlayerListItem newItem)
+        {
+            List<PlayerListItem> temp = new List<PlayerListItem>();
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                temp.Add(items[i]);
+            }
+
+            temp.Add(newItem);
+
+            items = temp.ToArray();
+        }
+        public void Remove(ulong clientId)
+        {
+            List<PlayerListItem> temp = new List<PlayerListItem>();
+
+            int index = -1;
+
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i].key == clientId)
+                    index = i;
+                temp.Add(items[i]);
+            }
+
+            temp.RemoveAt(index);
+
+            items = temp.ToArray();
+        }
+        public bool ContainsKey(ulong clientId)
+        {
+            for(int i = 0; i < items.Length; i++)
+            {
+                if (items[i].key == clientId)
+                    return true;
+            }
+            return false;
+        }
+        public bool ContainsValue(PlayerInfo playerInfo)
+        {
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i].value == playerInfo)
+                    return true;
+            }
+            return false;
+        }
+
+        public static PlayerList operator +(PlayerList left, PlayerListItem right)
+        {
+            left.Add(right);
+            return left;
+        }
+
+        public Dictionary<ulong, PlayerInfo> GetDictionary()
+        {
+            Dictionary<ulong, PlayerInfo> dict = new Dictionary<ulong, PlayerInfo>();
+            for(int i = 0; i < items.Length; i++)
+            {
+                PlayerListItem n = items[i];
+                dict.Add(n.key, n.value);
+            }
+            return dict;
+        }
+        public PlayerInfo GetPlayerInfo(ulong id)
+        {
+            for(int i = 0; i < items.Length; i++)
+            {
+                if (items[i].key == id)
+                    return items[i].value;
+            }
+            return items[0].value;
+        }
+        public override string ToString()
+        {
+            string s = String.Empty;
+
+            for(int i = 0; i < items.Length; i++)
+            {
+                s += items[i].ToString();
+            }
+
+            return s;
+        }
+
     }
 
 }

@@ -74,6 +74,11 @@ public class CameraController : MonoBehaviour
         audioListener.enabled = b;
         enabled = b;
     }
+    public void Spectate(bool b)
+    {
+        cam.enabled = b;
+        audioListener.enabled = b;
+    }
 
     #endregion
 

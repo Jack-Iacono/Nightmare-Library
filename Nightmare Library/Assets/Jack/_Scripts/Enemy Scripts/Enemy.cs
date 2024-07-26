@@ -6,7 +6,7 @@ using BehaviorTree;
 using UnityEditor.Timeline;
 using System.Collections.Generic;
 
-public abstract class Enemy : MonoBehaviour
+public class Enemy : MonoBehaviour
 {
     [Header("Nightmare Characteristics")]
     [SerializeField]
@@ -17,6 +17,7 @@ public abstract class Enemy : MonoBehaviour
     [NonSerialized]
     public NavMeshAgent navAgent;
 
+    [SerializeField]
     protected Vector3 spawnLocation;
     protected Vector3 targetLocation = Vector3.zero;
 
@@ -34,6 +35,10 @@ public abstract class Enemy : MonoBehaviour
 
     #region Initialization
 
+    private void Start()
+    {
+        Initialize();
+    }
     public virtual void Initialize()
     {
         navAgent = GetComponent<NavMeshAgent>();
@@ -92,6 +97,14 @@ public abstract class Enemy : MonoBehaviour
     {
         if(navAgent.isOnNavMesh)
             navAgent.isStopped = e;
+    }
+
+    private void OnDestroy()
+    {
+        if(activeAttackTree != null)
+            activeAttackTree.OnDestroy();
+        if(passiveAttackTree != null)
+            passiveAttackTree.OnDestroy();
     }
 
     private void OnDrawGizmos()

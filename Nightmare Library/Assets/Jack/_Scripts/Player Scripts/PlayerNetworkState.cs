@@ -30,6 +30,10 @@ public class PlayerNetworkState : NetworkBehaviour
         playerIntermittentState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
 
         playerCont = GetComponent<PlayerController>();
+        playerCont.OnPlayerAttacked += OnPlayerAttacked;
+
+        if (IsOwner)
+            PlayerController.ownerInstance = playerCont;
     }
 
     public override void OnNetworkSpawn()
@@ -70,6 +74,26 @@ public class PlayerNetworkState : NetworkBehaviour
             TransmitIntermittentState();
         }
     }
+
+    #region Player Enable / Disable
+
+    
+
+    #endregion
+
+    #region Player Attacked
+    public void OnPlayerAttacked(object sender, EventArgs e)
+    {
+        playerCont.KillPlayer();
+        OnPlayerAttackedClientRpc();
+    }
+    [ClientRpc]
+    private void OnPlayerAttackedClientRpc()
+    {
+        if(!IsServer)
+            playerCont.KillPlayer();
+    }
+    #endregion
 
     #region Server Data Transfers
     private void TransmitContinuousState()

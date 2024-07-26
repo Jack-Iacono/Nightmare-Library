@@ -20,6 +20,9 @@ public class AuthenticationController : MonoBehaviour
     public delegate void SignInEvent(bool status);
     public static event SignInEvent OnSignInStatusChanged;
 
+    public delegate void ProcessActiveDelegate(bool inProgress);
+    public static event ProcessActiveDelegate OnProcessActive;
+
     public static bool signedIn { get; private set; } = false;
 
     public async static Task Authenticate()
@@ -37,6 +40,8 @@ public class AuthenticationController : MonoBehaviour
     {
         try
         {
+            OnProcessActive?.Invoke(true);
+
             await Authenticate();
 
             if (!AuthenticationService.Instance.IsSignedIn)
@@ -53,12 +58,16 @@ public class AuthenticationController : MonoBehaviour
             signedIn = true;
             OnSignInStatusChanged?.Invoke(true);
 
+            OnProcessActive?.Invoke(false);
+
             return true;
         }
         catch(Exception e)
         {
             Debug.Log("Failed Sign In: " + e.Message);
         }
+
+        OnProcessActive?.Invoke(false);
 
         return false;
     }

@@ -38,37 +38,40 @@ public class Interactable : MonoBehaviour
     }
     private void CheckRange()
     {
-        Collider[] col = Physics.OverlapSphere(transform.position, interactRange, interactionLayers);
-
-        if(col.Length > 0)
+        if(PlayerController.ownerInstance != null)
         {
-            bool playerFound = false;
+            Collider[] col = Physics.OverlapSphere(transform.position, interactRange, interactionLayers);
 
-            foreach(Collider c in col)
+            if (col.Length > 0)
             {
-                if(c.gameObject == PlayerController.ownerInstance.gameObject)
-                {
-                    if (!inRange)
-                    {
-                        inRange = true;
-                        OnEnterRange();
-                    }
+                bool playerFound = false;
 
-                    playerFound = true;
-                    break;
+                foreach (Collider c in col)
+                {
+                    if (c.gameObject == PlayerController.ownerInstance.gameObject)
+                    {
+                        if (!inRange)
+                        {
+                            inRange = true;
+                            OnEnterRange();
+                        }
+
+                        playerFound = true;
+                        break;
+                    }
+                }
+
+                if (!playerFound && inRange)
+                {
+                    inRange = false;
+                    OnExitRange();
                 }
             }
-
-            if (!playerFound && inRange)
+            else if (inRange)
             {
                 inRange = false;
                 OnExitRange();
             }
-        }
-        else if (inRange)
-        {
-            inRange = false;
-            OnExitRange();
         }
     }
 

@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.AI;
 
 using BehaviorTree;
-using System.Buffers;
 
 public class TaskRushTarget : Node
 {
@@ -25,24 +24,34 @@ public class TaskRushTarget : Node
 
     public override Status Check(float dt)
     {
-        Debug.Log("Rushing Target");
-
         // Get the current target node
         Vector3 target = (Vector3)GetData(CheckPlayerInSightChase.PLAYER_KEY);
 
-        // Check if the agent is still not at the target
-        if (Vector3.Distance(transform.position, target) > 0.5f)
+        if(navAgent.pathStatus == NavMeshPathStatus.PathComplete)
         {
-            navAgent.speed = speedStore * 3;
+            // Check if the agent is still not at the target
+            if (Vector3.Distance(TrimVector(transform.position), TrimVector(target)) > 0.5f)
+            {
+                navAgent.speed = speedStore * 10;
 
-            navAgent.destination = target;
-            status = Status.RUNNING;
-            return status;
+                navAgent.destination = target;
+                status = Status.RUNNING;
+                return status;
+            }
         }
 
         navAgent.speed = speedStore;
 
         status = Status.SUCCESS;
         return status;
+    }
+
+    /// <summary>
+    /// Trims the y axis out of a vector3
+    /// </summary>
+    /// <returns>The given Vector3 without the y component</returns>
+    private Vector3 TrimVector(Vector3 org)
+    {
+        return new Vector3(org.x, 1, org.z);
     }
 }

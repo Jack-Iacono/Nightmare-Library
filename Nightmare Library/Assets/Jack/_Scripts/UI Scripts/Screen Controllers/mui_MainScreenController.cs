@@ -8,20 +8,14 @@ public class mui_MainScreenController : ScreenController
     [Header("Menu Specific Variables")]
     public TMP_InputField joinInputField;
 
-    public void PlayOnlineCreate()
+    private void Start()
     {
-        ((MainMenuLobbyController)LobbyController.instance).PlayOnlineCreate();
+        Cursor.lockState = CursorLockMode.None;
     }
-    public void PlayOffline()
+
+    public async void PlayOffline()
     {
+        await NetworkConnectionController.StopConnection();
         ((MainMenuLobbyController)LobbyController.instance).PlayOffline();
-    }
-    public void PlayOnlineJoin()
-    {
-        ((MainMenuLobbyController)LobbyController.instance).PlayOnlineJoin(joinInputField.text);
-    }
-    public void Connect()
-    {
-        ((MainMenuLobbyController)LobbyController.instance).Connect();
     }
 }

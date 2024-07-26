@@ -28,15 +28,11 @@ public class CheckRushStop : Node
 
         if (isRushing)
         {
-            Debug.Log("Is Rushing");
-
             Ray wallRay = new Ray(user.transform.position, user.transform.forward);
 
             // Check for the ray hitting a wall
             if(Physics.Raycast(wallRay, wallCheckDistance, wallLayers))
             {
-                Debug.Log("Stopping Rush");
-
                 status = Status.SUCCESS;
                 return status;
             }

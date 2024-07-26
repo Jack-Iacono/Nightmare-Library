@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class DeskController : MonoBehaviour
@@ -9,26 +10,20 @@ public class DeskController : MonoBehaviour
     public static List<PlayerController> playersAtDesk = new List<PlayerController>();
 
     public GameObject offlineIdolPrefab;
-    public List<Transform> idolSpawnLocations = new List<Transform>();
+    public List<GameObject> idolGameObjects = new List<GameObject>();
 
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
-        else
-            Destroy(this);
+        if (instance != null)
+            Destroy(instance);
+
+        instance = this;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        playersAtDesk = new List<PlayerController>();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -46,15 +41,21 @@ public class DeskController : MonoBehaviour
         }
     }
 
-    public List<GameObject> SpawnIdols(int count, TaskSpawnIdols idolSpawner)
+    public List<IdolController> GetIdolControllers(TaskSpawnIdols idolSpawner)
     {
-        List<GameObject> list = new List<GameObject>();
-        for(int i = 0; i < count; i++)
+        List<IdolController> idols = new List<IdolController>();
+        foreach(GameObject g in idolGameObjects)
         {
-            GameObject idol = Instantiate(offlineIdolPrefab, idolSpawnLocations[i].position, Quaternion.identity, transform);
-            idol.GetComponent<IdolController>().Initialize(idolSpawner);
-            list.Add(idol);
+            IdolController iCont = g.GetComponent<IdolController>();
+            iCont.Initialize(idolSpawner);
+            idols.Add(iCont);
         }
-        return list;
+        return idols;
+    }
+
+    private void OnDestroy()
+    {
+        if(instance == this)
+            instance = null;
     }
 }

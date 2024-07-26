@@ -39,18 +39,33 @@ public class NetworkConnectionController : NetworkBehaviour
 
     public static event EventHandler<string> OnJoinCodeChanged;
 
-    public bool isServer = false;
-    public bool isRunning = false;
+    public delegate void ProcessActiveDelegate(bool inProgress);
+    public static event ProcessActiveDelegate OnProcessActive;
 
-    private void Update()
+    public delegate void ProcessCompleteDelegate();
+    public static event ProcessCompleteDelegate OnConnected;
+
+    [SerializeField]
+    public bool isServer
     {
-        isServer = NetworkManager.Singleton.IsServer;
-        isRunning = NetworkManager.Singleton.IsClient;
+        get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
+    }
+    [SerializeField]
+    public bool IsRunning
+    {
+        get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
+    }
+
+    public static bool IsOnline
+    {
+        get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
     }
 
     public static async Task<bool> ConnectToLobby()
     {
         bool connected = false;
+
+        OnProcessActive?.Invoke(true);
 
         if(!NetworkManager.Singleton.IsConnectedClient && !NetworkManager.Singleton.IsServer)
         {
@@ -62,9 +77,13 @@ public class NetworkConnectionController : NetworkBehaviour
                 case ConnectionType.JOIN:
                     connected = await JoinLobby();
                     break;
-                default: return false;
+                default:
+                    connected = false;
+                    break;
             }
         }
+
+        OnProcessActive?.Invoke(false);
 
         connectedToLobby = connected;
         return connected;
@@ -91,13 +110,18 @@ public class NetworkConnectionController : NetworkBehaviour
     {
         if(NetworkManager.Singleton.IsConnectedClient)
         {
+            OnProcessActive?.Invoke(false);
+            OnConnected?.Invoke();
+
             currentConnectionTimer = 0;
             Debug.Log("Connection Successful");
             return;
         }
         else
         {
-            if(currentConnectionTimer <= ConnectionTimeoutTimer)
+            OnProcessActive?.Invoke(false);
+
+            if (currentConnectionTimer <= ConnectionTimeoutTimer)
             {
                 Debug.Log("Connection Not Started, Trying Again in 1 Second");
                 await Task.Delay(ConnectionRetryTimer);

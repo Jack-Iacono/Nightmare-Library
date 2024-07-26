@@ -15,6 +15,7 @@ public class mui_MultiplayerScreen : ScreenController
     public GameObject startGameButton;
     public TMP_Text playerJoinText;
 
+    public TMP_Text roomCodeText;
 
     public override void Initialize(UIController parent)
     {
@@ -39,6 +40,8 @@ public class mui_MultiplayerScreen : ScreenController
             createRoomButton.SetActive(false);
             joinRoomButton.SetActive(false);
             joinInputObj.SetActive(false);
+
+            roomCodeText.text = "Code: " + NetworkConnectionController.joinCode;
         }
         else
         {
@@ -48,6 +51,8 @@ public class mui_MultiplayerScreen : ScreenController
             createRoomButton.SetActive(true);
             joinRoomButton.SetActive(true);
             joinInputObj.SetActive(true);
+
+            roomCodeText.text = "";
         }
     }
 
@@ -64,6 +69,12 @@ public class mui_MultiplayerScreen : ScreenController
         ((MainMenuLobbyController)LobbyController.instance).Connect();
     }
 
+    public async void BackButtonPressed()
+    {
+        await LobbyController.instance.DisconnectFromLobby();
+        GoToScreen(0);
+    }
+
     private void OnNetworkConnected()
     {
         if (NetworkConnectionController.IsOnline)
@@ -76,6 +87,8 @@ public class mui_MultiplayerScreen : ScreenController
             createRoomButton.SetActive(false);
             joinRoomButton.SetActive(false);
             joinInputObj.SetActive(false);
+
+            roomCodeText.text = "Code: " + NetworkConnectionController.joinCode;
         }
         else
         {
@@ -85,6 +98,8 @@ public class mui_MultiplayerScreen : ScreenController
             createRoomButton.SetActive(true);
             joinRoomButton.SetActive(true);
             joinInputObj.SetActive(true);
+
+            roomCodeText.text = "";
         }
     }
     public void OnPlayerListChange()

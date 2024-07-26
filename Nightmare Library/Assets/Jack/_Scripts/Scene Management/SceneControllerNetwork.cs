@@ -29,7 +29,8 @@ public class SceneControllerNetwork : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        NetworkManager.SceneManager.OnSceneEvent += SceneManager_OnSceneEvent;
+        if(instance == this)
+            NetworkManager.SceneManager.OnSceneEvent += SceneManager_OnSceneEvent;
 
         base.OnNetworkSpawn();
     }
@@ -50,16 +51,21 @@ public class SceneControllerNetwork : NetworkBehaviour
     private void SceneManager_OnSceneEvent(SceneEvent sceneEvent)
     {
         // Used for denoting in warning message
-        var clientOrServer = sceneEvent.ClientId == NetworkManager.ServerClientId ? "server" : "client";
+        int clientOrServer = sceneEvent.ClientId == NetworkManager.ServerClientId ? 1 : 0;
         
         switch (sceneEvent.SceneEventType)
         {
             case SceneEventType.LoadComplete:
                 // We want to handle this for only the server-side
-                if (sceneEvent.ClientId == NetworkManager.ServerClientId)
+                if (clientOrServer == 1)
                 {
-                    sceneBuffer = sceneEvent.Scene;
-                    //Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
+                    sceneBuffer = SceneController.loadedScene;
+                    SceneController.loadedScene = sceneEvent.Scene;
+                    //Debug.Log($"Loaded Scene: {SceneController.loadedScene.name}  || Unload Buffer: {sceneBuffer.name}");
+                }
+                else if (!NetworkManager.IsServer)
+                {
+                    SceneController.loadedScene = sceneEvent.Scene;
                 }
                 //Debug.Log($"Loaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
                 break;
@@ -70,7 +76,6 @@ public class SceneControllerNetwork : NetworkBehaviour
                 Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
 
                 UnloadScene();
-                SceneController.loadedScene = sceneBuffer;
 
                 if (sceneEvent.ClientsThatTimedOut.Count > 0)
                     Debug.LogWarning($"Load event timed out for the following client identifiers:({sceneEvent.ClientsThatTimedOut})");
@@ -93,7 +98,7 @@ public class SceneControllerNetwork : NetworkBehaviour
         {
             OnSceneLoad?.Invoke(this, SceneManager.GetSceneByName(s));
             var status = NetworkManager.SceneManager.LoadScene(s, LoadSceneMode.Additive);
-            CheckStatus(status);
+            //CheckStatus(status);
         }
     }
     public void UnloadScene()
@@ -103,15 +108,15 @@ public class SceneControllerNetwork : NetworkBehaviour
         //Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
         //Debug.Log(OfflineSceneController.loadedScene.name);
         //Debug.Log(!IsServer + " || " + !IsSpawned + " || " + !OfflineSceneController.loadedScene.IsValid() + " || " + !OfflineSceneController.loadedScene.isLoaded);
-        if (!IsServer || !IsSpawned || !SceneController.loadedScene.IsValid() || !SceneController.loadedScene.isLoaded)
+        if (!IsServer || !IsSpawned || !sceneBuffer.IsValid() || !sceneBuffer.isLoaded)
         {
             return;
         }
 
         // Unload the scene
-        OnSceneUnload?.Invoke(this, SceneController.loadedScene);
-        var status = NetworkManager.SceneManager.UnloadScene(SceneManager.GetSceneByName(SceneController.loadedScene.name));
-        CheckStatus(status, false);
+        OnSceneUnload?.Invoke(this, sceneBuffer);
+        var status = NetworkManager.SceneManager.UnloadScene(SceneManager.GetSceneByName(sceneBuffer.name));
+        //CheckStatus(status, false);
     }
 
     private void OnChangeScene(object sender, string s)

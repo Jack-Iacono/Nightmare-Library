@@ -63,7 +63,6 @@ public class Enemy : MonoBehaviour
                 break;
         }
 
-        Debug.Log("Initializing Tree");
         activeAttackTree.Initialize();
         passiveAttackTree.Initialize();
     }

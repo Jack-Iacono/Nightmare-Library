@@ -44,7 +44,7 @@ public class GameControllerNetwork : NetworkBehaviour
 
         parent = GetComponent<GameController>();
 
-        // Changes the player data for all versions of this gameobject
+        // Changes the gameController data for all versions of this gameobject
         if (!IsOwner)
         {
             parent.enabled = false;
@@ -54,7 +54,7 @@ public class GameControllerNetwork : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (IsOwner)
+        if (NetworkManager.IsServer)
             TransmitContinuousState();
         else
             ConsumeContinuousState();
@@ -123,7 +123,7 @@ public class GameControllerNetwork : NetworkBehaviour
     {
         var state = new ContinuousData(parent.timer);
 
-        if (IsOwner)
+        if (NetworkManager.IsServer)
         {
             contState.Value = state;
         }
@@ -170,8 +170,6 @@ public class GameControllerNetwork : NetworkBehaviour
         // Should never not be this, but just better to check
         if (instance == this)
             instance = null;
-
-        Debug.Log("Destroying GameController");
 
         GameController.OnNetworkGamePause -= OnParentPause;
         GameController.OnGameEnd -= OnGameEnd;

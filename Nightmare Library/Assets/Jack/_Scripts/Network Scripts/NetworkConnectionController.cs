@@ -45,18 +45,20 @@ public class NetworkConnectionController : NetworkBehaviour
     public delegate void ProcessCompleteDelegate();
     public static event ProcessCompleteDelegate OnConnected;
 
-    public bool isServer = false;
-    public bool isRunning = false;
-
-    public static bool IsOnline
+    [SerializeField]
+    public bool isServer
+    {
+        get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
+    }
+    [SerializeField]
+    public bool IsRunning
     {
         get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
     }
 
-    private void Update()
+    public static bool IsOnline
     {
-        isServer = NetworkManager.Singleton.IsServer;
-        isRunning = NetworkManager.Singleton.IsClient;
+        get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
     }
 
     public static async Task<bool> ConnectToLobby()

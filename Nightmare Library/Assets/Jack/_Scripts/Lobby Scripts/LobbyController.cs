@@ -86,12 +86,6 @@ public abstract class LobbyController : NetworkBehaviour
         OnPlayerListChange?.Invoke();
     }
 
-    private void Update()
-    {
-        if(playerList != null)    
-            Debug.Log(playerList.Count);
-    }
-
     protected virtual void ServerEntryAction()
     {
         OnLobbyEnter?.Invoke(NetworkManager.LocalClientId, true);
@@ -105,30 +99,12 @@ public abstract class LobbyController : NetworkBehaviour
 
     #region Lobby Leaving
 
-    IEnumerator CheckClientLeave()
-    {
-        while (true)
-        {
-            Debug.Log("Clients Connected: " + NetworkManager.ConnectedClients.Count);
-            if (NetworkManager.ConnectedClients.Count == 1)
-            {
-                StopAllCoroutines();
-                LeaveLobby();
-            }
-
-            yield return new WaitForSeconds(0.5f);
-        }
-    }
-    [ClientRpc]
-    public void LeaveLobbyClientRpc()
-    {
-        if (!IsServer)
-        {
-            LeaveLobby();
-        }
-    }
-
     public virtual async void LeaveLobby()
+    {
+        await DisconnectFromLobby();
+        SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
+    }
+    public virtual async Task DisconnectFromLobby()
     {
         try
         {
@@ -139,16 +115,9 @@ public abstract class LobbyController : NetworkBehaviour
             Debug.Log("Failed to Unregister Callbacks");
         }
 
-        if (IsServer && NetworkManager.ConnectedClients.Count != 1)
-        {
-            LeaveLobbyClientRpc();
-            StartCoroutine(CheckClientLeave());
-        }
-        else
-        {
-            await NetworkConnectionController.StopConnection();
-            SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
-        }
+        playerList = new PlayerList();
+
+        await NetworkConnectionController.StopConnection();
     }
 
     #endregion
@@ -157,6 +126,7 @@ public abstract class LobbyController : NetworkBehaviour
 
     protected virtual void RegisterCallbacks()
     {
+        Debug.Log("Registering Callbacks");
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
     }
@@ -165,7 +135,7 @@ public abstract class LobbyController : NetworkBehaviour
         NetworkManager.OnClientConnectedCallback -= OnClientConnected;
         NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
     }
-
+    
     protected virtual void OnClientConnected(ulong obj)
     {
         Debug.Log("Client " + obj + " Connected");
@@ -176,16 +146,16 @@ public abstract class LobbyController : NetworkBehaviour
     {
         // This runs just before the client is disconnected, client is still technically in the server
 
-        // Host actions
-        if (NetworkConnectionController.instance.isServer)
-        {
-            await CheckClientDisconnect(obj);
-        }
-
         // Host Disconnect
-        if (NetworkManager.ServerClientId == obj)
+        if (NetworkManager.Singleton != null && NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
         {
-            LeaveLobby();
+            playerList.Remove(NetworkManager.LocalClientId);
+            UpdatePlayerInfoClientRpc(playerList);
+        }
+        else if(NetworkManager.Singleton != null && !NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
+        {
+            await NetworkConnectionController.StopConnection();
+            SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU, true);
         }
     }
     protected async Task CheckClientDisconnect(ulong clientId)
@@ -194,9 +164,6 @@ public abstract class LobbyController : NetworkBehaviour
         
         if (!NetworkManager.Singleton.ConnectedClientsIds.Contains(clientId))
         {
-            playerList.Remove(NetworkManager.LocalClientId);
-            UpdatePlayerInfoClientRpc(playerList);
-
             return;
         }
         else
@@ -215,6 +182,8 @@ public abstract class LobbyController : NetworkBehaviour
         // Should never not be this, but just better to check
         if (instance == this)
             instance = null;
+
+        playerList = new PlayerList();
     }
     private void OnApplicationQuit()
     {
@@ -222,6 +191,8 @@ public abstract class LobbyController : NetworkBehaviour
     }
 
     #endregion
+
+    #region Player List Class Defenitions
 
     public struct PlayerInfo : INetworkSerializable
     {
@@ -350,16 +321,11 @@ public abstract class LobbyController : NetworkBehaviour
         {
             List<PlayerListItem> temp = new List<PlayerListItem>();
 
-            int index = -1;
-
             for (int i = 0; i < items.Length; i++)
             {
-                if (items[i].key == clientId)
-                    index = i;
-                temp.Add(items[i]);
+                if (items[i].key != clientId)
+                    temp.Add(items[i]);
             }
-
-            temp.RemoveAt(index);
 
             items = temp.ToArray();
         }
@@ -420,5 +386,7 @@ public abstract class LobbyController : NetworkBehaviour
         }
 
     }
+
+    #endregion
 
 }

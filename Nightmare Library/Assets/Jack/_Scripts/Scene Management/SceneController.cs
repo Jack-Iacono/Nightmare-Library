@@ -71,14 +71,14 @@ public class SceneController : MonoBehaviour
         Debug.Log($"Scene {s.name} unloaded");
     }
 
-    public static void LoadScene(m_Scene scene)
+    public static void LoadScene(m_Scene scene, bool offlineOverride = false)
     {
-        LoadScene(scenes[scene]);
+        LoadScene(scenes[scene], offlineOverride);
     }
-    public static void LoadScene(string scene)
+
+    public static void LoadScene(string scene, bool offlineOverride = false)
     {
-        Debug.Log(!NetworkConnectionController.instance.isRunning);
-        if (!NetworkConnectionController.instance.isRunning)
+        if (offlineOverride || !NetworkConnectionController.instance.IsRunning)
         {
             SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
         }

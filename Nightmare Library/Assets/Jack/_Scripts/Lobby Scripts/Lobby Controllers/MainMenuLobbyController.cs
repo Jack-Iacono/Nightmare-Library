@@ -20,8 +20,6 @@ public class MainMenuLobbyController : LobbyController
         te.text = NetworkConnectionController.joinCode;
         te.SelectAll();
         te.Copy();
-
-        Debug.Log(NetworkConnectionController.joinCode);
     }
 
     public void PlayOnlineCreate()

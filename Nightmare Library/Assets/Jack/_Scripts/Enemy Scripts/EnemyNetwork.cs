@@ -5,8 +5,8 @@ using System.Globalization;
 using Unity.Netcode;
 using UnityEngine;
 
-[RequireComponent(typeof(BasicEnemy))]
-public class BasicEnemyNetwork : NetworkBehaviour
+[RequireComponent(typeof(Enemy))]
+public class EnemyNetwork : NetworkBehaviour
 {
     [SerializeField] private bool _serverAuth;
 
@@ -22,7 +22,7 @@ public class BasicEnemyNetwork : NetworkBehaviour
         contState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);
         intState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
 
-        enemyController = GetComponent<BasicEnemy>();
+        enemyController = GetComponent<Enemy>();
     }
 
     public override void OnNetworkSpawn()

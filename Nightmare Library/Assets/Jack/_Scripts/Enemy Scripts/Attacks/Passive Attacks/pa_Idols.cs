@@ -9,19 +9,15 @@ public class pa_Idols : PassiveAttack
     TaskSpawnIdols idolSpawner;
     private int maxIdolCount = 7;
 
-    private List<GameObject> idolObjects = new List<GameObject>();
+    private List<IdolController> idolObjects = new List<IdolController>();
+    private int activeIdolObjects = 0;
 
     public pa_Idols(Enemy owner) : base(owner)
     {
         idolSpawner = new TaskSpawnIdols(3, 0.5f);
-        idolSpawner.OnIdolCountChanged += OnIdolCountChanged;
+        TaskSpawnIdols.OnIdolCountChanged += OnIdolCountChanged;
 
-        idolObjects = DeskController.instance.SpawnIdols(maxIdolCount, idolSpawner);
-
-        foreach (GameObject obj in idolObjects)
-        {
-            obj.SetActive(false);
-        }
+        idolObjects = DeskController.instance.GetIdolControllers(idolSpawner);
     }
 
     protected override Node SetupTree()
@@ -31,26 +27,35 @@ public class pa_Idols : PassiveAttack
         {
             new Sequence(new List<Node>()
             {
-                new CheckIdolCount(maxIdolCount)
+                new CheckIdolCount(maxIdolCount),
+                new TaskAttackPlayerPassive()
             }),
             idolSpawner
         });
-
         return root;
     }
 
-    private void OnIdolCountChanged(object sender, int e)
+    private void OnIdolCountChanged(int e)
     {
-        for(int i = 0; i < idolObjects.Count; i++)
+        if (e > activeIdolObjects)
         {
-            if(i < e)
+            for (int i = 0; i < idolObjects.Count; i++)
             {
-                idolObjects[i].SetActive(true);
-            }
-            else
-            {
-                idolObjects[i].SetActive(false);
+                if (!idolObjects[i].gameObject.activeInHierarchy)
+                {
+                    idolObjects[i].AddIdol();
+                    break;
+                }
             }
         }
+
+        activeIdolObjects = e;
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        TaskSpawnIdols.OnIdolCountChanged -= OnIdolCountChanged;
     }
 }

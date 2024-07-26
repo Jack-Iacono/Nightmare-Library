@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEditor.PackageManager;
 using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(GameController))]
 public class GameControllerNetwork : NetworkBehaviour
@@ -18,6 +19,8 @@ public class GameControllerNetwork : NetworkBehaviour
     private NetworkVariable<ContinuousData> contState;
     public static NetworkVariable<bool> gamePaused;
 
+    public List<GameObject> spawnedPrefabs = new List<GameObject>();
+
     private void Awake()
     {
         if (instance == null)
@@ -26,6 +29,7 @@ public class GameControllerNetwork : NetworkBehaviour
             Destroy(this);
 
         GameController.OnNetworkGamePause += OnParentPause;
+        GameController.OnGameEnd += OnGameEnd;
         LobbyController.OnLobbyEnter += OnLobbyEnter;
 
         var permission = NetworkVariableWritePermission.Owner;
@@ -40,7 +44,7 @@ public class GameControllerNetwork : NetworkBehaviour
 
         parent = GetComponent<GameController>();
 
-        // Changes the player data for all versions of this gameobject
+        // Changes the gameController data for all versions of this gameobject
         if (!IsOwner)
         {
             parent.enabled = false;
@@ -50,7 +54,7 @@ public class GameControllerNetwork : NetworkBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (IsOwner)
+        if (NetworkManager.IsServer)
             TransmitContinuousState();
         else
             ConsumeContinuousState();
@@ -60,6 +64,17 @@ public class GameControllerNetwork : NetworkBehaviour
     {
         ConsumePauseStateClientRpc(e);
     }
+    private void OnGameEnd(object sender, EventArgs e)
+    {
+        // Unload Spawned Objects
+        foreach (GameObject g in spawnedPrefabs)
+        {
+            g.GetComponent<NetworkObject>().Despawn();
+        }
+
+        GameController.OnGameEnd -= OnGameEnd;
+        SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
+    }
 
     private void OnLobbyEnter(ulong clientId, bool isServer)
     {
@@ -68,7 +83,6 @@ public class GameControllerNetwork : NetworkBehaviour
 
     public void SpawnNetworkObjects()
     {
-        Debug.Log("Spawning Players");
         if (NetworkManager.Singleton.IsServer)
             ServerSpawn();
         else
@@ -76,19 +90,19 @@ public class GameControllerNetwork : NetworkBehaviour
     }
     private void ServerSpawn()
     {
+        // TEMPORARY: Remove the spawn coordinates from this line
         GameObject pPrefab = Instantiate(onlinePlayerPrefab);
 
         pPrefab.name = "Player " + instance.OwnerClientId;
         pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
 
-        /* Re-enable this to spawn enemies, this was just annoying for testing
         GameObject ePrefab = Instantiate(onlineEnemyPrefab);
 
         ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
         ePrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
-        */
 
-        Debug.Log("Server");
+        spawnedPrefabs.Add(pPrefab);
+        spawnedPrefabs.Add(ePrefab);
     }
     private void ClientSpawn()
     {
@@ -101,13 +115,15 @@ public class GameControllerNetwork : NetworkBehaviour
 
         pPrefab.name = "Player " + clientId;
         pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
+
+        spawnedPrefabs.Add(pPrefab);
     }
 
     private void TransmitContinuousState()
     {
         var state = new ContinuousData(parent.timer);
 
-        if (IsOwner)
+        if (NetworkManager.IsServer)
         {
             contState.Value = state;
         }
@@ -148,6 +164,7 @@ public class GameControllerNetwork : NetworkBehaviour
         }
     }
 
+    
     public override void OnDestroy()
     {
         // Should never not be this, but just better to check
@@ -155,6 +172,7 @@ public class GameControllerNetwork : NetworkBehaviour
             instance = null;
 
         GameController.OnNetworkGamePause -= OnParentPause;
+        GameController.OnGameEnd -= OnGameEnd;
         LobbyController.OnLobbyEnter -= OnLobbyEnter;
     }
 }

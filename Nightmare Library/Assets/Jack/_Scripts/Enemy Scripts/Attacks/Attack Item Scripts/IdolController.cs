@@ -1,10 +1,20 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class IdolController : Interactable
 {
-    private TaskSpawnIdols idolSpawner;
+    [NonSerialized]
+    public TaskSpawnIdols idolSpawner;
+
+    public event EventHandler<bool> OnIdolActivated;
+
+    private void Start()
+    {
+        gameObject.SetActive(false);
+    }
 
     public void Initialize(TaskSpawnIdols idolSpawner)
     {
@@ -13,11 +23,21 @@ public class IdolController : Interactable
 
     public override void Click()
     {
-        RemoveIdol();
+        if(NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient || NetworkManager.Singleton.IsServer)
+            RemoveIdol();
+
+        base.Click();
     }
 
-    private void RemoveIdol()
+    public void AddIdol()
     {
-        idolSpawner.RemoveIdol();
+        gameObject.SetActive(true);
+        OnIdolActivated?.Invoke(this, true);
+    }
+    public void RemoveIdol()
+    {
+        gameObject.SetActive(false);
+        OnIdolActivated?.Invoke(this, false);
+        TaskSpawnIdols.RemoveIdol();
     }
 }

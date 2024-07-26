@@ -18,17 +18,10 @@ public class TaskRushCooldown : TaskWait
     protected override void OnStart()
     {
         navAgent.destination = navAgent.transform.position;
-        Debug.Log("Starting Rush Cooldown");
     }
     protected override void OnEnd()
     {
         parent.SetData(TaskStopRush.COOLDOWN_KEY, false);
-    }
-
-    protected override void OnTick(float time)
-    {
-        Debug.Log("Checking Timer");
-        base.OnTick(time);
     }
 
     protected override bool TickCondition()

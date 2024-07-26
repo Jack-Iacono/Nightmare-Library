@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
@@ -11,9 +12,20 @@ public class PlayerController : MonoBehaviour
     public static PlayerController ownerInstance;
 
     public static List<PlayerController> playerInstances = new List<PlayerController>();
+
+    private static int currentlySpectating;
+    private int myPlayerIndex;
+
     public static LayerMask playerLayerMask;
 
     public CameraController camCont;
+
+    private Collider playerCollider;
+    [SerializeField]
+    private List<MeshRenderer> playerMeshes;
+
+    [SerializeField]
+    public bool isAlive = true;
 
     [Header("Movement Variables")]
     [SerializeField]
@@ -34,14 +46,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float airDeceleration = 1;
 
-    /*
-    [Header("Movement Contstraints", order = 2)]
-    [SerializeField]
-    private float maxNormalSpeed = 10;
-    [SerializeField]
-    private float maxCapSpeed = 100;
-    */
-
     [Header("Interaction Variables")]
     public LayerMask environmentLayers;
 
@@ -55,12 +59,23 @@ public class PlayerController : MonoBehaviour
 
     public static KeyCode keyInteract = KeyCode.R;
 
+    public event EventHandler OnPlayerAttacked;
+    public static event EventHandler OnPlayerKilled;
+
     private void Awake()
     {
         playerInstances.Add(this);
-        charCont = GetComponent<CharacterController>();
+        myPlayerIndex = playerInstances.Count - 1;
 
-        if(!TryGetComponent<PlayerNetworkState>(out var g))
+        charCont = GetComponent<CharacterController>();
+        playerCollider = GetComponent<Collider>();
+
+        // TEMPORARY
+        charCont.enabled = false;
+        transform.position = new Vector3(-20, 1, 0);
+        charCont.enabled = true;
+
+        if (!NetworkConnectionController.IsOnline)
             ownerInstance = this;
 
         playerLayerMask = gameObject.layer;
@@ -90,6 +105,7 @@ public class PlayerController : MonoBehaviour
                 Input.GetButtonDown("Jump") ? 1 : 0,
                 Input.GetAxis("Vertical")
             );
+        
     }
     private void CalculateNormalPlayerMove()
     {
@@ -144,19 +160,51 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void AttackPlayer()
+    {
+        if (!NetworkConnectionController.IsOnline)
+        {
+            KillPlayer();
+        }
+        OnPlayerAttacked?.Invoke(this, EventArgs.Empty);
+    }
+    public void KillPlayer()
+    {
+        ActivatePlayer(false);
+        isAlive = false;
+
+        playerCollider.enabled = false;
+        charCont.enabled = false;
+        foreach(MeshRenderer r in playerMeshes)
+        {
+            r.enabled = false;
+        }
+
+        OnPlayerKilled?.Invoke(this, EventArgs.Empty);
+
+        SpectatePlayer(0);
+    }
+
     public void ActivatePlayer(bool b)
     {
-        if (!b)
+        enabled = b;
+        camCont.SetEnabled(b);
+        charCont.enabled = b;
+
+        if (b)
         {
-            enabled = false;
-            camCont.SetEnabled(false);
-        }
-        else
-        {
-            enabled = true;
-            camCont.SetEnabled(true);
             name = "My Player";
             ownerInstance = this;
+        }
+    }
+
+    public static void SpectatePlayer(int index)
+    {
+        if (playerInstances[index].isAlive)
+        {
+            playerInstances[currentlySpectating].camCont.Spectate(false);
+            playerInstances[index].camCont.Spectate(true);
+            currentlySpectating = index;
         }
     }
 }

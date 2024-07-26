@@ -16,4 +16,9 @@ public abstract class EnemyAttack : BehaviorTree.Tree
     {
         this.owner = owner;
     }
+
+    public virtual void OnDestroy()
+    {
+
+    }
 }

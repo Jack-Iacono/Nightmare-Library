@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class MainMenuLobbyController : LobbyController
 {
-
     public async void Connect()
     {
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.CREATE;
@@ -17,18 +16,21 @@ public class MainMenuLobbyController : LobbyController
             await NetworkConnectionController.StopConnection();
         }
 
-        Debug.Log(NetworkConnectionController.joinCode);
+        TextEditor te = new TextEditor();
+        te.text = NetworkConnectionController.joinCode;
+        te.SelectAll();
+        te.Copy();
     }
 
     public void PlayOnlineCreate()
     {
         GameController.isNetworkGame = true;
-        OnlineSceneController.instance.LoadScene("j_OnlineGame");
+        SceneController.LoadScene(SceneController.m_Scene.ONLINE_GAME);
     }
     public void PlayOffline()
     {
         GameController.isNetworkGame = false;
-        OfflineSceneController.ChangeScene(OfflineSceneController.m_Scene.OFFLINE_GAME);
+        SceneController.LoadScene(SceneController.m_Scene.OFFLINE_GAME);
     }
     public async void PlayOnlineJoin(string joinCode)
     {

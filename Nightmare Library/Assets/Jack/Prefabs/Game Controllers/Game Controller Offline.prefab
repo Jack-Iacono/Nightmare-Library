@@ -48,11 +48,9 @@ MonoBehaviour:
     type: 3}
   offlineEnemyPrefab: {fileID: 1289455882946623128, guid: 3693b8fad534778459dd9dbae0fd1532,
     type: 3}
-  offlineIdolPrefab: {fileID: 8034921731507286969, guid: 30e2ec54a67496f42b688d867d7fd37a,
-    type: 3}
-  timer: 0
   patrolPoints:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  gameTimer: 120

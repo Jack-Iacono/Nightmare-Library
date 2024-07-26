@@ -149,7 +149,7 @@ public abstract class LobbyController : NetworkBehaviour
         // Host Disconnect
         if (NetworkManager.Singleton != null && NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
         {
-            playerList.Remove(NetworkManager.LocalClientId);
+            playerList.Remove(obj);
             UpdatePlayerInfoClientRpc(playerList);
         }
         else if(NetworkManager.Singleton != null && !NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)

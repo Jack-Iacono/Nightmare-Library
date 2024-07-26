@@ -121,7 +121,7 @@ public class GameControllerNetwork : NetworkBehaviour
 
     private void TransmitContinuousState()
     {
-        var state = new ContinuousData(parent.timer);
+        var state = new ContinuousData(parent.gameTimer);
 
         if (NetworkManager.IsServer)
         {
@@ -134,7 +134,7 @@ public class GameControllerNetwork : NetworkBehaviour
     }
     private void ConsumeContinuousState()
     {
-        parent.timer = contState.Value.timer;
+        parent.gameTimer = contState.Value.timer;
     }
     [ServerRpc]
     private void TransmitContinuousStateServerRpc(ContinuousData state)

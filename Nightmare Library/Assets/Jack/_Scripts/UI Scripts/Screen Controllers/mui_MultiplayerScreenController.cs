@@ -110,7 +110,7 @@ public class mui_MultiplayerScreen : ScreenController
 
         foreach(ulong clientId in dict.Keys)
         {
-            playerJoinText.text += dict[clientId].username + "\n";
+            playerJoinText.text += "(" + clientId + ")" + dict[clientId].username + "\n";
         }
     }
 

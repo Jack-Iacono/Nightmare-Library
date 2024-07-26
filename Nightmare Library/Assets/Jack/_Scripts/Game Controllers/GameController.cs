@@ -12,8 +12,9 @@ public class GameController : MonoBehaviour
     public GameObject offlinePlayerPrefab;
     public GameObject offlineEnemyPrefab;
 
-    public float timer = 0;
     public Transform[] patrolPoints;
+
+    public float gameTimer = 120;
 
     // Local Events
     public static event EventHandler<bool> OnGamePause;
@@ -50,7 +51,10 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        timer += Time.deltaTime;
+        if(gameTimer > 0)
+            gameTimer -= Time.deltaTime * 10;
+        else
+            EndGame();
 
         if (Input.GetKeyDown(KeyCode.Q))
         {
@@ -78,7 +82,6 @@ public class GameController : MonoBehaviour
             EndGame();
         }
     }
-
     private void EndGame()
     {
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)

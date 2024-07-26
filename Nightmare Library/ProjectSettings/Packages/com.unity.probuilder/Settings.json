@@ -112,16 +112,6 @@
                 "value": "{\"m_Value\":true}"
             },
             {
-                "type": "System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
-                "key": "editor.stripProBuilderScriptsOnBuild",
-                "value": "{\"m_Value\":true}"
-            },
-            {
-                "type": "System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
-                "key": "experimental.meshesAreAssets",
-                "value": "{\"m_Value\":false}"
-            },
-            {
                 "type": "UnityEngine.ProBuilder.SelectMode, Unity.ProBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
                 "key": "editor.selectMode",
                 "value": "{\"m_Value\":1}"
@@ -174,11 +164,7 @@
             {
                 "type": "UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
                 "key": "ShapeBuilder.LastSize",
-<<<<<<< Updated upstream
                 "value": "{\"m_Value\":{\"x\":100.0,\"y\":0.009999999776482582,\"z\":100.0}}"
-=======
-                "value": "{\"m_Value\":{\"x\":22.671829223632814,\"y\":46.746742248535159,\"z\":-4.043384552001953}}"
->>>>>>> Stashed changes
             },
             {
                 "type": "UnityEngine.Vector3, UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
@@ -246,14 +232,6 @@
                 "value": "{}"
             },
             {
-<<<<<<< Updated upstream
-=======
-                "type": "UnityEngine.ProBuilder.Shapes.Shape, Unity.ProBuilder, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
-                "key": "ShapeBuilder.Sprite",
-                "value": "{}"
-            },
-            {
->>>>>>> Stashed changes
                 "type": "System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
                 "key": "ExtrudeFaces.distance",
                 "value": "{\"m_Value\":0.5}"
@@ -267,11 +245,6 @@
                 "type": "System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
                 "key": "BevelEdges.size",
                 "value": "{\"m_Value\":0.20000000298023225}"
-            },
-            {
-                "type": "System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
-                "key": "uv.uvEditorGridSnapIncrement",
-                "value": "{\"m_Value\":0.125}"
             },
             {
                 "type": "UnityEditor.ProBuilder.Actions.OffsetElements+CoordinateSpace, Unity.ProBuilder.Editor, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",

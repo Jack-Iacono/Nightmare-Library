@@ -189,7 +189,7 @@ public class PlayerController : MonoBehaviour
     {
         enabled = b;
         camCont.SetEnabled(b);
-        charCont.enabled = b;
+        //charCont.enabled = b;
 
         if (b)
         {

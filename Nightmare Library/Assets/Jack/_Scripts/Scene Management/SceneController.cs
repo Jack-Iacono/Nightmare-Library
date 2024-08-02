@@ -78,7 +78,7 @@ public class SceneController : MonoBehaviour
 
     public static void LoadScene(string scene, bool offlineOverride = false)
     {
-        if (offlineOverride || !NetworkConnectionController.instance.IsRunning)
+        if (offlineOverride || !NetworkConnectionController.IsRunning)
         {
             SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
         }

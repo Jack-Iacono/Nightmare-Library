@@ -44,6 +44,9 @@ public class GameControllerNetwork : NetworkBehaviour
 
         parent = GetComponent<GameController>();
 
+        if (!IsOwner)
+            parent.enabled = false;
+
         // Changes the gameController data for all versions of this gameobject
         if (!IsOwner)
         {

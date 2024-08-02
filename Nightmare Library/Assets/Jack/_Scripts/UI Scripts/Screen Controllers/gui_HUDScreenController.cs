@@ -10,7 +10,8 @@ public class gui_HUDScreenController : ScreenController
 
     private void Update()
     {
-        timerText.text = FloatToTime(GameController.instance.gameTimer);
+        if (GameController.instance != null)
+            timerText.text = FloatToTime(GameController.instance.gameTimer);
     }
 
     private string FloatToTime(float time)

@@ -16,6 +16,9 @@ public class DeskNetwork : NetworkBehaviour
         base.OnNetworkSpawn();
 
         parent = GetComponent<DeskController>();
+
+        if (!IsOwner)
+            parent.enabled = false;
     }
 
     public List<IdolController> SpawnIdols(int count, TaskSpawnIdols idolSpawner)

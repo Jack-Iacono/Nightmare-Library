@@ -52,7 +52,7 @@ public class GameController : MonoBehaviour
     void Update()
     {
         if(gameTimer > 0)
-            gameTimer -= Time.deltaTime * 10;
+            gameTimer -= Time.deltaTime;
         else
             EndGame();
 

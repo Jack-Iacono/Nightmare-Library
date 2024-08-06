@@ -104,6 +104,8 @@ public class GameController : MonoBehaviour
     {
         if (instance == this)
             instance = null;
+
+        PlayerController.OnPlayerKilled -= OnPlayerKilled;
     }
 
 }

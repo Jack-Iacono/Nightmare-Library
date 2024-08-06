@@ -27,6 +27,8 @@ public class MainMenuUIController : UIController
 
         if (NetworkConnectionController.IsRunning)
             ChangeToScreen(1);
+        else
+            ChangeToScreen(0);
     }
 
     /// <summary>

@@ -40,17 +40,12 @@ public class SceneController : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
+            SceneManager.sceneLoaded += OnSceneLoad;
+            SceneManager.sceneUnloaded += OnSceneUnload;
+            loadedScene = SceneManager.GetActiveScene();
         }
         else
             Destroy(this);
-    }
-
-    private void Start()
-    {
-        SceneManager.sceneLoaded += OnSceneLoad;
-        SceneManager.sceneUnloaded += OnSceneUnload;
-
-        loadedScene = SceneManager.GetActiveScene();
     }
 
     private void OnSceneLoad(Scene s, LoadSceneMode loadMode)
@@ -78,6 +73,8 @@ public class SceneController : MonoBehaviour
 
     public static void LoadScene(string scene, bool offlineOverride = false)
     {
+        Debug.Log("Load Scene Requested");
+
         if (offlineOverride || !NetworkConnectionController.IsRunning)
         {
             SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);

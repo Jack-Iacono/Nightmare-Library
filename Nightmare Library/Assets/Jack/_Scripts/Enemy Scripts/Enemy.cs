@@ -33,6 +33,13 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
+    public enum EvidenceEnum { HYSTERICS };
+    [Header("Evidence Variables")]
+    [SerializeField]
+    public List<EvidenceEnum> evidenceList = new List<EvidenceEnum>();
+
+    protected List<Evidence> evidence = new List<Evidence>();
+
     #region Initialization
 
     private void Start()
@@ -65,6 +72,16 @@ public class Enemy : MonoBehaviour
 
         activeAttackTree.Initialize();
         passiveAttackTree.Initialize();
+
+        for(int i = 0; i < evidenceList.Count; i++)
+        {
+            switch(evidenceList[i])
+            {
+                case EvidenceEnum.HYSTERICS:
+                    evidence.Add(new ev_Hysterics(this));
+                    break;
+            }
+        }
     }
     public virtual void Spawn()
     {
@@ -83,6 +100,11 @@ public class Enemy : MonoBehaviour
 
         activeAttackTree.UpdateTree(dt);
         passiveAttackTree.UpdateTree(dt);
+
+        foreach (Evidence e in evidence)
+        {
+            e.UpdateProcess(dt);
+        }
     }
 
     public void Activate(bool b)

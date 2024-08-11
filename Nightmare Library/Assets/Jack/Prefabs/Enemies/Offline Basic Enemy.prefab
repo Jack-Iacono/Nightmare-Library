@@ -150,6 +150,7 @@ MonoBehaviour:
   spawnLocation: {x: 20, y: 1, z: 0}
   aAttack: 0
   pAttack: 0
+  evidenceList: 00000000
 --- !u!1 &3566560211629083487
 GameObject:
   m_ObjectHideFlags: 0

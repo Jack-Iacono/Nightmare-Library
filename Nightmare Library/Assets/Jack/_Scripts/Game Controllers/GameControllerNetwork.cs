@@ -148,7 +148,7 @@ public class GameControllerNetwork : NetworkBehaviour
     [ClientRpc]
     private void ConsumePauseStateClientRpc(bool b)
     {
-        if (!IsOwner)
+        if (NetworkConnectionController.IsRunning && !IsOwner)
             parent.PauseGame(b);
     }
 

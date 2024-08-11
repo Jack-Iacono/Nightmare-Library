@@ -12,9 +12,9 @@ public abstract class UIController : MonoBehaviour
     protected virtual void Awake()
     {
         if (instance != null)
-            Destroy(this);
-        else
-            instance = this;
+            Destroy(instance);
+
+        instance = this;
     }
     protected virtual void Start()
     {
@@ -37,7 +37,7 @@ public abstract class UIController : MonoBehaviour
 
     private void OnDestroy()
     {
-        instance = null;
+        GameController.OnGamePause -= OnGamePause;
     }
 
     /// <summary>
@@ -66,11 +66,7 @@ public abstract class UIController : MonoBehaviour
 
     protected virtual void OnGamePause(object sender, bool e)
     {
-        // Shows the pause menu if paused, else show the hud
-        if (e)
-            ChangeToScreen(1);
-        else
-            ChangeToScreen(0);
+
     }
 
     #endregion

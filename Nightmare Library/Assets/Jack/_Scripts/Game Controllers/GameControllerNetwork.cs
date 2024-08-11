@@ -44,6 +44,9 @@ public class GameControllerNetwork : NetworkBehaviour
 
         parent = GetComponent<GameController>();
 
+        if (!IsOwner)
+            parent.enabled = false;
+
         // Changes the gameController data for all versions of this gameobject
         if (!IsOwner)
         {
@@ -121,7 +124,7 @@ public class GameControllerNetwork : NetworkBehaviour
 
     private void TransmitContinuousState()
     {
-        var state = new ContinuousData(parent.timer);
+        var state = new ContinuousData(parent.gameTimer);
 
         if (NetworkManager.IsServer)
         {
@@ -134,7 +137,7 @@ public class GameControllerNetwork : NetworkBehaviour
     }
     private void ConsumeContinuousState()
     {
-        parent.timer = contState.Value.timer;
+        parent.gameTimer = contState.Value.timer;
     }
     [ServerRpc]
     private void TransmitContinuousStateServerRpc(ContinuousData state)
@@ -145,7 +148,7 @@ public class GameControllerNetwork : NetworkBehaviour
     [ClientRpc]
     private void ConsumePauseStateClientRpc(bool b)
     {
-        if (!IsOwner)
+        if (NetworkConnectionController.IsRunning && !IsOwner)
             parent.PauseGame(b);
     }
 

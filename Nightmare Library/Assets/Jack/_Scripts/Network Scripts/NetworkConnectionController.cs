@@ -46,12 +46,12 @@ public class NetworkConnectionController : NetworkBehaviour
     public static event ProcessCompleteDelegate OnConnected;
 
     [SerializeField]
-    public bool isServer
+    public static bool HasAuthority
     {
-        get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer;
+        get => NetworkManager.Singleton == null || NetworkManager.Singleton.IsServer;
     }
     [SerializeField]
-    public bool IsRunning
+    public static bool IsRunning
     {
         get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
     }

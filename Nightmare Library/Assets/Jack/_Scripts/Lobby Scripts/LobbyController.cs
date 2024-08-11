@@ -6,10 +6,6 @@ using Unity.Collections;
 using Unity.VisualScripting;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections;
-using static UnityEngine.Rendering.DebugUI;
-using UnityEditorInternal.Profiling.Memory.Experimental;
-using UnityEditor.PackageManager;
 
 public abstract class LobbyController : NetworkBehaviour
 {
@@ -142,20 +138,19 @@ public abstract class LobbyController : NetworkBehaviour
 
         OnPlayerListChange?.Invoke();
     }
-    protected virtual async void OnClientDisconnected(ulong obj)
+    protected virtual void OnClientDisconnected(ulong obj)
     {
         // This runs just before the client is disconnected, client is still technically in the server
 
         // Host Disconnect
         if (NetworkManager.Singleton != null && NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
         {
-            playerList.Remove(NetworkManager.LocalClientId);
+            playerList.Remove(obj);
             UpdatePlayerInfoClientRpc(playerList);
         }
         else if(NetworkManager.Singleton != null && !NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
         {
-            await NetworkConnectionController.StopConnection();
-            SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU, true);
+            LeaveLobby();
         }
     }
     protected async Task CheckClientDisconnect(ulong clientId)
@@ -182,8 +177,6 @@ public abstract class LobbyController : NetworkBehaviour
         // Should never not be this, but just better to check
         if (instance == this)
             instance = null;
-
-        playerList = new PlayerList();
     }
     private void OnApplicationQuit()
     {

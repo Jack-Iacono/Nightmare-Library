@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -12,8 +13,9 @@ public class GameController : MonoBehaviour
     public GameObject offlinePlayerPrefab;
     public GameObject offlineEnemyPrefab;
 
-    public float timer = 0;
     public Transform[] patrolPoints;
+
+    public float gameTimer = 120;
 
     // Local Events
     public static event EventHandler<bool> OnGamePause;
@@ -38,6 +40,7 @@ public class GameController : MonoBehaviour
     {
         if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
             SpawnPrefabs();
+        PauseGame(false);
     }
 
     private void SpawnPrefabs()
@@ -50,36 +53,45 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        timer += Time.deltaTime;
-
-        if (Input.GetKeyDown(KeyCode.Q))
+        if (!gamePaused)
         {
-            PauseGame(!gamePaused);
-            
-            if(isNetworkGame)
-                OnNetworkGamePause?.Invoke(this, gamePaused);
+            if (gameTimer > 0)
+                gameTimer -= Time.deltaTime;
+            else
+                EndGame();
+
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                PauseGame(!gamePaused);
+            }
         }
     }
 
     private void OnPlayerKilled(object sender, EventArgs e)
     {
-        bool gameEnd = true;
+        bool allPlayersDead = true;
         foreach(PlayerController p in PlayerController.playerInstances)
         {
             if (p.isAlive)
             {
-                gameEnd = false;
+                allPlayersDead = false;
                 break;
             }
         }
 
-        if (gameEnd)
+        if (allPlayersDead && NetworkConnectionController.HasAuthority)
         {
-            EndGame();
+            PauseGame(true);
+            StartCoroutine(EndGameCoroutine());
         }
     }
 
-    private void EndGame()
+    public IEnumerator EndGameCoroutine()
+    {
+        yield return new WaitForSeconds(5);
+        EndGame();
+    }
+    public void EndGame()
     {
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
         {
@@ -93,6 +105,9 @@ public class GameController : MonoBehaviour
 
     public void PauseGame(bool b)
     {
+        if (isNetworkGame && NetworkConnectionController.HasAuthority)
+            OnNetworkGamePause?.Invoke(this, b);
+
         gamePaused = b;
         OnGamePause?.Invoke(this, b);
     }
@@ -101,6 +116,8 @@ public class GameController : MonoBehaviour
     {
         if (instance == this)
             instance = null;
+
+        PlayerController.OnPlayerKilled -= OnPlayerKilled;
     }
 
 }

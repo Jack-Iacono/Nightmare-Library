@@ -22,6 +22,13 @@ public class MainMenuUIController : UIController
     protected override void Start()
     {
         base.Start();
+
+        Cursor.lockState = CursorLockMode.None;
+
+        if (NetworkConnectionController.IsRunning)
+            ChangeToScreen(1);
+        else
+            ChangeToScreen(0);
     }
 
     /// <summary>

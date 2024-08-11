@@ -22,6 +22,12 @@ public class MainMenuLobbyController : LobbyController
         te.Copy();
     }
 
+    public override async void LeaveLobby()
+    {
+        await DisconnectFromLobby();
+        UIController.instance.ChangeToScreen(0);
+    }
+
     public void PlayOnlineCreate()
     {
         GameController.isNetworkGame = true;

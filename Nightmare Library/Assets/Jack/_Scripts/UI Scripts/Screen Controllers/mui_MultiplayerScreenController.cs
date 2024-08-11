@@ -30,7 +30,9 @@ public class mui_MultiplayerScreen : ScreenController
     {
         base.ShowScreen();
 
-        if(NetworkConnectionController.IsOnline)
+        OnPlayerListChange();
+
+        if(NetworkConnectionController.IsRunning)
         {
             if(NetworkConnectionController.instance.IsHost)
                 startGameButton.SetActive(true);
@@ -110,7 +112,7 @@ public class mui_MultiplayerScreen : ScreenController
 
         foreach(ulong clientId in dict.Keys)
         {
-            playerJoinText.text += dict[clientId].username + "\n";
+            playerJoinText.text += "(" + clientId + ")" + dict[clientId].username + "\n";
         }
     }
 

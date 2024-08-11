@@ -182,14 +182,19 @@ public class PlayerController : MonoBehaviour
 
         OnPlayerKilled?.Invoke(this, EventArgs.Empty);
 
-        SpectatePlayer(0);
+        int aliveIndex = GetAlivePlayer();
+
+        if (aliveIndex != -1)
+            SpectatePlayer(aliveIndex);
+        else
+            camCont.SetEnabled(true);
     }
 
     public void ActivatePlayer(bool b)
     {
         enabled = b;
         camCont.SetEnabled(b);
-        charCont.enabled = b;
+        //charCont.enabled = b;
 
         if (b)
         {
@@ -206,5 +211,15 @@ public class PlayerController : MonoBehaviour
             playerInstances[index].camCont.Spectate(true);
             currentlySpectating = index;
         }
+    }
+    private int GetAlivePlayer()
+    {
+        for(int i = 0; i < playerInstances.Count; i++)
+        {
+            if (playerInstances[i].isAlive)
+                return i;
+        }
+
+        return -1;
     }
 }

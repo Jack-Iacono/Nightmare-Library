@@ -1,9 +1,8 @@
-using BehaviorTree;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ev_Hysterics : Evidence
+public class ev_MusicLover : Evidence
 {
     protected float baseInteractChance = 0.05f;
     protected float currentInteractChance;
@@ -19,7 +18,7 @@ public class ev_Hysterics : Evidence
     protected float interactRange = 3;
     protected LayerMask interactLayers = 1 << 7;
 
-    public ev_Hysterics(Enemy owner) : base(owner)
+    public ev_MusicLover(Enemy owner) : base(owner)
     {
         interactChanceTimer = interactChanceTime;
         interactCooldownTimer = interactCooldownTime;
@@ -34,38 +33,35 @@ public class ev_Hysterics : Evidence
             interactCooldownTimer -= dt;
         else
         {
-            if (!interactReady)
+            if (interactReady)
             {
-                CheckInteractReady(dt);
+                Interact();
             }
             else
             {
-                Interact();
+                CheckInteractReady(dt);
             }
         }
     }
 
     protected void Interact()
     {
-        Collider[] col = Physics.OverlapSphere(owner.transform.position, interactRange, interactLayers);
-        if(col.Length > 0)
-        {
-            col[0].GetComponent<EnemyInteractable>().EnemyInteract();
+        Debug.Log("Play Sound");
+        owner.PlaySound("musicLover");
 
-            interactReady = false;
-            interactCooldownTimer = interactCooldownTime;
-        }
+        interactReady = false;
+        interactCooldownTimer = interactCooldownTime;
     }
 
     private void CheckInteractReady(float dt)
     {
         // Check if the timer is running or if it has ended
-        if(interactChanceTimer > 0)
+        if (interactChanceTimer > 0)
             interactChanceTimer -= dt;
         else
         {
             // Check for random chance
-            if(Random.Range(0,1f) < currentInteractChance)
+            if (Random.Range(0, 1f) < currentInteractChance)
             {
                 // Chance succeeded and now the enemy will interact and reset it's odds back to base
                 currentInteractChance = baseInteractChance;

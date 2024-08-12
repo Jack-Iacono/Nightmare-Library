@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 public class Enemy : MonoBehaviour
 {
-    [Header("Nightmare Characteristics")]
+    [Header("Enemy Characteristics")]
     [SerializeField]
     public float moveSpeed = 10;
     public float fovRange = 100;
@@ -33,12 +33,18 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
-    public enum EvidenceEnum { HYSTERICS };
+    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER };
     [Header("Evidence Variables")]
     [SerializeField]
     public List<EvidenceEnum> evidenceList = new List<EvidenceEnum>();
 
     protected List<Evidence> evidence = new List<Evidence>();
+
+    [Header("Sounds")]
+    private AudioSource audioSrc;
+    public AudioClip musicLoverSound;
+
+    public event EventHandler<string> OnPlaySound;
 
     #region Initialization
 
@@ -50,6 +56,8 @@ public class Enemy : MonoBehaviour
     {
         navAgent = GetComponent<NavMeshAgent>();
         navAgent.speed = moveSpeed;
+
+        audioSrc = GetComponent<AudioSource>();
 
         GameController.OnGamePause += OnGamePause;
 
@@ -79,6 +87,9 @@ public class Enemy : MonoBehaviour
             {
                 case EvidenceEnum.HYSTERICS:
                     evidence.Add(new ev_Hysterics(this));
+                    break;
+                case EvidenceEnum.MUSIC_LOVER:
+                    evidence.Add(new ev_MusicLover(this));
                     break;
             }
         }
@@ -113,6 +124,22 @@ public class Enemy : MonoBehaviour
         if(!navAgent)
             navAgent = GetComponent<NavMeshAgent>();
         navAgent.enabled = b;
+    }
+
+    public void PlaySound(string soundName)
+    {
+        OnPlaySound?.Invoke(this, soundName);
+
+        if(!audioSrc)
+            audioSrc = GetComponent<AudioSource>();
+
+        switch (soundName)
+        {
+            case "musicLover":
+                audioSrc.volume = 2;
+                audioSrc.PlayOneShot(musicLoverSound);
+                break;
+        }
     }
 
     protected virtual void OnGamePause(object sender, bool e)

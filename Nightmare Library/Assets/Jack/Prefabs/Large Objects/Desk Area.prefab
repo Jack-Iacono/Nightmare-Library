@@ -1356,7 +1356,7 @@ GameObject:
   - component: {fileID: 3953284871925788144}
   - component: {fileID: 8861432142527287153}
   m_Layer: 2
-  m_Name: Offline Desk Area
+  m_Name: Desk Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

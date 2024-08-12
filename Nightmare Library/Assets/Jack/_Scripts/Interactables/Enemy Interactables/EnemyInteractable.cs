@@ -16,8 +16,7 @@ public class EnemyInteractable : Interactable
 
     public void EnemyInteract()
     {
-        Debug.Log("Hysterics Interaction");
-        rb.AddForce(new Vector3(1,0,1) * 10, ForceMode.Impulse);
+        rb.AddForce(new Vector3(1,1,1) * 10, ForceMode.Impulse);
 
         OnInteract?.Invoke(this, EventArgs.Empty);
     }

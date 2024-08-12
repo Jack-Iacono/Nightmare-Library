@@ -30,6 +30,9 @@ public class EnemyNetwork : NetworkBehaviour
         base.OnNetworkSpawn();
 
         enemyController.Activate(IsOwner);
+
+        if(IsOwner)
+            enemyController.OnPlaySound += OnPlaySound;
     }
 
     // Update is called once per frame
@@ -51,6 +54,17 @@ public class EnemyNetwork : NetworkBehaviour
         {
             TransmitIntermittentState();
         }
+    }
+
+    public void OnPlaySound(object sender, string sound)
+    {
+        PlaySoundClientRpc(sound);
+    }
+    [ClientRpc]
+    private void PlaySoundClientRpc(string sound)
+    {
+        if (!NetworkManager.IsServer)
+            enemyController.PlaySound(sound);
     }
 
     #region Server Data Transfers

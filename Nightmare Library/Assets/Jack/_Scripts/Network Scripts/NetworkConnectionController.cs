@@ -48,7 +48,7 @@ public class NetworkConnectionController : NetworkBehaviour
     [SerializeField]
     public static bool HasAuthority
     {
-        get => NetworkManager.Singleton == null || NetworkManager.Singleton.IsServer;
+        get => NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient || NetworkManager.Singleton.IsServer;
     }
     [SerializeField]
     public static bool IsRunning

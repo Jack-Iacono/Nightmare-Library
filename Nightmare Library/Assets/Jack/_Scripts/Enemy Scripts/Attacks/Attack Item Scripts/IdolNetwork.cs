@@ -9,7 +9,7 @@ public class IdolNetwork : NetworkBehaviour
 {
     private IdolController parent;
 
-    private void Start()
+    public override void OnNetworkSpawn()
     {
         parent = GetComponent<IdolController>();
 
@@ -45,6 +45,7 @@ public class IdolNetwork : NetworkBehaviour
     [ClientRpc]
     private void ConsumeIdolCountChangeClientRpc(bool activeState)
     {
+        Debug.Log("Client Change");
         gameObject.SetActive(activeState);
     }
 

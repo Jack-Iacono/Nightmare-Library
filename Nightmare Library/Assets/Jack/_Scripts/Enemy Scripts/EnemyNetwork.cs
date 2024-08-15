@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using Unity.Burst.CompilerServices;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -30,6 +31,14 @@ public class EnemyNetwork : NetworkBehaviour
         base.OnNetworkSpawn();
 
         enemyController.Activate(IsOwner);
+
+        if (IsOwner)
+        {
+            enemyController.OnPlaySound += OnPlaySound;
+            enemyController.OnSpawnFootprint += OnSpawnFootprint;
+
+            CreateFootprintPool();
+        }
     }
 
     // Update is called once per frame
@@ -44,7 +53,6 @@ public class EnemyNetwork : NetworkBehaviour
             ConsumeContinuousState();
         }
     }
-
     public void UpdatePlayerIntermittentState()
     {
         if (IsOwner)
@@ -52,6 +60,44 @@ public class EnemyNetwork : NetworkBehaviour
             TransmitIntermittentState();
         }
     }
+
+    #region Evidence Methods
+
+    public void OnPlaySound(object sender, string sound)
+    {
+        PlaySoundClientRpc(sound);
+    }
+    [ClientRpc]
+    private void PlaySoundClientRpc(string sound)
+    {
+        if (!NetworkManager.IsServer)
+            enemyController.PlaySound(sound);
+    }
+
+    public void CreateFootprintPool()
+    {
+        enemyController.objPool.PoolObject(enemyController.footprintPrefabOnline, 10, true);
+
+        List<GameObject> list = enemyController.objPool.GetPool(enemyController.footprintPrefabOnline);
+
+        foreach(GameObject obj in list)
+        {
+            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
+        }
+    }
+    public void OnSpawnFootprint(Vector3 pos)
+    {
+        if (NetworkConnectionController.HasAuthority)
+        {
+            var print = enemyController.objPool.GetObject(enemyController.footprintPrefabOnline);
+
+            print.transform.position = pos;
+            print.GetComponent<FootprintController>().Activate();
+            print.SetActive(true);
+        }
+    }
+
+    #endregion
 
     #region Server Data Transfers
     private void TransmitContinuousState()

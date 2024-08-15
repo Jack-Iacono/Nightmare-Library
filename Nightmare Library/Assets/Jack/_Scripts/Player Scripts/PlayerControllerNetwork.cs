@@ -8,9 +8,9 @@ using UnityEditor.Build.Content;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerController))]
-public class PlayerNetworkState : NetworkBehaviour
+public class PlayerControllerNetwork : NetworkBehaviour
 {
-    public static PlayerNetworkState ownerInstance;
+    public static PlayerControllerNetwork ownerInstance;
 
     [SerializeField] private bool _serverAuth;
 
@@ -20,7 +20,7 @@ public class PlayerNetworkState : NetworkBehaviour
     private NetworkVariable<PlayerContinuousNetworkData> playerContinuousState;
     private NetworkVariable<PlayerIntermittentNetworkData> playerIntermittentState;
 
-    private static List<PlayerNetworkState> players = new List<PlayerNetworkState>();
+    private static List<PlayerControllerNetwork> players = new List<PlayerControllerNetwork>();
 
     private void Awake()
     {

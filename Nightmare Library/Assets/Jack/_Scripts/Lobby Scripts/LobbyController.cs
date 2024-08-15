@@ -36,6 +36,16 @@ public abstract class LobbyController : NetworkBehaviour
         }
     }
 
+    private void Update()
+    {
+        // Temporary!!!
+        // this prevents an error that exists if this line of code is run within the OnClientDisconnected Callback
+        if (NetworkConnectionController.HasAuthority)
+        {
+            UpdatePlayerInfoClientRpc(playerList);
+        }
+    }
+
     #region Connection Methods
 
     public async virtual Task<bool> StartConnection()
@@ -67,8 +77,6 @@ public abstract class LobbyController : NetworkBehaviour
         return true;
     }
 
-    
-
     [ServerRpc(RequireOwnership = false)]
     protected void AddPlayerInfoServerRpc(ulong sender, PlayerInfo playerInfo)
     {
@@ -98,7 +106,7 @@ public abstract class LobbyController : NetworkBehaviour
     public virtual async void LeaveLobby()
     {
         await DisconnectFromLobby();
-        SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
+        SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU, true);
     }
     public virtual async Task DisconnectFromLobby()
     {
@@ -143,10 +151,10 @@ public abstract class LobbyController : NetworkBehaviour
         // This runs just before the client is disconnected, client is still technically in the server
 
         // Host Disconnect
-        if (NetworkManager.Singleton != null && NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
+        if (NetworkConnectionController.HasAuthority && !NetworkManager.ShutdownInProgress)
         {
             playerList.Remove(obj);
-            UpdatePlayerInfoClientRpc(playerList);
+            //UpdatePlayerInfoClientRpc(playerList);
         }
         else if(NetworkManager.Singleton != null && !NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
         {
@@ -281,6 +289,18 @@ public abstract class LobbyController : NetworkBehaviour
         public int Count
         {
             get => items.Length;
+        }
+        public List<ulong> Keys
+        {
+            get
+            {
+                List<ulong> result = new List<ulong>();
+                for(int i = 0; i < items.Length; i++)
+                {
+                    result.Add(items[i].key);
+                }
+                return result;
+            }
         }
 
         public PlayerList()

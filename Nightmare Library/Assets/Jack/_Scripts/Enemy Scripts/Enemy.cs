@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 public class Enemy : MonoBehaviour
 {
-    [Header("Nightmare Characteristics")]
+    [Header("Enemy Characteristics")]
     [SerializeField]
     public float moveSpeed = 10;
     public float fovRange = 100;
@@ -20,6 +20,8 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     protected Vector3 spawnLocation;
     protected Vector3 targetLocation = Vector3.zero;
+
+    public ObjectPool objPool = new ObjectPool();
 
     public enum aAttackEnum { RUSH };
     public enum pAttackEnum { IDOLS };
@@ -33,6 +35,25 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
+    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT };
+    [Header("Evidence Variables")]
+    [SerializeField]
+    public List<EvidenceEnum> evidenceList = new List<EvidenceEnum>();
+
+    protected List<Evidence> evidence = new List<Evidence>();
+
+    private AudioSource audioSrc;
+    [Space(10)]
+    public AudioClip musicLoverSound;
+    public event EventHandler<string> OnPlaySound;
+    
+    private List<GameObject> footprintList = new List<GameObject>();
+    [Space(10)]
+    public GameObject footprintPrefab;
+    public GameObject footprintPrefabOnline;
+    public delegate void FootprintDelegate(Vector3 pos);
+    public event FootprintDelegate OnSpawnFootprint;
+
     #region Initialization
 
     private void Start()
@@ -43,6 +64,8 @@ public class Enemy : MonoBehaviour
     {
         navAgent = GetComponent<NavMeshAgent>();
         navAgent.speed = moveSpeed;
+
+        audioSrc = GetComponent<AudioSource>();
 
         GameController.OnGamePause += OnGamePause;
 
@@ -65,6 +88,24 @@ public class Enemy : MonoBehaviour
 
         activeAttackTree.Initialize();
         passiveAttackTree.Initialize();
+
+        for(int i = 0; i < evidenceList.Count; i++)
+        {
+            switch(evidenceList[i])
+            {
+                case EvidenceEnum.HYSTERICS:
+                    evidence.Add(new ev_Hysterics(this));
+                    break;
+                case EvidenceEnum.MUSIC_LOVER:
+                    evidence.Add(new ev_MusicLover(this));
+                    break;
+                case EvidenceEnum.FOOTPRINT:
+                    evidence.Add(new ev_Footprint(this));
+                    if (!NetworkConnectionController.IsRunning)
+                        objPool.PoolObject(footprintPrefab, 10);
+                    break;
+            }
+        }
     }
     public virtual void Spawn()
     {
@@ -83,6 +124,11 @@ public class Enemy : MonoBehaviour
 
         activeAttackTree.UpdateTree(dt);
         passiveAttackTree.UpdateTree(dt);
+
+        foreach (Evidence e in evidence)
+        {
+            e.UpdateProcess(dt);
+        }
     }
 
     public void Activate(bool b)
@@ -91,6 +137,42 @@ public class Enemy : MonoBehaviour
         if(!navAgent)
             navAgent = GetComponent<NavMeshAgent>();
         navAgent.enabled = b;
+    }
+
+    public void PlaySound(string soundName)
+    {
+        OnPlaySound?.Invoke(this, soundName);
+
+        if(!audioSrc)
+            audioSrc = GetComponent<AudioSource>();
+
+        switch (soundName)
+        {
+            case "musicLover":
+                audioSrc.volume = 2;
+                audioSrc.PlayOneShot(musicLoverSound);
+                break;
+        }
+    }
+    public void SpawnFootprint()
+    {
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit hit;
+        Physics.Raycast(ray, out hit, 5);
+
+        if (NetworkConnectionController.IsRunning)
+        {
+            OnSpawnFootprint?.Invoke(hit.point);
+        }
+        else
+        {
+            var print = objPool.GetObject(footprintPrefab);
+
+            print.GetComponent<FootprintController>().Activate();
+            print.transform.position = hit.point;
+            print.SetActive(true);
+        }
+        
     }
 
     protected virtual void OnGamePause(object sender, bool e)

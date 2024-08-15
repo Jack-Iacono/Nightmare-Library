@@ -13,7 +13,7 @@ public class TaskPatrol : Node
 
     private int currentWaypointIndex = 0;
 
-    private float waitTime = 1f;
+    private float waitTime = 0.5f;
     private float waitTimer = 0f;
     private bool waiting = false;
 

@@ -21,6 +21,8 @@ public class Enemy : MonoBehaviour
     protected Vector3 spawnLocation;
     protected Vector3 targetLocation = Vector3.zero;
 
+    public ObjectPool objPool = new ObjectPool();
+
     public enum aAttackEnum { RUSH };
     public enum pAttackEnum { IDOLS };
 
@@ -33,18 +35,24 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
-    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER };
+    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT };
     [Header("Evidence Variables")]
     [SerializeField]
     public List<EvidenceEnum> evidenceList = new List<EvidenceEnum>();
 
     protected List<Evidence> evidence = new List<Evidence>();
 
-    [Header("Sounds")]
     private AudioSource audioSrc;
+    [Space(10)]
     public AudioClip musicLoverSound;
-
     public event EventHandler<string> OnPlaySound;
+    
+    private List<GameObject> footprintList = new List<GameObject>();
+    [Space(10)]
+    public GameObject footprintPrefab;
+    public GameObject footprintPrefabOnline;
+    public delegate void FootprintDelegate(Vector3 pos);
+    public event FootprintDelegate OnSpawnFootprint;
 
     #region Initialization
 
@@ -90,6 +98,11 @@ public class Enemy : MonoBehaviour
                     break;
                 case EvidenceEnum.MUSIC_LOVER:
                     evidence.Add(new ev_MusicLover(this));
+                    break;
+                case EvidenceEnum.FOOTPRINT:
+                    evidence.Add(new ev_Footprint(this));
+                    if (!NetworkConnectionController.IsRunning)
+                        objPool.PoolObject(footprintPrefab, 10);
                     break;
             }
         }
@@ -140,6 +153,26 @@ public class Enemy : MonoBehaviour
                 audioSrc.PlayOneShot(musicLoverSound);
                 break;
         }
+    }
+    public void SpawnFootprint()
+    {
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit hit;
+        Physics.Raycast(ray, out hit, 5);
+
+        if (NetworkConnectionController.IsRunning)
+        {
+            OnSpawnFootprint?.Invoke(hit.point);
+        }
+        else
+        {
+            var print = objPool.GetObject(footprintPrefab);
+
+            print.GetComponent<FootprintController>().Activate();
+            print.transform.position = hit.point;
+            print.SetActive(true);
+        }
+        
     }
 
     protected virtual void OnGamePause(object sender, bool e)

@@ -21,23 +21,6 @@ public class DeskNetwork : NetworkBehaviour
             parent.enabled = false;
     }
 
-    public List<IdolController> SpawnIdols(int count, TaskSpawnIdols idolSpawner)
-    {
-        List<IdolController> list = new List<IdolController>();
-        for (int i = 0; i < count; i++)
-        {
-            GameObject idol = Instantiate(onlineIdolPrefab, parent.idolGameObjects[i].transform.position, Quaternion.identity, transform);
-            idol.name = "Online Idol";
-            idol.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-            IdolController iCont = idol.GetComponent<IdolController>();
-            iCont.Initialize(idolSpawner);
-            list.Add(iCont);
-
-            GameControllerNetwork.instance.spawnedPrefabs.Add(idol);
-        }
-        return list;
-    }
-
     [ServerRpc(RequireOwnership = false)]
     private void TransmitClickServerRpc(ulong sender)
     {

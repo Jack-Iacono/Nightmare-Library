@@ -35,9 +35,19 @@ public class EnemyNetwork : NetworkBehaviour
         if (IsOwner)
         {
             enemyController.OnPlaySound += OnPlaySound;
-            enemyController.OnSpawnFootprint += OnSpawnFootprint;
 
-            CreateFootprintPool();
+
+            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
+            {
+                enemyController.OnSpawnFootprint += OnSpawnFootprint;
+                CreateFootprintPool();
+            }
+            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.TRAPPER))
+            {
+                enemyController.OnSpawnTrap += OnSpawnTrap;
+                CreateTrapPool();
+            }
+                
         }
     }
 
@@ -85,6 +95,18 @@ public class EnemyNetwork : NetworkBehaviour
             obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
         }
     }
+    public void CreateTrapPool()
+    {
+        enemyController.objPool.PoolObject(enemyController.trapPrefabOnline, 10, true);
+
+        List<GameObject> list = enemyController.objPool.GetPool(enemyController.trapPrefabOnline);
+
+        foreach (GameObject obj in list)
+        {
+            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
+        }
+    }
+
     public void OnSpawnFootprint(Vector3 pos)
     {
         if (NetworkConnectionController.HasAuthority)
@@ -93,6 +115,17 @@ public class EnemyNetwork : NetworkBehaviour
 
             print.transform.position = pos;
             print.GetComponent<FootprintController>().Activate();
+            print.SetActive(true);
+        }
+    }
+    public void OnSpawnTrap(Vector3 pos)
+    {
+        if (NetworkConnectionController.HasAuthority)
+        {
+            var print = enemyController.objPool.GetObject(enemyController.trapPrefabOnline);
+
+            print.transform.position = pos;
+            print.GetComponent<TrapController>().Activate();
             print.SetActive(true);
         }
     }

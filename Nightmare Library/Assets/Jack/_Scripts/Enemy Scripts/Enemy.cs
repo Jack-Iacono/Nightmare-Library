@@ -16,6 +16,7 @@ public class Enemy : MonoBehaviour
 
     [NonSerialized]
     public NavMeshAgent navAgent;
+    private AudioSource audioSrc;
 
     [SerializeField]
     protected Vector3 spawnLocation;
@@ -35,24 +36,28 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
-    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT };
+    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT, TRAPPER };
     [Header("Evidence Variables")]
     [SerializeField]
     public List<EvidenceEnum> evidenceList = new List<EvidenceEnum>();
-
     protected List<Evidence> evidence = new List<Evidence>();
-
-    private AudioSource audioSrc;
+    
     [Space(10)]
     public AudioClip musicLoverSound;
     public event EventHandler<string> OnPlaySound;
     
-    private List<GameObject> footprintList = new List<GameObject>();
     [Space(10)]
     public GameObject footprintPrefab;
     public GameObject footprintPrefabOnline;
+    private List<GameObject> footprintList = new List<GameObject>();
     public delegate void FootprintDelegate(Vector3 pos);
     public event FootprintDelegate OnSpawnFootprint;
+
+    [Space(10)]
+    public GameObject trapPrefab;
+    public GameObject trapPrefabOnline;
+    public delegate void TrapDelegate(Vector3 pos);
+    public event TrapDelegate OnSpawnTrap;
 
     #region Initialization
 
@@ -103,6 +108,11 @@ public class Enemy : MonoBehaviour
                     evidence.Add(new ev_Footprint(this));
                     if (!NetworkConnectionController.IsRunning)
                         objPool.PoolObject(footprintPrefab, 10);
+                    break;
+                case EvidenceEnum.TRAPPER:
+                    evidence.Add(new ev_Trapper(this));
+                    if (!NetworkConnectionController.IsRunning)
+                        objPool.PoolObject(trapPrefab, 10);
                     break;
             }
         }
@@ -172,7 +182,26 @@ public class Enemy : MonoBehaviour
             print.transform.position = hit.point;
             print.SetActive(true);
         }
-        
+    }
+    public void SpawnTrap()
+    {
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit hit;
+        Physics.Raycast(ray, out hit, 5);
+
+        if (NetworkConnectionController.IsRunning)
+        {
+            OnSpawnTrap?.Invoke(hit.point);
+        }
+        else
+        {
+            var print = objPool.GetObject(trapPrefab);
+
+            print.GetComponent<TrapController>().Activate();
+            print.transform.position = hit.point;
+            print.SetActive(true);
+        }
+
     }
 
     protected virtual void OnGamePause(object sender, bool e)
@@ -187,6 +216,8 @@ public class Enemy : MonoBehaviour
             activeAttackTree.OnDestroy();
         if(passiveAttackTree != null)
             passiveAttackTree.OnDestroy();
+
+        GameController.OnGamePause -= OnGamePause;
     }
 
     private void OnDrawGizmos()

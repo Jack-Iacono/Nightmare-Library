@@ -122,5 +122,10 @@ public class CameraController : MonoBehaviour
         return false;
     }
 
+    public Ray GetCameraRay()
+    {
+        return new Ray(transform.position, transform.forward);
+    }
+
     #endregion
 }

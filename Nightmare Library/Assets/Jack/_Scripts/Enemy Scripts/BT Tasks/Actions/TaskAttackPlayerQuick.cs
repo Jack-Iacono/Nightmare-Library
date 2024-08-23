@@ -11,7 +11,7 @@ public class TaskAttackPlayerQuick : TaskWait
     NavMeshAgent navAgent;
     Transform currentTarget;
 
-    private bool hasAttacked = false;
+    //private bool hasAttacked = false;
 
     public TaskAttackPlayerQuick(string waitLabel, float waitTimer, Enemy owner) : base(waitLabel, waitTimer)
     {
@@ -21,7 +21,7 @@ public class TaskAttackPlayerQuick : TaskWait
 
     protected override void OnStart()
     {
-        hasAttacked = false;
+        //hasAttacked = false;
 
         PlayerController player = (PlayerController)GetData(CheckInAttackRange.ATTACK_TARGET_KEY);
         if(player != null)
@@ -32,7 +32,7 @@ public class TaskAttackPlayerQuick : TaskWait
     }
     protected override void OnEnd()
     {
-        hasAttacked = false;
+        //hasAttacked = false;
 
         ClearData(CheckInAttackRange.ATTACKING_KEY);
         ClearData(CheckInAttackRange.ATTACK_TARGET_KEY);

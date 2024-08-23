@@ -57,7 +57,7 @@ public class PlayerController : MonoBehaviour
 
     private CharacterController charCont;
 
-    public static KeyCode keyInteract = KeyCode.R;
+    public static KeyCode keyInteract = KeyCode.Mouse0;
 
     public event EventHandler OnPlayerAttacked;
     public static event EventHandler OnPlayerKilled;

@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Interactable : MonoBehaviour
 {
+    [Header("Interactable Variables")]
     [SerializeField]
     protected Collider interactCollider;
 
@@ -23,7 +24,7 @@ public class Interactable : MonoBehaviour
     public event EventHandler OnClick;
 
     // Update is called once per frame
-    void Update()
+    protected virtual void Update()
     {
         if(
             inRange &&

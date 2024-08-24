@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+using static UnityEditor.PlayerSettings;
+using static UnityEngine.Rendering.DebugUI.Table;
 
 public class MonitorCameraController : Interactable
 {
@@ -20,6 +23,11 @@ public class MonitorCameraController : Interactable
 
     public LayerMask placeableLayers;
 
+    public delegate void OnPickupDelegate();
+    public event OnPickupDelegate OnPickup;
+    public delegate void OnPlaceDelegate(Vector3 pos, Quaternion rot);
+    public event OnPlaceDelegate OnPlace;
+
     private void Awake()
     {
         renderTexture = new RenderTexture(240, 240, 1);
@@ -31,7 +39,7 @@ public class MonitorCameraController : Interactable
         base.Click();
 
         pickedUpMonitor = this;
-        Enable(false);
+        Pickup();
     }
     protected override void Update()
     {
@@ -47,32 +55,40 @@ public class MonitorCameraController : Interactable
         {
             if (pickedUpMonitor == this && Input.GetKeyDown(PlayerController.keyInteract))
             {
-                Debug.Log("Placing");
                 Ray ray = PlayerController.ownerInstance.camCont.GetCameraRay();
                 RaycastHit hit;
 
                 if (Physics.Raycast(ray, out hit, placementRange, placeableLayers))
                 {
-                    transform.position = hit.point;
                     transform.LookAt(PlayerController.ownerInstance.transform.position);
 
                     pickedUpMonitor = null;
-                    Enable(true);
+                    Place(hit.point, transform.rotation);
                 }
             }
         }
     }
 
-    public void Enable(bool b)
+    public void Pickup(bool sendEvent = true)
     {
-        body.SetActive(b);
+        body.SetActive(false);
+        placeBufferTimer = placeBufferTime;
+        placeBuffering = true;
 
-        if(!b)
-        {
-            placeBufferTimer = placeBufferTime;
-            placeBuffering = true;
-        }
+        if (sendEvent)
+            OnPickup?.Invoke();
     }
+    public void Place(Vector3 pos, Quaternion rot, bool sendEvent = true)
+    {
+        transform.position = pos;
+        transform.rotation = rot;
+
+        body.SetActive(true);
+
+        if (sendEvent)
+            OnPlace?.Invoke(pos, rot);
+    }
+
     public void SetBroadcasting(bool b)
     {
         isBroadcasting = b;

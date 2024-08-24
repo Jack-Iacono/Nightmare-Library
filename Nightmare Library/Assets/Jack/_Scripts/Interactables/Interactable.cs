@@ -12,6 +12,7 @@ public class Interactable : MonoBehaviour
     [SerializeField]
     protected float interactRange = 5;
     protected bool inRange = false;
+    protected bool canInteract = true;
     
     protected enum InteractionType { CLICK, HIT }
     [SerializeField]

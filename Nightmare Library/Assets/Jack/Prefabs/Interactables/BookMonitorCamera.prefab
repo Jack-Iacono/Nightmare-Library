@@ -52,10 +52,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   cam: {fileID: 6077936201343342321}
+  body: {fileID: 6541544184771139750}
+  placementRange: 100
   placeableLayers:
     serializedVersion: 2
     m_Bits: 1
-  body: {fileID: 6541544184771139750}
 --- !u!1 &6541544184771139750
 GameObject:
   m_ObjectHideFlags: 0

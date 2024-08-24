@@ -14,7 +14,7 @@ public class MonitorCameraController : Interactable
     private float placementRange = 7f;
     public RenderTexture renderTexture {  get; private set; }
 
-    private bool isBroadcasting = true;
+    public bool isBroadcasting { get; private set; } = true;
     private static MonitorCameraController pickedUpMonitor;
 
     private float placeBufferTime = 0.5f;
@@ -28,6 +28,8 @@ public class MonitorCameraController : Interactable
     public delegate void OnPlaceDelegate(Vector3 pos, Quaternion rot);
     public event OnPlaceDelegate OnPlace;
 
+    public event EventHandler OnBroadcastChange;
+
     private void Awake()
     {
         renderTexture = new RenderTexture(240, 240, 1);
@@ -38,8 +40,11 @@ public class MonitorCameraController : Interactable
     {
         base.Click();
 
-        pickedUpMonitor = this;
-        Pickup();
+        if (pickedUpMonitor == null)
+        {
+            pickedUpMonitor = this;
+            Pickup();
+        }
     }
     protected override void Update()
     {
@@ -60,6 +65,7 @@ public class MonitorCameraController : Interactable
 
                 if (Physics.Raycast(ray, out hit, placementRange, placeableLayers))
                 {
+                    transform.position = hit.point;
                     transform.LookAt(PlayerController.ownerInstance.transform.position);
 
                     pickedUpMonitor = null;
@@ -75,6 +81,8 @@ public class MonitorCameraController : Interactable
         placeBufferTimer = placeBufferTime;
         placeBuffering = true;
 
+        SetBroadcasting(false);
+
         if (sendEvent)
             OnPickup?.Invoke();
     }
@@ -85,6 +93,8 @@ public class MonitorCameraController : Interactable
 
         body.SetActive(true);
 
+        SetBroadcasting(true);
+
         if (sendEvent)
             OnPlace?.Invoke(pos, rot);
     }
@@ -93,6 +103,8 @@ public class MonitorCameraController : Interactable
     {
         isBroadcasting = b;
         cam.enabled = b;
+
+        OnBroadcastChange?.Invoke(this, EventArgs.Empty);
     }
 
     private void OnDestroy()

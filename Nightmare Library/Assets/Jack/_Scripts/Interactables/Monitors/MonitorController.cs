@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,6 +25,7 @@ public class MonitorController : MonoBehaviour
         for(int i = 0; i < pairedBooks.Count; i++)
         {
             pairedBooks[i].SetBroadcasting(false);
+            pairedBooks[i].OnBroadcastChange += OnCameraBroadcastChange;
         }
 
         ChangeCamera(0);
@@ -42,15 +44,25 @@ public class MonitorController : MonoBehaviour
         }
     }
 
+    private void OnCameraBroadcastChange(object sender, EventArgs e)
+    {
+        monitorViewBlocker.SetActive(!pairedBooks[pairedIndex].isBroadcasting);
+    }
+
     private void CheckPlayerInRange()
     {
-        bool inRange = Physics.OverlapSphere(transform.position, useRadius, playerMask).Length > 0;
-        pairedBooks[pairedIndex].SetBroadcasting(inRange);
-        monitorViewBlocker.SetActive(!inRange);
+        if (pairedBooks[pairedIndex].isBroadcasting)
+        {
+            bool inRange = Physics.OverlapSphere(transform.position, useRadius, playerMask).Length > 0;
+            monitorViewBlocker.SetActive(!inRange);
+        }
     }
     public void ChangeCamera(int i)
     {
+        pairedBooks[pairedIndex].SetBroadcasting(false);
         pairedIndex = i;
+        pairedBooks[pairedIndex].SetBroadcasting(true);
+
         display = pairedBooks[pairedIndex].renderTexture;
         monitorPicture.texture = display;
     }

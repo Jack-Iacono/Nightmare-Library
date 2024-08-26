@@ -5,6 +5,7 @@ using System.Globalization;
 using Unity.Burst.CompilerServices;
 using Unity.Netcode;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 [RequireComponent(typeof(Enemy))]
 public class EnemyNetwork : NetworkBehaviour
@@ -35,7 +36,7 @@ public class EnemyNetwork : NetworkBehaviour
         if (IsOwner)
         {
             enemyController.OnPlaySound += OnPlaySound;
-
+            enemyController.OnHallucination += OnHallucination;
 
             if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
             {
@@ -128,6 +129,20 @@ public class EnemyNetwork : NetworkBehaviour
             print.GetComponent<TrapController>().Activate();
             print.SetActive(true);
         }
+    }
+
+    private void OnHallucination(object sender, bool b)
+    {
+        if (NetworkConnectionController.HasAuthority)
+        {
+            OnHallucinationClientRpc(b);
+        }
+    }
+    [ClientRpc]
+    private void OnHallucinationClientRpc(bool b)
+    {
+        if (!NetworkManager.IsServer)
+            enemyController.SetHallucinating(b, false);
     }
 
     #endregion

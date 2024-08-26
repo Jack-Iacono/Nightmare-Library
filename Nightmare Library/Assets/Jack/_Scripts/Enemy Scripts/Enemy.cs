@@ -36,7 +36,7 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
-    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT, TRAPPER };
+    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT, TRAPPER, HALLUCINATOR};
     [Header("Evidence Variables")]
     [SerializeField]
     public List<EvidenceEnum> evidenceList = new List<EvidenceEnum>();
@@ -58,6 +58,13 @@ public class Enemy : MonoBehaviour
     public GameObject trapPrefabOnline;
     public delegate void TrapDelegate(Vector3 pos);
     public event TrapDelegate OnSpawnTrap;
+
+    [Space(10)]
+    [SerializeField]
+    private MeshRenderer hallucinationMesh;
+    [SerializeField]
+    private Material hallucinationMaterial;
+    public event EventHandler<bool> OnHallucination;
 
     #region Initialization
 
@@ -113,6 +120,9 @@ public class Enemy : MonoBehaviour
                     evidence.Add(new ev_Trapper(this));
                     if (!NetworkConnectionController.IsRunning)
                         objPool.PoolObject(trapPrefab, 10);
+                    break;
+                case EvidenceEnum.HALLUCINATOR:
+                    evidence.Add(new ev_Hallucinator(this));
                     break;
             }
         }
@@ -202,6 +212,20 @@ public class Enemy : MonoBehaviour
             print.SetActive(true);
         }
 
+    }
+    public void SetHallucinating(bool b, bool invokeEvent = true)
+    {
+        if (b)
+        {
+            hallucinationMesh.material = hallucinationMaterial;
+        }
+        else
+        {
+            hallucinationMesh.material = null;
+        }
+
+        if (invokeEvent)
+            OnHallucination?.Invoke(this, b);
     }
 
     protected virtual void OnGamePause(object sender, bool e)

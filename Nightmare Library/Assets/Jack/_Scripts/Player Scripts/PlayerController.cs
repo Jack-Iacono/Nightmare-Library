@@ -59,6 +59,9 @@ public class PlayerController : MonoBehaviour
 
     public static KeyCode keyInteract = KeyCode.Mouse0;
 
+    private KeyCode keySprint = KeyCode.LeftShift;
+    private bool isSprinting = false;
+
     public event EventHandler OnPlayerAttacked;
     public static event EventHandler OnPlayerKilled;
 
@@ -118,12 +121,19 @@ public class PlayerController : MonoBehaviour
                 Input.GetButtonDown("Jump") ? 1 : 0,
                 Input.GetAxis("Vertical")
             );
-        
+        isSprinting = Input.GetKey(keySprint);
     }
     private void CalculateNormalPlayerMove()
     {
         float moveX = currentInput.x * transform.right.x * moveSpeed + currentInput.z * transform.forward.x * moveSpeed;
         float moveZ = currentInput.x * transform.right.z * moveSpeed + currentInput.z * transform.forward.z * moveSpeed;
+
+        // TEMPORARY
+        if (isSprinting)
+        {
+            moveX *= 2f;
+            moveZ *= 2f;
+        }
 
         if (charCont.isGrounded)
         {

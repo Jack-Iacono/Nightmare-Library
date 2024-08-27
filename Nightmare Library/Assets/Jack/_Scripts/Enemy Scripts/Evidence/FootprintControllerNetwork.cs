@@ -20,6 +20,11 @@ public class FootprintControllerNetwork : NetworkBehaviour
 
             OnFootprintDespawn(this, EventArgs.Empty);
         }
+        else
+        {
+            fController.enabled = false;
+            enabled = false;
+        }
 
         gameObject.SetActive(false);
     }
@@ -40,6 +45,8 @@ public class FootprintControllerNetwork : NetworkBehaviour
         {
             transform.position = pos;
             gameObject.SetActive(true);
+
+            fController.Activate();
         }
     }
     [ClientRpc]
@@ -47,7 +54,7 @@ public class FootprintControllerNetwork : NetworkBehaviour
     {
         if (!IsOwner)
         {
-            gameObject.SetActive(false);
+            fController.Deactivate();
         }
     }
 }

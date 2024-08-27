@@ -5,6 +5,7 @@ using System.Globalization;
 using Unity.Burst.CompilerServices;
 using Unity.Netcode;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 [RequireComponent(typeof(Enemy))]
 public class EnemyNetwork : NetworkBehaviour
@@ -35,9 +36,20 @@ public class EnemyNetwork : NetworkBehaviour
         if (IsOwner)
         {
             enemyController.OnPlaySound += OnPlaySound;
-            enemyController.OnSpawnFootprint += OnSpawnFootprint;
+            enemyController.OnHallucination += OnHallucination;
+            enemyController.OnLightFlicker += OnLightFlicker;
 
-            CreateFootprintPool();
+            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
+            {
+                enemyController.OnSpawnFootprint += OnSpawnFootprint;
+                CreateFootprintPool();
+            }
+            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.TRAPPER))
+            {
+                enemyController.OnSpawnTrap += OnSpawnTrap;
+                CreateTrapPool();
+            }
+                
         }
     }
 
@@ -85,6 +97,18 @@ public class EnemyNetwork : NetworkBehaviour
             obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
         }
     }
+    public void CreateTrapPool()
+    {
+        enemyController.objPool.PoolObject(enemyController.trapPrefabOnline, 10, true);
+
+        List<GameObject> list = enemyController.objPool.GetPool(enemyController.trapPrefabOnline);
+
+        foreach (GameObject obj in list)
+        {
+            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
+        }
+    }
+
     public void OnSpawnFootprint(Vector3 pos)
     {
         if (NetworkConnectionController.HasAuthority)
@@ -95,6 +119,44 @@ public class EnemyNetwork : NetworkBehaviour
             print.GetComponent<FootprintController>().Activate();
             print.SetActive(true);
         }
+    }
+    public void OnSpawnTrap(Vector3 pos)
+    {
+        if (NetworkConnectionController.HasAuthority)
+        {
+            var print = enemyController.objPool.GetObject(enemyController.trapPrefabOnline);
+
+            print.transform.position = pos;
+            print.GetComponent<TrapController>().Activate();
+            print.SetActive(true);
+        }
+    }
+
+    private void OnHallucination(object sender, bool b)
+    {
+        if (NetworkConnectionController.HasAuthority)
+        {
+            OnHallucinationClientRpc(b);
+        }
+    }
+    [ClientRpc]
+    private void OnHallucinationClientRpc(bool b)
+    {
+        if (!NetworkManager.IsServer)
+            enemyController.SetHallucinating(b, false);
+    }
+
+    private void OnLightFlicker(object sender, EventArgs e)
+    {
+        if (NetworkConnectionController.HasAuthority)
+        {
+            OnLightFlickerClientRpc();
+        }
+    }
+    [ClientRpc]
+    private void OnLightFlickerClientRpc()
+    {
+        enemyController.FlickerLights(false);
     }
 
     #endregion

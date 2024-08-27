@@ -1,9 +1,9 @@
-using BehaviorTree;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 
-public class ev_Hysterics : Evidence
+public class ev_Hallucinator : Evidence
 {
     protected float baseInteractChance = 0.05f;
     protected float currentInteractChance;
@@ -14,11 +14,17 @@ public class ev_Hysterics : Evidence
     protected float interactCooldownTime = 5f;
     protected float interactCooldownTimer = 0f;
 
+    protected float effectDurationTime = 3f;
+    protected float effectDurationDev = 0.5f;
+    protected float effectDurationTimer = 3f;
+    protected bool isEffectOn = false;
+
     protected bool interactReady = false;
 
     protected float interactRange = 3;
+    protected LayerMask interactLayers = 1 << 7;
 
-    public ev_Hysterics(Enemy owner) : base(owner)
+    public ev_Hallucinator(Enemy owner) : base(owner)
     {
         interactChanceTimer = interactChanceTime;
         interactCooldownTimer = interactCooldownTime;
@@ -28,43 +34,56 @@ public class ev_Hysterics : Evidence
 
     public override void UpdateProcess(float dt)
     {
-        // Check if the enemy is allowed to interact again via cooldown
-        if (interactCooldownTimer > 0)
-            interactCooldownTimer -= dt;
-        else
+        // Check if the effect is over
+        if(effectDurationTimer > 0)
         {
-            if (!interactReady)
+            effectDurationTimer -= dt;
+            if(effectDurationTimer <= 0)
             {
-                CheckInteractReady(dt);
-            }
+                isEffectOn = false;
+                owner.SetHallucinating(false);
+            }  
+        }
+            
+        
+        if(!isEffectOn)
+        {
+            // Check if the enemy is allowed to interact again via cooldown
+            if (interactCooldownTimer > 0)
+                interactCooldownTimer -= dt;
             else
             {
-                Interact();
+                if (interactReady)
+                {
+                    Interact();
+                }
+                else
+                {
+                    CheckInteractReady(dt);
+                }
             }
         }
     }
 
     protected void Interact()
     {
-        Collider[] col = Physics.OverlapSphere(owner.transform.position, interactRange, owner.hystericsInteractionLayers);
-        if(col.Length > 0)
-        {
-            col[0].GetComponent<EnemyInteractable>().EnemyInteract();
+        owner.SetHallucinating(true);
+        effectDurationTimer = Random.Range(effectDurationTime - effectDurationDev, effectDurationTimer + effectDurationDev);
+        isEffectOn = true;
 
-            interactReady = false;
-            interactCooldownTimer = interactCooldownTime;
-        }
+        interactReady = false;
+        interactCooldownTimer = interactCooldownTime;
     }
 
     private void CheckInteractReady(float dt)
     {
         // Check if the timer is running or if it has ended
-        if(interactChanceTimer > 0)
+        if (interactChanceTimer > 0)
             interactChanceTimer -= dt;
         else
         {
             // Check for random chance
-            if(Random.Range(0,1f) < currentInteractChance)
+            if (Random.Range(0, 1f) < currentInteractChance)
             {
                 // Chance succeeded and now the enemy will interact and reset it's odds back to base
                 currentInteractChance = baseInteractChance;

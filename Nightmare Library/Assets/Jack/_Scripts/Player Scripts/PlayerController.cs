@@ -57,10 +57,13 @@ public class PlayerController : MonoBehaviour
 
     private CharacterController charCont;
 
-    public static KeyCode keyInteract = KeyCode.R;
+    public static KeyCode keyInteract = KeyCode.Mouse0;
 
     public event EventHandler OnPlayerAttacked;
     public static event EventHandler OnPlayerKilled;
+
+    private bool isTrapped = false;
+    private float trapTimer = 0;
 
     private void Awake()
     {
@@ -86,9 +89,19 @@ public class PlayerController : MonoBehaviour
     {
         if (!GameController.gamePaused)
         {
-            GetInput();
-            CalculateNormalPlayerMove();
-            MovePlayer();
+            if (!isTrapped)
+            {
+                GetInput();
+                CalculateNormalPlayerMove();
+                MovePlayer();
+            }
+            else
+            {
+                if (trapTimer > 0)
+                    trapTimer -= Time.deltaTime;
+                else
+                    isTrapped = false;
+            }
         }
     }
     private void FixedUpdate()
@@ -188,6 +201,12 @@ public class PlayerController : MonoBehaviour
             SpectatePlayer(aliveIndex);
         else
             camCont.SetEnabled(true);
+    }
+
+    public void Trap(float duration)
+    {
+        isTrapped = true;
+        trapTimer = duration;
     }
 
     public void ActivatePlayer(bool b)

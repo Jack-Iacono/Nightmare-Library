@@ -16,6 +16,7 @@ public class Enemy : MonoBehaviour
 
     [NonSerialized]
     public NavMeshAgent navAgent;
+    private AudioSource audioSrc;
 
     [SerializeField]
     protected Vector3 spawnLocation;
@@ -35,24 +36,44 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
-    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT };
+    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT, TRAPPER, HALLUCINATOR, LIGHT_FLICKER };
     [Header("Evidence Variables")]
+
     [SerializeField]
     public List<EvidenceEnum> evidenceList = new List<EvidenceEnum>();
-
     protected List<Evidence> evidence = new List<Evidence>();
 
-    private AudioSource audioSrc;
+    [Space(10)]
+    public LayerMask hystericsInteractionLayers = 1 << 7;
+
     [Space(10)]
     public AudioClip musicLoverSound;
     public event EventHandler<string> OnPlaySound;
     
-    private List<GameObject> footprintList = new List<GameObject>();
     [Space(10)]
     public GameObject footprintPrefab;
     public GameObject footprintPrefabOnline;
+    private List<GameObject> footprintList = new List<GameObject>();
     public delegate void FootprintDelegate(Vector3 pos);
     public event FootprintDelegate OnSpawnFootprint;
+
+    [Space(10)]
+    public GameObject trapPrefab;
+    public GameObject trapPrefabOnline;
+    public delegate void TrapDelegate(Vector3 pos);
+    public event TrapDelegate OnSpawnTrap;
+
+    [Space(10)]
+    [SerializeField]
+    private MeshRenderer hallucinationMesh;
+    [SerializeField]
+    private Material hallucinationMaterial;
+    public event EventHandler<bool> OnHallucination;
+
+    [Space(10)]
+    public float lightFlickerRange = 40f;
+    public LayerMask lightFlickerInteractionLayers = 1 << 7;
+    public event EventHandler OnLightFlicker;
 
     #region Initialization
 
@@ -103,6 +124,17 @@ public class Enemy : MonoBehaviour
                     evidence.Add(new ev_Footprint(this));
                     if (!NetworkConnectionController.IsRunning)
                         objPool.PoolObject(footprintPrefab, 10);
+                    break;
+                case EvidenceEnum.TRAPPER:
+                    evidence.Add(new ev_Trapper(this));
+                    if (!NetworkConnectionController.IsRunning)
+                        objPool.PoolObject(trapPrefab, 10);
+                    break;
+                case EvidenceEnum.HALLUCINATOR:
+                    evidence.Add(new ev_Hallucinator(this));
+                    break;
+                case EvidenceEnum.LIGHT_FLICKER:
+                    evidence.Add(new ev_Flicker(this));
                     break;
             }
         }
@@ -172,7 +204,55 @@ public class Enemy : MonoBehaviour
             print.transform.position = hit.point;
             print.SetActive(true);
         }
-        
+    }
+    public void SpawnTrap()
+    {
+        Ray ray = new Ray(transform.position, Vector3.down);
+        RaycastHit hit;
+        Physics.Raycast(ray, out hit, 5);
+
+        if (NetworkConnectionController.IsRunning)
+        {
+            OnSpawnTrap?.Invoke(hit.point);
+        }
+        else
+        {
+            var print = objPool.GetObject(trapPrefab);
+
+            print.GetComponent<TrapController>().Activate();
+            print.transform.position = hit.point;
+            print.SetActive(true);
+        }
+
+    }
+    public void SetHallucinating(bool b, bool invokeEvent = true)
+    {
+        if (b)
+        {
+            hallucinationMesh.material = hallucinationMaterial;
+        }
+        else
+        {
+            hallucinationMesh.material = null;
+        }
+
+        if (invokeEvent)
+            OnHallucination?.Invoke(this, b);
+    }
+    public void FlickerLights(bool invokeEvent = true)
+    {
+        Collider[] col = Physics.OverlapSphere(transform.position, lightFlickerRange, lightFlickerInteractionLayers);
+
+        if (col.Length > 0)
+        {
+            for(int i = 0; i < col.Length; i++)
+            {
+                col[i].GetComponent<InteractableLightController>().FlickerLight();
+            }
+        }
+
+        if (invokeEvent)
+            OnLightFlicker?.Invoke(this, EventArgs.Empty);
     }
 
     protected virtual void OnGamePause(object sender, bool e)
@@ -187,6 +267,8 @@ public class Enemy : MonoBehaviour
             activeAttackTree.OnDestroy();
         if(passiveAttackTree != null)
             passiveAttackTree.OnDestroy();
+
+        GameController.OnGamePause -= OnGamePause;
     }
 
     private void OnDrawGizmos()
@@ -195,5 +277,7 @@ public class Enemy : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, fovRange);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, lightFlickerRange);
     }
 }

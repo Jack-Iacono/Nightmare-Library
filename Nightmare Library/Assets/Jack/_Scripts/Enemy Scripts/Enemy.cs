@@ -36,12 +36,16 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
-    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT, TRAPPER, HALLUCINATOR};
+    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT, TRAPPER, HALLUCINATOR, LIGHT_FLICKER };
     [Header("Evidence Variables")]
+
     [SerializeField]
     public List<EvidenceEnum> evidenceList = new List<EvidenceEnum>();
     protected List<Evidence> evidence = new List<Evidence>();
-    
+
+    [Space(10)]
+    public LayerMask hystericsInteractionLayers = 1 << 7;
+
     [Space(10)]
     public AudioClip musicLoverSound;
     public event EventHandler<string> OnPlaySound;
@@ -65,6 +69,11 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     private Material hallucinationMaterial;
     public event EventHandler<bool> OnHallucination;
+
+    [Space(10)]
+    public float lightFlickerRange = 40f;
+    public LayerMask lightFlickerInteractionLayers = 1 << 7;
+    public event EventHandler OnLightFlicker;
 
     #region Initialization
 
@@ -123,6 +132,9 @@ public class Enemy : MonoBehaviour
                     break;
                 case EvidenceEnum.HALLUCINATOR:
                     evidence.Add(new ev_Hallucinator(this));
+                    break;
+                case EvidenceEnum.LIGHT_FLICKER:
+                    evidence.Add(new ev_Flicker(this));
                     break;
             }
         }
@@ -227,6 +239,21 @@ public class Enemy : MonoBehaviour
         if (invokeEvent)
             OnHallucination?.Invoke(this, b);
     }
+    public void FlickerLights(bool invokeEvent = true)
+    {
+        Collider[] col = Physics.OverlapSphere(transform.position, lightFlickerRange, lightFlickerInteractionLayers);
+
+        if (col.Length > 0)
+        {
+            for(int i = 0; i < col.Length; i++)
+            {
+                col[i].GetComponent<InteractableLightController>().FlickerLight();
+            }
+        }
+
+        if (invokeEvent)
+            OnLightFlicker?.Invoke(this, EventArgs.Empty);
+    }
 
     protected virtual void OnGamePause(object sender, bool e)
     {
@@ -250,5 +277,7 @@ public class Enemy : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, fovRange);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, lightFlickerRange);
     }
 }

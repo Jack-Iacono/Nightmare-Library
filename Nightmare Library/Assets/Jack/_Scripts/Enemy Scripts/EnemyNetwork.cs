@@ -37,6 +37,7 @@ public class EnemyNetwork : NetworkBehaviour
         {
             enemyController.OnPlaySound += OnPlaySound;
             enemyController.OnHallucination += OnHallucination;
+            enemyController.OnLightFlicker += OnLightFlicker;
 
             if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
             {
@@ -143,6 +144,19 @@ public class EnemyNetwork : NetworkBehaviour
     {
         if (!NetworkManager.IsServer)
             enemyController.SetHallucinating(b, false);
+    }
+
+    private void OnLightFlicker(object sender, EventArgs e)
+    {
+        if (NetworkConnectionController.HasAuthority)
+        {
+            OnLightFlickerClientRpc();
+        }
+    }
+    [ClientRpc]
+    private void OnLightFlickerClientRpc()
+    {
+        enemyController.FlickerLights(false);
     }
 
     #endregion

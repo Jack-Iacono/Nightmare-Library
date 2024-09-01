@@ -9,7 +9,6 @@ public class DeskController : MonoBehaviour
 
     public static List<PlayerController> playersAtDesk = new List<PlayerController>();
 
-    public GameObject offlineIdolPrefab;
     public List<GameObject> idolGameObjects = new List<GameObject>();
 
     private void Awake()

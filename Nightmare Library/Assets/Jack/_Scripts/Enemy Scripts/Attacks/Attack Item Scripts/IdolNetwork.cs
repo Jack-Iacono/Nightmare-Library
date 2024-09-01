@@ -13,18 +13,13 @@ public class IdolNetwork : NetworkBehaviour
     {
         parent = GetComponent<IdolController>();
 
-        parent.OnHit += OnHit;
         parent.OnClick += OnClick;
 
         if (IsOwner)
             parent.OnIdolActivated += OnIdolActivated;
     }
 
-    private void OnHit(object sender, EventArgs e)
-    {
-        throw new NotImplementedException();
-    }
-    private void OnClick(object sender, EventArgs e)
+    private void OnClick(bool fromNetwork = false)
     {
         if (!IsOwner)
             TransmitClickServerRpc(NetworkManager.LocalClientId);

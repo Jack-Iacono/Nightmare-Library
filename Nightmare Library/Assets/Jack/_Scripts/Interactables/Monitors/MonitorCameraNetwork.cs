@@ -15,12 +15,15 @@ public class MonitorCameraNetwork : NetworkBehaviour
         parent.OnPlace += OnPlace;
     }
 
-    private void OnPickup()
+    private void OnPickup(bool fromNetwork = false)
     {
-        if (IsOwner)
-            OnPickupClientRpc(NetworkManager.LocalClientId);
-        else
-            OnPickupServerRpc(NetworkManager.LocalClientId);
+        if (!fromNetwork)
+        {
+            if (IsOwner)
+                OnPickupClientRpc(NetworkManager.LocalClientId);
+            else
+                OnPickupServerRpc(NetworkManager.LocalClientId);
+        }
     }
     [ServerRpc(RequireOwnership = false)]
     private void OnPickupServerRpc(ulong sender)
@@ -31,15 +34,18 @@ public class MonitorCameraNetwork : NetworkBehaviour
     private void OnPickupClientRpc(ulong sender)
     {
         if (NetworkManager.LocalClientId != sender)
-            parent.Pickup(false);
+            parent.Pickup(true);
     }
 
-    private void OnPlace(Vector3 pos, Quaternion rot)
+    private void OnPlace(bool fromNetwork = false)
     {
-        if (IsOwner)
-            OnPlaceClientRpc(NetworkManager.LocalClientId, pos, rot);
-        else
-            OnPlaceServerRpc(NetworkManager.LocalClientId,pos, rot);
+        if (!fromNetwork)
+        {
+            if (IsOwner)
+                OnPlaceClientRpc(NetworkManager.LocalClientId, transform.position, transform.rotation);
+            else
+                OnPlaceServerRpc(NetworkManager.LocalClientId, transform.position, transform.rotation);
+        }
     }
     [ServerRpc(RequireOwnership = false)]
     private void OnPlaceServerRpc(ulong sender, Vector3 pos, Quaternion rot)

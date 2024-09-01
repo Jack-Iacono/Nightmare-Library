@@ -44,11 +44,11 @@ public class PlayerControllerNetwork : NetworkBehaviour
         if(IsOwner)
         {
             ownerInstance = this;
-            playerCont.ActivatePlayer(true);
+            playerCont.Activate(true);
         }
         else
         {
-            playerCont.ActivatePlayer(false);
+            playerCont.Activate(false);
         }
 
         players.Add(this);
@@ -84,14 +84,14 @@ public class PlayerControllerNetwork : NetworkBehaviour
     #region Player Attacked
     public void OnPlayerAttacked(object sender, EventArgs e)
     {
-        playerCont.KillPlayer();
+        playerCont.Kill();
         OnPlayerAttackedClientRpc();
     }
     [ClientRpc]
     private void OnPlayerAttackedClientRpc()
     {
         if(!IsServer)
-            playerCont.KillPlayer();
+            playerCont.Kill();
     }
     #endregion
 

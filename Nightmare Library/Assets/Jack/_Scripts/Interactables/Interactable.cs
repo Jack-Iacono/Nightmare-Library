@@ -3,106 +3,71 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Interactable : MonoBehaviour
+public abstract class Interactable : MonoBehaviour
 {
+    // Used for quick interactable look up
+    public static Dictionary<GameObject, Interactable> interactables { get; private set; } = new Dictionary<GameObject, Interactable>();
+
     [Header("Interactable Variables")]
     [SerializeField]
-    protected Collider interactCollider;
-
+    public bool allowPlayerClick = false;
     [SerializeField]
-    protected float interactRange = 5;
-    protected bool inRange = false;
-    protected bool canInteract = true;
-    
-    protected enum InteractionType { CLICK, HIT }
+    public bool allowPlayerPickup = false;
     [SerializeField]
-    protected List<InteractionType> interactionTypes = new List<InteractionType>();
-
+    public bool allowEnemyHysterics = false;
     [SerializeField]
-    protected LayerMask interactionLayers;
+    public bool allowEnemyFlicker = false;
 
-    public event EventHandler OnHit;
-    public event EventHandler OnClick;
+    public delegate void OnClickDelegate(bool fromNetwork = false);
+    public event OnClickDelegate OnClick;
+    public delegate void OnPickupDelegate(bool fromNetwork = false);
+    public event OnPickupDelegate OnPickup;
+    public delegate void OnPlaceDelegate(bool fromNetwork = false);
+    public event OnPlaceDelegate OnPlace;
 
-    // Update is called once per frame
-    protected virtual void Update()
+    public delegate void OnEnemyInteractHystericsDelegate(bool fromNetwork = false);
+    public event OnEnemyInteractHystericsDelegate OnEnemyInteractHysterics;
+    public delegate void OnEnemyInteractFlickerDelegate(bool fromNetwork = false);
+    public event OnEnemyInteractFlickerDelegate OnEnemyInteractFlicker;
+
+    protected virtual void Awake()
     {
-        if(
-            inRange &&
-            Input.GetKeyDown(PlayerController.keyInteract) && 
-            PlayerController.ownerInstance.camCont.GetCameraSight(interactCollider)
-        )
-        {
-            Click();
-        }
-
-        CheckRange();
+        interactables.Add(gameObject, this);
     }
-    private void CheckRange()
+
+    public virtual void Click(bool fromNetwork = false)
     {
-        if(PlayerController.ownerInstance != null)
+        OnClick?.Invoke(fromNetwork);
+    }
+    public virtual void Pickup(bool fromNetwork = false)
+    {
+        if (InventoryController.Instance.AddItem(gameObject))
         {
-            Collider[] col = Physics.OverlapSphere(transform.position, interactRange, interactionLayers);
-
-            if (col.Length > 0)
-            {
-                bool playerFound = false;
-
-                foreach (Collider c in col)
-                {
-                    if (c.gameObject == PlayerController.ownerInstance.gameObject)
-                    {
-                        if (!inRange)
-                        {
-                            inRange = true;
-                            OnEnterRange();
-                        }
-
-                        playerFound = true;
-                        break;
-                    }
-                }
-
-                if (!playerFound && inRange)
-                {
-                    inRange = false;
-                    OnExitRange();
-                }
-            }
-            else if (inRange)
-            {
-                inRange = false;
-                OnExitRange();
-            }
+            gameObject.SetActive(false);
+            OnPickup?.Invoke(fromNetwork);
         }
     }
+    public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
+    {
+        gameObject.SetActive(true);
 
-    public virtual void Click()
-    {
-        Debug.Log("Click");
-        OnClick?.Invoke(this, EventArgs.Empty);
-    }
-    public virtual void Hit()
-    {
-        Debug.Log("Hit");
-        OnHit?.Invoke(this, EventArgs.Empty);
+        transform.position = pos;
+        transform.rotation = rot;
+
+        OnPlace?.Invoke(fromNetwork);
     }
 
-    protected virtual void OnEnterRange()
+    public virtual void EnemyInteractHysterics(bool fromNetwork = false)
     {
-        //Debug.Log("Enter Range");
+        OnEnemyInteractHysterics?.Invoke(fromNetwork);
     }
-    protected virtual void OnExitRange()
+    public virtual void EnemyInteractFlicker(bool fromNetwork = false)
     {
-        //Debug.Log("Exit Range");
+        OnEnemyInteractFlicker?.Invoke(fromNetwork);
     }
 
-    private void OnDrawGizmos()
+    private void OnDestroy()
     {
-        if(inRange)
-            Gizmos.color = Color.green;
-        else
-            Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, interactRange);
+        interactables.Remove(gameObject);
     }
 }

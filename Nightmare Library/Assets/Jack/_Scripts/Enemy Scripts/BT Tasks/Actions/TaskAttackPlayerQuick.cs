@@ -26,7 +26,7 @@ public class TaskAttackPlayerQuick : TaskWait
         PlayerController player = (PlayerController)GetData(CheckInAttackRange.ATTACK_TARGET_KEY);
         if(player != null)
         {
-            player.AttackPlayer();
+            player.ReceiveAttack();
         }
 
     }

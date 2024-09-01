@@ -11,7 +11,7 @@ public class TaskAttackPlayerPassive : Node
     {
         foreach(PlayerController player in DeskController.playersAtDesk)
         {
-            player.AttackPlayer();
+            player.ReceiveAttack();
         }
 
         return Status.SUCCESS;

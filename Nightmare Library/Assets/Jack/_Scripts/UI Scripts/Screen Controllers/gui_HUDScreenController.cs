@@ -7,6 +7,13 @@ public class gui_HUDScreenController : ScreenController
 {
     [SerializeField]
     private TMP_Text timerText;
+    [SerializeField]
+    private TMP_Text inventoryText;
+
+    private void Start()
+    {
+        InventoryController.Instance.onHeldItemChanged += OnInventoryHeldItemChanged;
+    }
 
     private void Update()
     {
@@ -33,5 +40,11 @@ public class gui_HUDScreenController : ScreenController
 
         return timeString;
     }
-
+    private void OnInventoryHeldItemChanged(InventoryItem item)
+    {
+        if (item.realObject != null)
+            inventoryText.text = item.realObject.name;
+        else
+            inventoryText.text = "Empty";
+    }
 }

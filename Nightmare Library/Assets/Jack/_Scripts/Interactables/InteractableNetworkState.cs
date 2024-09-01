@@ -26,7 +26,6 @@ public class InteractableNetworkState : NetworkBehaviour
 
         parent = GetComponent<Interactable>();
 
-        parent.OnHit += OnHit;
         parent.OnClick += OnClick;
     }
 
@@ -62,12 +61,15 @@ public class InteractableNetworkState : NetworkBehaviour
         contState.Value = state;
     }
 
-    private void OnClick(object sender, EventArgs e)
+    private void OnClick(bool fromNetwork = false)
     {
-        if (IsOwner)
-            ConsumeClickClientRpc(NetworkManager.LocalClientId);
-        else
-            TransmitClickServerRpc(NetworkManager.LocalClientId);
+        if (!fromNetwork)
+        {
+            if (IsOwner)
+                ConsumeClickClientRpc(NetworkManager.LocalClientId);
+            else
+                TransmitClickServerRpc(NetworkManager.LocalClientId);
+        }
     }
     private void OnHit(object sender, EventArgs e)
     {

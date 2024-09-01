@@ -73,7 +73,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 247
+    m_Bits: 1783
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -289,6 +289,7 @@ GameObject:
   - component: {fileID: 5277981915099947413}
   - component: {fileID: 5474594209864994712}
   - component: {fileID: 1162553893588703299}
+  - component: {fileID: 3932436536211899181}
   - component: {fileID: 6176258763298536126}
   m_Layer: 6
   m_Name: Offline Player
@@ -412,7 +413,23 @@ MonoBehaviour:
   airDeceleration: 30
   environmentLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 1
+--- !u!114 &3932436536211899181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8304355550611021137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53b7ce7345f1e1a48b1dfa1908e72cfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interactDistance: 10
+  interactLayers:
+    serializedVersion: 2
+    m_Bits: 1025
 --- !u!143 &6176258763298536126
 CharacterController:
   m_ObjectHideFlags: 0

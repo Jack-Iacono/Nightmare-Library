@@ -21,7 +21,7 @@ public class IdolController : Interactable
         this.idolSpawner = idolSpawner;
     }
 
-    public override void Click()
+    public override void Click(bool fromNetwork = false)
     {
         if(NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient || NetworkManager.Singleton.IsServer)
             RemoveIdol();

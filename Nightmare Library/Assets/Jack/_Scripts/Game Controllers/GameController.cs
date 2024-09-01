@@ -59,11 +59,6 @@ public class GameController : MonoBehaviour
                 gameTimer -= Time.deltaTime;
             else
                 EndGame();
-
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                PauseGame(!gamePaused);
-            }
         }
     }
 

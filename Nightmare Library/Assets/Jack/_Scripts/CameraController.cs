@@ -40,7 +40,7 @@ public class CameraController : MonoBehaviour
             MoveCamera();
 
             // TEMPORARY!!!!
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.R))
             {
                 Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ? CursorLockMode.None : CursorLockMode.Locked;
             }

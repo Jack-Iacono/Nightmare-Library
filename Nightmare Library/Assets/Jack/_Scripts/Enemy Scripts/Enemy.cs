@@ -154,7 +154,7 @@ public class Enemy : MonoBehaviour
         float dt = Time.deltaTime;
 
         activeAttackTree.UpdateTree(dt);
-        passiveAttackTree.UpdateTree(dt);
+        passiveAttackTree.Update(dt);
 
         foreach (Evidence e in evidence)
         {

@@ -9,8 +9,6 @@ public class DeskController : MonoBehaviour
 
     public static List<PlayerController> playersAtDesk = new List<PlayerController>();
 
-    public List<GameObject> idolGameObjects = new List<GameObject>();
-
     private void Awake()
     {
         if (instance != null)
@@ -38,18 +36,6 @@ public class DeskController : MonoBehaviour
         {
             playersAtDesk.Remove(other.GetComponent<PlayerController>());
         }
-    }
-
-    public List<IdolController> GetIdolControllers(TaskSpawnIdols idolSpawner)
-    {
-        List<IdolController> idols = new List<IdolController>();
-        foreach(GameObject g in idolGameObjects)
-        {
-            IdolController iCont = g.GetComponent<IdolController>();
-            iCont.Initialize(idolSpawner);
-            idols.Add(iCont);
-        }
-        return idols;
     }
 
     private void OnDestroy()

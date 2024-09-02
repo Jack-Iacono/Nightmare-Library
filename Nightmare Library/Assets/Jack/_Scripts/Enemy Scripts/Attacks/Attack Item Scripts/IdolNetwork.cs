@@ -5,33 +5,33 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(IdolController))]
-public class IdolNetwork : NetworkBehaviour
+public class IdolNetwork : InteractableNetwork
 {
-    private IdolController parent;
+    private IdolController idolCont;
 
     public override void OnNetworkSpawn()
     {
-        parent = GetComponent<IdolController>();
-
-        parent.OnClick += OnClick;
-
+        base.OnNetworkSpawn();
+        idolCont = GetComponent<IdolController>();
+        
         if (IsOwner)
-            parent.OnIdolActivated += OnIdolActivated;
+            idolCont.OnIdolActivated += OnIdolActivated;
     }
 
-    private void OnClick(bool fromNetwork = false)
+    protected override void OnClick(bool fromNetwork = false)
     {
         if (!IsOwner)
             TransmitClickServerRpc(NetworkManager.LocalClientId);
     }
     [ServerRpc(RequireOwnership = false)]
-    private void TransmitClickServerRpc(ulong sender)
+    protected override void TransmitClickServerRpc(ulong sender)
     {
-        parent.RemoveIdol();
+        idolCont.Remove();
     }
 
     private void OnIdolActivated(object sender, bool b)
     {
+        Debug.Log("Check");
         if (IsOwner)
         {
             ConsumeIdolCountChangeClientRpc(b);

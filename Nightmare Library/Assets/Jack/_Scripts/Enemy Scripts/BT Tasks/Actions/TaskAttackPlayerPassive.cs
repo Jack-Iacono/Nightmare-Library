@@ -9,6 +9,7 @@ public class TaskAttackPlayerPassive : Node
 
     public override Status Check(float dt)
     {
+        Debug.Log("Running");
         foreach(PlayerController player in DeskController.playersAtDesk)
         {
             player.ReceiveAttack();

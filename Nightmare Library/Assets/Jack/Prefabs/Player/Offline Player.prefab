@@ -430,6 +430,7 @@ MonoBehaviour:
   interactLayers:
     serializedVersion: 2
     m_Bits: 1025
+  placementMaterial: {fileID: 2100000, guid: 2b949a86e09e35f4793bc8227e65dd46, type: 2}
 --- !u!143 &6176258763298536126
 CharacterController:
   m_ObjectHideFlags: 0

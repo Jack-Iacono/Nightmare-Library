@@ -11,6 +11,9 @@ public abstract class Interactable : MonoBehaviour
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
 
+    [SerializeField]
+    public bool precisePlacement = false;
+
     // Contains the mesh renderer as well as the default mesh
     private Dictionary<MeshRenderer, Material> renderMaterialList = new Dictionary<MeshRenderer, Material>();
     private List<Collider> colliders = new List<Collider>();

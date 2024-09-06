@@ -4,6 +4,7 @@ using Unity.Burst.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using static Interactable;
+using static UnityEditor.Progress;
 
 [RequireComponent(typeof(PlayerController))]
 public class PlayerInteractionController : MonoBehaviour
@@ -32,7 +33,9 @@ public class PlayerInteractionController : MonoBehaviour
     private bool actionBuffering = false;
 
     [SerializeField]
-    public Material placementMaterial;
+    private Material placementMaterial;
+    private bool isPlacingItem = false;
+    private Interactable currentPlacingItem;
 
     // Start is called before the first frame update
     void Start()
@@ -84,42 +87,70 @@ public class PlayerInteractionController : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit, interactDistance, interactLayers))
             {
-                if (isPlaceStart)
+                InventoryItem temp = InventoryController.Instance.GetCurrentItem();
+                if (!temp.IsEmpty())
+                    currentPlacingItem = interactables[temp.realObject];
+
+                if (currentPlacingItem != null)
                 {
-                    Interactable item = interactables[InventoryController.Instance.GetCurrentItem().realObject];
-                    item.SetMeshMaterial(placementMaterial);
-                    item.EnableMesh(true);
-                }
-                else if (isPlacing)
-                {
-                    GameObject item = InventoryController.Instance.GetCurrentItem().realObject;
-                    item.transform.position = hit.point;
-                    item.transform.Rotate(Vector3.up, 10f * Time.deltaTime);
-                }
-                else if (isPlaceFinish)
-                {
-                    Interactable item = interactables[InventoryController.Instance.GetCurrentItem().realObject];
-                    PlacementType type = CheckPlacementType(hit);
-                    
-                    if (item != null && item.placementTypes.Contains(type))
+                    if (isPlaceStart)
                     {
-                        switch(type)
+                        currentPlacingItem.SetMeshMaterial(placementMaterial);
+                        currentPlacingItem.EnableMesh(true);
+
+                        if (currentPlacingItem.precisePlacement)
                         {
-                            case PlacementType.FLOOR:
-                                item.Place(hit.point, item.transform.rotation);
-                                break;
-                            case PlacementType.CEILING:
-                                item.Place(hit);
-                                break;
-                            case PlacementType.WALL:
-                                item.Place(hit);
-                                break;
+                            currentPlacingItem.transform.position = hit.point;
+                            playerCont.Lock(true);
                         }
 
-                        InventoryController.Instance.RemoveCurrentItem();
+                        isPlacingItem = true;
                     }
+                    else if (isPlacing && isPlacingItem)
+                    {
+                        PlacementType type = CheckPlacementType(hit);
 
-                    actionBuffering = true;
+                        if (currentPlacingItem != null && currentPlacingItem.placementTypes.Contains(type))
+                        {
+                            if (currentPlacingItem.precisePlacement)
+                            {
+                                Debug.Log(Input.GetAxis("Mouse X"));
+                                currentPlacingItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                            }
+                            else
+                            {
+                                currentPlacingItem.transform.position = hit.point;
+                                currentPlacingItem.transform.LookAt(hit.point + hit.normal);
+                            }
+                        }
+                    }
+                    else if (isPlaceFinish && isPlacingItem)
+                    {
+                        PlacementType type = CheckPlacementType(hit);
+
+                        if (currentPlacingItem.placementTypes.Contains(type))
+                        {
+                            switch (type)
+                            {
+                                case PlacementType.FLOOR:
+                                    currentPlacingItem.Place(hit.point, currentPlacingItem.transform.rotation);
+                                    break;
+                                case PlacementType.CEILING:
+                                    currentPlacingItem.Place(hit);
+                                    break;
+                                case PlacementType.WALL:
+                                    currentPlacingItem.Place(hit);
+                                    break;
+                            }
+
+                            InventoryController.Instance.RemoveCurrentItem();
+                        }
+
+                        isPlacingItem = false;
+                        playerCont.Lock(false);
+                        currentPlacingItem = null;
+                        actionBuffering = true;
+                    }
                 }
 
                 if (interactables.ContainsKey(hit.collider.gameObject))
@@ -131,6 +162,14 @@ public class PlayerInteractionController : MonoBehaviour
 
                     actionBuffering = true;
                 }
+            }
+            else if(isPlacingItem)
+            {
+                // Resets the item if it was being placed and the player is now too far from the placement range
+                currentPlacingItem.ResetMeshMaterial();
+                currentPlacingItem.EnableMesh(false);
+                isPlacingItem = false;
+                playerCont.Lock(false);
             }
         }
     }

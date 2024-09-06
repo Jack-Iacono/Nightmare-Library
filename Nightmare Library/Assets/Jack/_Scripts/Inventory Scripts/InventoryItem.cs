@@ -29,4 +29,9 @@ public class InventoryItem
         realObject = null;
         isEmpty = true;
     }
+
+    public bool IsEmpty()
+    {
+        return isEmpty; 
+    }
 }

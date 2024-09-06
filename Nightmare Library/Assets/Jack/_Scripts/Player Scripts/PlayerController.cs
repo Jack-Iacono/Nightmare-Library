@@ -229,6 +229,11 @@ public class PlayerController : MonoBehaviour
             ownerInstance = this;
         }
     }
+    public void Lock(bool b)
+    {
+        enabled = !b;
+        camCont.enabled = !b;
+    }
 
     public static void SpectatePlayer(int index)
     {

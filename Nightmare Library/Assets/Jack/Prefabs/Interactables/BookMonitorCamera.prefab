@@ -47,6 +47,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   placementTypes: 0000000001000000
+  precisePlacement: 1
   allowPlayerClick: 0
   allowPlayerPickup: 1
   allowEnemyHysterics: 0

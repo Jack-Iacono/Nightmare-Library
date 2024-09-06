@@ -10,13 +10,19 @@ public abstract class Interactable : MonoBehaviour
 
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
+    public bool placePerp = false;
 
     [SerializeField]
     public bool precisePlacement = false;
 
     // Contains the mesh renderer as well as the default mesh
     private Dictionary<MeshRenderer, Material> renderMaterialList = new Dictionary<MeshRenderer, Material>();
+
     private List<Collider> colliders = new List<Collider>();
+    private Vector3 mainColliderSize = Vector3.zero;
+
+    private bool hasRigidBody = false;
+    protected Rigidbody rb;
 
     [Header("Interactable Variables")]
     [SerializeField]
@@ -48,10 +54,14 @@ public abstract class Interactable : MonoBehaviour
         {
             renderMaterialList.Add(r, r.material);
         }
+
         foreach(Collider col in GetComponentsInChildren<Collider>())
         {
             colliders.Add(col);
         }
+        mainColliderSize = colliders[0].bounds.size;
+
+        hasRigidBody = TryGetComponent(out rb);
     }
 
     public virtual void Click(bool fromNetwork = false)
@@ -60,33 +70,39 @@ public abstract class Interactable : MonoBehaviour
     }
     public virtual void Pickup(bool fromNetwork = false)
     {
-        if (InventoryController.Instance.AddItem(gameObject))
+        // Decyphers between local pickup and pickup via notification
+        if (!fromNetwork)
+        {
+            if (InventoryController.Instance.AddItem(gameObject))
+            {
+                EnableColliders(false);
+                EnableMesh(false);
+                OnPickup?.Invoke(fromNetwork);
+            }
+        }
+        else
         {
             EnableColliders(false);
             EnableMesh(false);
             OnPickup?.Invoke(fromNetwork);
         }
+        
     }
 
-    public virtual void Place(RaycastHit hit, bool fromNetwork = false)
+    public virtual void Place(bool fromNetwork = false)
     {
-        transform.position = hit.point;
-        transform.LookAt(hit.point + hit.normal);
-        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
-        Place(transform.position, transform.rotation, fromNetwork);
-    }
-    public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
-    {
-        gameObject.SetActive(true);
-
-        transform.position = pos;
-        transform.rotation = rot;
-
         EnableColliders(true);
         EnableMesh(true);
         ResetMeshMaterial();
 
         OnPlace?.Invoke(fromNetwork);
+    }
+    public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
+    {
+        transform.position = pos;
+        transform.rotation = rot;
+
+        Place(fromNetwork);
     }
 
     public virtual void EnemyInteractHysterics(bool fromNetwork = false)
@@ -104,6 +120,8 @@ public abstract class Interactable : MonoBehaviour
         {
             c.enabled = b;
         }
+        if (hasRigidBody)
+            rb.isKinematic = !b;
     }
 
     public void EnableMesh(bool b)
@@ -126,6 +144,11 @@ public abstract class Interactable : MonoBehaviour
         {
             r.material = renderMaterialList[r];
         }
+    }
+
+    public Vector3 GetColliderSize()
+    {
+        return mainColliderSize;
     }
 
     private void OnDestroy()

@@ -27,11 +27,11 @@ public class MonitorCameraController : Interactable
 
         base.Pickup();
     }
-    public override void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
+    public override void Place(bool fromNetwork = false)
     {
         SetBroadcasting(true);
 
-        base.Place(pos, rot, fromNetwork);
+        base.Place(fromNetwork);
     }
 
     public void SetBroadcasting(bool b)

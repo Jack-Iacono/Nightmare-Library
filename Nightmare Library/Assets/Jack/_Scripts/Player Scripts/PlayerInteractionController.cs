@@ -4,7 +4,6 @@ using Unity.Burst.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using static Interactable;
-using static UnityEditor.Progress;
 
 [RequireComponent(typeof(PlayerController))]
 public class PlayerInteractionController : MonoBehaviour
@@ -25,7 +24,7 @@ public class PlayerInteractionController : MonoBehaviour
     private bool isClick = false;
 
     private bool isPlaceStart = false;
-    private bool isPlacing = false;
+    private bool isPlacePressed = false;
     private bool isPlaceFinish = false;
 
     private float actionBufferTime = 0.5f;
@@ -74,9 +73,9 @@ public class PlayerInteractionController : MonoBehaviour
 
         isPlaceStart = Input.GetKeyDown(keyPlace);
         isPlaceFinish = Input.GetKeyUp(keyPlace);
-        isPlacing = Input.GetKey(keyPlace);
+        isPlacePressed = Input.GetKey(keyPlace);
         
-        isActive = isClick || isPickup || isPlaceFinish || isPlacing || isPlaceStart;
+        isActive = isClick || isPickup || isPlaceFinish || isPlacePressed || isPlaceStart;
     }
     private void Check()
     {
@@ -100,13 +99,29 @@ public class PlayerInteractionController : MonoBehaviour
 
                         if (currentPlacingItem.precisePlacement)
                         {
-                            currentPlacingItem.transform.position = hit.point;
+                            PlacementType type = CheckPlacementType(hit);
+
+                            switch (type) 
+                            {
+                                case PlacementType.FLOOR:
+                                    currentPlacingItem.transform.position = hit.point + new Vector3(0, currentPlacingItem.GetColliderSize().y / 2, 0);
+                                    currentPlacingItem.transform.LookAt(new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z));
+                                    break;
+                                case PlacementType.WALL:
+                                    currentPlacingItem.transform.position = hit.point;
+                                    if (currentPlacingItem.placePerp)
+                                        currentPlacingItem.transform.LookAt(hit.point + hit.normal);
+                                    else
+                                        currentPlacingItem.transform.LookAt(hit.point + hit.normal);
+                                    break;
+                            }
+                            
                             playerCont.Lock(true);
                         }
 
                         isPlacingItem = true;
                     }
-                    else if (isPlacing && isPlacingItem)
+                    else if (isPlacePressed && isPlacingItem)
                     {
                         PlacementType type = CheckPlacementType(hit);
 
@@ -114,13 +129,27 @@ public class PlayerInteractionController : MonoBehaviour
                         {
                             if (currentPlacingItem.precisePlacement)
                             {
-                                Debug.Log(Input.GetAxis("Mouse X"));
-                                currentPlacingItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                currentPlacingItem.transform.Rotate(hit.normal, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                             }
                             else
                             {
-                                currentPlacingItem.transform.position = hit.point;
-                                currentPlacingItem.transform.LookAt(hit.point + hit.normal);
+                                switch (type)
+                                {
+                                    case PlacementType.FLOOR:
+                                        currentPlacingItem.transform.position = hit.point + new Vector3(0, currentPlacingItem.GetColliderSize().y / 2, 0);
+                                        if (currentPlacingItem.placePerp)
+                                            currentPlacingItem.transform.LookAt(hit.point + hit.normal);
+                                        else
+                                            currentPlacingItem.transform.LookAt(new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z));
+                                        break;
+                                    case PlacementType.WALL:
+                                        currentPlacingItem.transform.position = hit.point;
+                                        if (currentPlacingItem.placePerp)
+                                            currentPlacingItem.transform.LookAt(hit.point + hit.normal);
+                                        else
+                                            currentPlacingItem.transform.LookAt(hit.point + hit.normal);
+                                        break;
+                                }
                             }
                         }
                     }
@@ -130,19 +159,7 @@ public class PlayerInteractionController : MonoBehaviour
 
                         if (currentPlacingItem.placementTypes.Contains(type))
                         {
-                            switch (type)
-                            {
-                                case PlacementType.FLOOR:
-                                    currentPlacingItem.Place(hit.point, currentPlacingItem.transform.rotation);
-                                    break;
-                                case PlacementType.CEILING:
-                                    currentPlacingItem.Place(hit);
-                                    break;
-                                case PlacementType.WALL:
-                                    currentPlacingItem.Place(hit);
-                                    break;
-                            }
-
+                            currentPlacingItem.Place();
                             InventoryController.Instance.RemoveCurrentItem();
                         }
 

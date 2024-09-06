@@ -8,6 +8,13 @@ public abstract class Interactable : MonoBehaviour
     // Used for quick interactable look up
     public static Dictionary<GameObject, Interactable> interactables { get; private set; } = new Dictionary<GameObject, Interactable>();
 
+    public enum PlacementType { FLOOR, WALL, CEILING }
+    public List<PlacementType> placementTypes = new List<PlacementType>();
+
+    // Contains the mesh renderer as well as the default mesh
+    private Dictionary<MeshRenderer, Material> renderMaterialList = new Dictionary<MeshRenderer, Material>();
+    private List<Collider> colliders = new List<Collider>();
+
     [Header("Interactable Variables")]
     [SerializeField]
     public bool allowPlayerClick = false;
@@ -33,6 +40,15 @@ public abstract class Interactable : MonoBehaviour
     protected virtual void Awake()
     {
         interactables.Add(gameObject, this);
+
+        foreach(MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
+        {
+            renderMaterialList.Add(r, r.material);
+        }
+        foreach(Collider col in GetComponentsInChildren<Collider>())
+        {
+            colliders.Add(col);
+        }
     }
 
     public virtual void Click(bool fromNetwork = false)
@@ -43,9 +59,18 @@ public abstract class Interactable : MonoBehaviour
     {
         if (InventoryController.Instance.AddItem(gameObject))
         {
-            gameObject.SetActive(false);
+            EnableColliders(false);
+            EnableMesh(false);
             OnPickup?.Invoke(fromNetwork);
         }
+    }
+
+    public virtual void Place(RaycastHit hit, bool fromNetwork = false)
+    {
+        transform.position = hit.point;
+        transform.LookAt(hit.point + hit.normal);
+        transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
+        Place(transform.position, transform.rotation, fromNetwork);
     }
     public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
@@ -53,6 +78,10 @@ public abstract class Interactable : MonoBehaviour
 
         transform.position = pos;
         transform.rotation = rot;
+
+        EnableColliders(true);
+        EnableMesh(true);
+        ResetMeshMaterial();
 
         OnPlace?.Invoke(fromNetwork);
     }
@@ -64,6 +93,36 @@ public abstract class Interactable : MonoBehaviour
     public virtual void EnemyInteractFlicker(bool fromNetwork = false)
     {
         OnEnemyInteractFlicker?.Invoke(fromNetwork);
+    }
+
+    public void EnableColliders(bool b)
+    {
+        foreach(Collider c in colliders)
+        {
+            c.enabled = b;
+        }
+    }
+
+    public void EnableMesh(bool b)
+    {
+        foreach(MeshRenderer r in renderMaterialList.Keys)
+        {
+            r.enabled = b;
+        }
+    }
+    public void SetMeshMaterial(Material mat)
+    {
+        foreach (MeshRenderer r in renderMaterialList.Keys)
+        {
+            r.material = mat;
+        }
+    }
+    public void ResetMeshMaterial()
+    {
+        foreach (MeshRenderer r in renderMaterialList.Keys)
+        {
+            r.material = renderMaterialList[r];
+        }
     }
 
     private void OnDestroy()

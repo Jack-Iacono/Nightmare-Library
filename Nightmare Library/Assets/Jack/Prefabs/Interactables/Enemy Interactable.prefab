@@ -68,8 +68,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7554d7334cfe6624d92eb7d19dbe180c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  allowPlayerClick: 1
-  allowPlayerInteract: 1
+  placementTypes: 
+  allowPlayerClick: 0
+  allowPlayerPickup: 0
   allowEnemyHysterics: 1
   allowEnemyFlicker: 0
 --- !u!54 &848618968928024411

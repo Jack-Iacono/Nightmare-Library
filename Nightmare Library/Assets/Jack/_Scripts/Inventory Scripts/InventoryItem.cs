@@ -5,6 +5,7 @@ using UnityEngine;
 public class InventoryItem
 {
     public bool isEmpty { get; private set; } = true;
+
     public GameObject realObject;
 
     public InventoryItem()

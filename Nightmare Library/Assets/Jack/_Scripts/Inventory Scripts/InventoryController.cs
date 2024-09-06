@@ -68,17 +68,16 @@ public class InventoryController : MonoBehaviour
 
         return true;
     }
-    public GameObject RemoveItem()
+    public bool RemoveCurrentItem()
     {
         if (!inventoryItems[currentItemIndex].isEmpty)
         {
-            GameObject g = inventoryItems[currentItemIndex].realObject;
             inventoryItems[currentItemIndex].Clear();
             onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
-            return g;
+            return true;
         }
 
-        return null;
+        return false;
     }
     
     public bool HasOpenSlot()

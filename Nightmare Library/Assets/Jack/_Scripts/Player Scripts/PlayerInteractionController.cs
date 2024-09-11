@@ -167,19 +167,28 @@ public class PlayerInteractionController : MonoBehaviour
         switch (type)
         {
             case PlacementType.FLOOR:
-                float xRot = Mathf.Atan2(Mathf.Sqrt(-hit.normal.x * -hit.normal.x + hit.normal.z * hit.normal.z), hit.normal.y) * Mathf.Rad2Deg;
-                currentPlacingItem.transform.position = hit.point + new Vector3(0, currentPlacingItem.GetColliderSize().y / 2, 0);
+                float xRot = Mathf.RoundToInt(Mathf.Atan2(Mathf.Sqrt(-hit.normal.x * -hit.normal.x + hit.normal.z * hit.normal.z), hit.normal.y) * Mathf.Rad2Deg);
+                float yRot;
+
+                // Makes sure that there is a value to base this off of
+                if(xRot != 0)
+                    yRot = Mathf.Atan2(hit.normal.x, hit.normal.z) * Mathf.Rad2Deg;
+                else
+                    yRot = Mathf.Atan2(transform.position.x - hit.point.x, transform.position.z - hit.point.z) * Mathf.Rad2Deg;
+
+                currentPlacingItem.transform.position = hit.point + MultiplyVector(hit.normal, currentPlacingItem.GetColliderSize()) / 2;
+
                 switch (currentPlacingItem.floorPlacementType)
                 {
                     case 0:
                         // Face toward the player
                         //currentPlacingItem.transform.LookAt(new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z));
-                        currentPlacingItem.transform.rotation = Quaternion.Euler(xRot, 0, 0);
+                        currentPlacingItem.transform.rotation = Quaternion.Euler(xRot, yRot, 0);
                         break;
                     case 1:
                         // Face away from the player
                         Vector3 diff = new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z) - currentPlacingItem.transform.position;
-                        currentPlacingItem.transform.LookAt(currentPlacingItem.transform.position - diff);
+                        currentPlacingItem.transform.rotation = Quaternion.Euler(xRot, -yRot, 0);
                         break;
                 }
                 break;
@@ -202,7 +211,7 @@ public class PlayerInteractionController : MonoBehaviour
                 break;
         }
     }
-    private Vector3 WallPositionMove(Vector3 a, Vector3 b)
+    private Vector3 MultiplyVector(Vector3 a, Vector3 b)
     {
         return new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
     }

@@ -69,7 +69,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   placementTypes: 0100000000000000
-  placePerp: 0
+  floorPlacementType: 1
+  wallPlacementType: 1
   precisePlacement: 0
   allowPlayerClick: 0
   allowPlayerPickup: 0

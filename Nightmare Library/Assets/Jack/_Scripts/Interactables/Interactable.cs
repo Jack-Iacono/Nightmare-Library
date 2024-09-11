@@ -10,7 +10,18 @@ public abstract class Interactable : MonoBehaviour
 
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
-    public bool placePerp = false;
+
+    /// <summary>
+    /// 0: Facing Player
+    /// 1: Facing away from player
+    /// </summary>
+    public int floorPlacementType = 0;
+    /// <summary>
+    /// 0: Bottom down, no x or z rotation, facing player
+    /// 1: Bottom on wall, top facing player
+    /// </summary>
+    public int wallPlacementType = 0;
+
 
     [SerializeField]
     public bool precisePlacement = false;

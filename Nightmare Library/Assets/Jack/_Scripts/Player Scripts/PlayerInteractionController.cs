@@ -101,21 +101,8 @@ public class PlayerInteractionController : MonoBehaviour
                         {
                             PlacementType type = CheckPlacementType(hit);
 
-                            switch (type) 
-                            {
-                                case PlacementType.FLOOR:
-                                    currentPlacingItem.transform.position = hit.point + new Vector3(0, currentPlacingItem.GetColliderSize().y / 2, 0);
-                                    currentPlacingItem.transform.LookAt(new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z));
-                                    break;
-                                case PlacementType.WALL:
-                                    currentPlacingItem.transform.position = hit.point;
-                                    if (currentPlacingItem.placePerp)
-                                        currentPlacingItem.transform.LookAt(hit.point + hit.normal);
-                                    else
-                                        currentPlacingItem.transform.LookAt(hit.point + hit.normal);
-                                    break;
-                            }
-                            
+                            SetObjectTransform(type, hit);
+
                             playerCont.Lock(true);
                         }
 
@@ -133,23 +120,7 @@ public class PlayerInteractionController : MonoBehaviour
                             }
                             else
                             {
-                                switch (type)
-                                {
-                                    case PlacementType.FLOOR:
-                                        currentPlacingItem.transform.position = hit.point + new Vector3(0, currentPlacingItem.GetColliderSize().y / 2, 0);
-                                        if (currentPlacingItem.placePerp)
-                                            currentPlacingItem.transform.LookAt(hit.point + hit.normal);
-                                        else
-                                            currentPlacingItem.transform.LookAt(new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z));
-                                        break;
-                                    case PlacementType.WALL:
-                                        currentPlacingItem.transform.position = hit.point;
-                                        if (currentPlacingItem.placePerp)
-                                            currentPlacingItem.transform.LookAt(hit.point + hit.normal);
-                                        else
-                                            currentPlacingItem.transform.LookAt(hit.point + hit.normal);
-                                        break;
-                                }
+                                SetObjectTransform(type, hit);
                             }
                         }
                     }
@@ -191,11 +162,51 @@ public class PlayerInteractionController : MonoBehaviour
         }
     }
 
-    private void GetPlacementOffset(RaycastHit hit)
+    private void SetObjectTransform(PlacementType type, RaycastHit hit)
     {
-        // This will rely on the object having an origin point on it's bottom center
-        //float wallAngleY = Mathf.Atan2(hit.normal.x, hit.normal.z) * Mathf.Rad2Deg;
+        switch (type)
+        {
+            case PlacementType.FLOOR:
+                float xRot = Mathf.Atan2(Mathf.Sqrt(-hit.normal.x * -hit.normal.x + hit.normal.z * hit.normal.z), hit.normal.y) * Mathf.Rad2Deg;
+                currentPlacingItem.transform.position = hit.point + new Vector3(0, currentPlacingItem.GetColliderSize().y / 2, 0);
+                switch (currentPlacingItem.floorPlacementType)
+                {
+                    case 0:
+                        // Face toward the player
+                        //currentPlacingItem.transform.LookAt(new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z));
+                        currentPlacingItem.transform.rotation = Quaternion.Euler(xRot, 0, 0);
+                        break;
+                    case 1:
+                        // Face away from the player
+                        Vector3 diff = new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z) - currentPlacingItem.transform.position;
+                        currentPlacingItem.transform.LookAt(currentPlacingItem.transform.position - diff);
+                        break;
+                }
+                break;
+            case PlacementType.WALL:
+                float wallAngleY = Mathf.Atan2(hit.normal.x, hit.normal.z) * Mathf.Rad2Deg;
+                
+                switch (currentPlacingItem.wallPlacementType)
+                {
+                    case 0:
+                        // Back against wall, facing perpendicular
+                        currentPlacingItem.transform.position = hit.point + hit.normal * currentPlacingItem.GetColliderSize().z / 2;
+                        currentPlacingItem.transform.rotation = Quaternion.Euler(0, wallAngleY, 0);
+                        break;
+                    case 1:
+                        // Have bottom against the wall
+                        currentPlacingItem.transform.position = hit.point + hit.normal * currentPlacingItem.GetColliderSize().y / 2;
+                        currentPlacingItem.transform.rotation = Quaternion.Euler(90, wallAngleY, 0);
+                        break;
+                }
+                break;
+        }
     }
+    private Vector3 WallPositionMove(Vector3 a, Vector3 b)
+    {
+        return new Vector3(a.x * b.x, a.y * b.y, a.z * b.z);
+    }
+
     private PlacementType CheckPlacementType(RaycastHit hit)
     {
         // dictate what kind of surface the object is being placed on

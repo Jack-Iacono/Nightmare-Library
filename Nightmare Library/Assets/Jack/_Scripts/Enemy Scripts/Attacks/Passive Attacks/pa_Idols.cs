@@ -6,56 +6,96 @@ using UnityEngine;
 
 public class pa_Idols : PassiveAttack
 {
-    TaskSpawnIdols idolSpawner;
-    private int maxIdolCount = 7;
+    protected int maxIdolCount = 7;
+    protected static int currentIdolCount = 0;
 
     private List<IdolController> idolObjects = new List<IdolController>();
-    private int activeIdolObjects = 0;
+    protected int activeIdolObjects = 0;
+
+    private float spawnTimeAvg = 4;
+    private float spawnTimeDev = 1;
+    private float spawnTimer = 0;
+
+    public delegate void OnIdolCountChangeDelegate(int idolCount);
+    public static event OnIdolCountChangeDelegate OnIdolCountChanged;
 
     public pa_Idols(Enemy owner) : base(owner)
     {
-        idolSpawner = new TaskSpawnIdols(3, 0.5f);
-        TaskSpawnIdols.OnIdolCountChanged += OnIdolCountChanged;
-
-        idolObjects = DeskController.instance.GetIdolControllers(idolSpawner);
     }
 
-    protected override Node SetupTree()
+    public override void Initialize()
     {
-        // Establises the Behavior Tree and its logic
-        Node root = new Selector(new List<Node>()
-        {
-            new Sequence(new List<Node>()
-            {
-                new CheckIdolCount(maxIdolCount),
-                new TaskAttackPlayerPassive()
-            }),
-            idolSpawner
-        });
-        return root;
+        base.Initialize();
+
+        idolObjects = IdolController.GetAllIdols();
+        spawnTimer = UnityEngine.Random.Range(spawnTimeAvg - spawnTimeDev, spawnTimeAvg + spawnTimeDev);
     }
 
-    private void OnIdolCountChanged(int e)
+    public override void Update(float dt)
     {
-        if (e > activeIdolObjects)
+        // Make sure the game isn't paused
+        if (!GameController.gamePaused)
         {
-            for (int i = 0; i < idolObjects.Count; i++)
+            // Check if there are less than the max amount of idols
+            if (currentIdolCount < maxIdolCount)
             {
-                if (!idolObjects[i].gameObject.activeInHierarchy)
+                if(spawnTimer > 0)
+                    spawnTimer -= dt;
+                else
                 {
-                    idolObjects[i].AddIdol();
-                    break;
+                    SpawnIdol();
+                    spawnTimer = UnityEngine.Random.Range(spawnTimeAvg - spawnTimeDev, spawnTimeAvg + spawnTimeDev);
                 }
             }
+            else
+            {
+                AttackPlayer();
+            }
+        }
+    }
+
+    protected void SpawnIdol()
+    {
+        currentIdolCount++;
+
+        for(int i = 0; i < idolObjects.Count; i++)
+        {
+            if (!idolObjects[i].isActive)
+            {
+                idolObjects[i].Activate();
+                OnIdolCountChanged?.Invoke(currentIdolCount);
+                break;
+            }
+        }
+    }
+    public static void RemoveIdol()
+    {
+        currentIdolCount--;
+        OnIdolCountChanged?.Invoke(currentIdolCount);
+    }
+    protected void ClearIdols()
+    {
+        currentIdolCount = 0;
+        foreach(IdolController i in idolObjects)
+        {
+            i.Deactivate();
+        }
+    }
+
+    protected void AttackPlayer()
+    {
+        foreach (PlayerController player in DeskController.playersAtDesk)
+        {
+            player.ReceiveAttack();
         }
 
-        activeIdolObjects = e;
+        spawnTimer = UnityEngine.Random.Range(spawnTimeAvg - spawnTimeDev, spawnTimeAvg + spawnTimeDev);
+        ClearIdols();
     }
 
     public override void OnDestroy()
     {
+        currentIdolCount = 0;
         base.OnDestroy();
-
-        TaskSpawnIdols.OnIdolCountChanged -= OnIdolCountChanged;
     }
 }

@@ -3,106 +3,167 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Interactable : MonoBehaviour
+public abstract class Interactable : MonoBehaviour
 {
+    // Used for quick interactable look up
+    public static Dictionary<GameObject, Interactable> interactables { get; private set; } = new Dictionary<GameObject, Interactable>();
+
+    public enum PlacementType { FLOOR, WALL, CEILING }
+    public List<PlacementType> placementTypes = new List<PlacementType>();
+
+    /// <summary>
+    /// 0: Facing Player
+    /// 1: Facing away from player
+    /// </summary>
+    public int floorPlacementType = 0;
+    /// <summary>
+    /// 0: Bottom down, no x or z rotation, facing player
+    /// 1: Bottom on wall, top facing player
+    /// </summary>
+    public int wallPlacementType = 0;
+
+
+    [SerializeField]
+    public bool precisePlacement = false;
+
+    // Contains the mesh renderer as well as the default mesh
+    private Dictionary<MeshRenderer, Material> renderMaterialList = new Dictionary<MeshRenderer, Material>();
+
+    private List<Collider> colliders = new List<Collider>();
+    private Vector3 mainColliderSize = Vector3.zero;
+
+    private bool hasRigidBody = false;
+    protected Rigidbody rb;
+
     [Header("Interactable Variables")]
     [SerializeField]
-    protected Collider interactCollider;
-
+    public bool allowPlayerClick = false;
     [SerializeField]
-    protected float interactRange = 5;
-    protected bool inRange = false;
-    protected bool canInteract = true;
-    
-    protected enum InteractionType { CLICK, HIT }
+    public bool allowPlayerPickup = false;
     [SerializeField]
-    protected List<InteractionType> interactionTypes = new List<InteractionType>();
-
+    public bool allowEnemyHysterics = false;
     [SerializeField]
-    protected LayerMask interactionLayers;
+    public bool allowEnemyFlicker = false;
 
-    public event EventHandler OnHit;
-    public event EventHandler OnClick;
+    public delegate void OnClickDelegate(bool fromNetwork = false);
+    public event OnClickDelegate OnClick;
+    public delegate void OnPickupDelegate(bool fromNetwork = false);
+    public event OnPickupDelegate OnPickup;
+    public delegate void OnPlaceDelegate(bool fromNetwork = false);
+    public event OnPlaceDelegate OnPlace;
 
-    // Update is called once per frame
-    protected virtual void Update()
+    public delegate void OnEnemyInteractHystericsDelegate(bool fromNetwork = false);
+    public event OnEnemyInteractHystericsDelegate OnEnemyInteractHysterics;
+    public delegate void OnEnemyInteractFlickerDelegate(bool fromNetwork = false);
+    public event OnEnemyInteractFlickerDelegate OnEnemyInteractFlicker;
+
+    protected virtual void Awake()
     {
-        if(
-            inRange &&
-            Input.GetKeyDown(PlayerController.keyInteract) && 
-            PlayerController.ownerInstance.camCont.GetCameraSight(interactCollider)
-        )
+        interactables.Add(gameObject, this);
+
+        foreach(MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
         {
-            Click();
+            renderMaterialList.Add(r, r.material);
         }
 
-        CheckRange();
-    }
-    private void CheckRange()
-    {
-        if(PlayerController.ownerInstance != null)
+        foreach(Collider col in GetComponentsInChildren<Collider>())
         {
-            Collider[] col = Physics.OverlapSphere(transform.position, interactRange, interactionLayers);
+            colliders.Add(col);
+        }
+        mainColliderSize = colliders[0].bounds.size;
 
-            if (col.Length > 0)
+        hasRigidBody = TryGetComponent(out rb);
+    }
+
+    public virtual void Click(bool fromNetwork = false)
+    {
+        OnClick?.Invoke(fromNetwork);
+    }
+    public virtual void Pickup(bool fromNetwork = false)
+    {
+        // Decyphers between local pickup and pickup via notification
+        if (!fromNetwork)
+        {
+            if (InventoryController.Instance.AddItem(gameObject))
             {
-                bool playerFound = false;
-
-                foreach (Collider c in col)
-                {
-                    if (c.gameObject == PlayerController.ownerInstance.gameObject)
-                    {
-                        if (!inRange)
-                        {
-                            inRange = true;
-                            OnEnterRange();
-                        }
-
-                        playerFound = true;
-                        break;
-                    }
-                }
-
-                if (!playerFound && inRange)
-                {
-                    inRange = false;
-                    OnExitRange();
-                }
-            }
-            else if (inRange)
-            {
-                inRange = false;
-                OnExitRange();
+                EnableColliders(false);
+                EnableMesh(false);
+                OnPickup?.Invoke(fromNetwork);
             }
         }
-    }
-
-    public virtual void Click()
-    {
-        Debug.Log("Click");
-        OnClick?.Invoke(this, EventArgs.Empty);
-    }
-    public virtual void Hit()
-    {
-        Debug.Log("Hit");
-        OnHit?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected virtual void OnEnterRange()
-    {
-        //Debug.Log("Enter Range");
-    }
-    protected virtual void OnExitRange()
-    {
-        //Debug.Log("Exit Range");
-    }
-
-    private void OnDrawGizmos()
-    {
-        if(inRange)
-            Gizmos.color = Color.green;
         else
-            Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, interactRange);
+        {
+            EnableColliders(false);
+            EnableMesh(false);
+            OnPickup?.Invoke(fromNetwork);
+        }
+        
+    }
+
+    public virtual void Place(bool fromNetwork = false)
+    {
+        EnableColliders(true);
+        EnableMesh(true);
+        ResetMeshMaterial();
+
+        OnPlace?.Invoke(fromNetwork);
+    }
+    public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
+    {
+        transform.position = pos;
+        transform.rotation = rot;
+
+        Place(fromNetwork);
+    }
+
+    public virtual void EnemyInteractHysterics(bool fromNetwork = false)
+    {
+        OnEnemyInteractHysterics?.Invoke(fromNetwork);
+    }
+    public virtual void EnemyInteractFlicker(bool fromNetwork = false)
+    {
+        OnEnemyInteractFlicker?.Invoke(fromNetwork);
+    }
+
+    public void EnableColliders(bool b)
+    {
+        foreach(Collider c in colliders)
+        {
+            c.enabled = b;
+        }
+        if (hasRigidBody)
+            rb.isKinematic = !b;
+    }
+
+    public void EnableMesh(bool b)
+    {
+        foreach(MeshRenderer r in renderMaterialList.Keys)
+        {
+            r.enabled = b;
+        }
+    }
+    public void SetMeshMaterial(Material mat)
+    {
+        foreach (MeshRenderer r in renderMaterialList.Keys)
+        {
+            r.material = mat;
+        }
+    }
+    public void ResetMeshMaterial()
+    {
+        foreach (MeshRenderer r in renderMaterialList.Keys)
+        {
+            r.material = renderMaterialList[r];
+        }
+    }
+
+    public Vector3 GetColliderSize()
+    {
+        return mainColliderSize;
+    }
+
+    private void OnDestroy()
+    {
+        interactables.Remove(gameObject);
     }
 }

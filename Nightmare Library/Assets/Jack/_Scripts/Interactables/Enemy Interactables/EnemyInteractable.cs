@@ -5,19 +5,10 @@ using UnityEngine;
 
 public class EnemyInteractable : Interactable
 {
-    private Rigidbody rb;
-
-    public event EventHandler OnInteract;
-
-    private void Start()
+    public override void EnemyInteractHysterics(bool fromNetwork = false)
     {
-        rb = GetComponent<Rigidbody>();
-    }
+        rb.AddForce(new Vector3(1, 1, 1) * 10, ForceMode.Impulse);
 
-    public void EnemyInteract()
-    {
-        rb.AddForce(new Vector3(1,1,1) * 10, ForceMode.Impulse);
-
-        OnInteract?.Invoke(this, EventArgs.Empty);
+        base.EnemyInteractHysterics();
     }
 }

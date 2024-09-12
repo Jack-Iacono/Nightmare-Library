@@ -6,38 +6,64 @@ using UnityEngine;
 
 public class IdolController : Interactable
 {
-    [NonSerialized]
-    public TaskSpawnIdols idolSpawner;
+    public static List<IdolController> allIdols = new List<IdolController>();
 
+    public bool isActive = false;
     public event EventHandler<bool> OnIdolActivated;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        allIdols.Add(this);
+    }
 
     private void Start()
     {
         gameObject.SetActive(false);
+        isActive = false;
     }
 
-    public void Initialize(TaskSpawnIdols idolSpawner)
-    {
-        this.idolSpawner = idolSpawner;
-    }
-
-    public override void Click()
+    public override void Click(bool fromNetwork = false)
     {
         if(NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient || NetworkManager.Singleton.IsServer)
-            RemoveIdol();
+            Remove();
 
         base.Click();
     }
 
-    public void AddIdol()
+    public void Activate()
     {
         gameObject.SetActive(true);
+        isActive = true;
         OnIdolActivated?.Invoke(this, true);
     }
-    public void RemoveIdol()
+    public void Deactivate()
     {
         gameObject.SetActive(false);
+        isActive = false;
         OnIdolActivated?.Invoke(this, false);
-        TaskSpawnIdols.RemoveIdol();
+    }
+    public void Remove()
+    {
+        gameObject.SetActive(false);
+        isActive = false;
+        OnIdolActivated?.Invoke(this, false);
+
+        pa_Idols.RemoveIdol();
+    }
+
+    public static List<IdolController> GetAllIdols()
+    {
+        List<IdolController> newList = new List<IdolController>();
+        foreach(IdolController i in allIdols)
+        {
+            newList.Add(i);
+        }
+        return newList;
+    }
+
+    private void OnDestroy()
+    {
+        allIdols.Remove(this);
     }
 }

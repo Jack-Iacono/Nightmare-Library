@@ -46,13 +46,22 @@ public class ev_Hysterics : Evidence
 
     protected void Interact()
     {
-        Collider[] col = Physics.OverlapSphere(owner.transform.position, interactRange, owner.hystericsInteractionLayers);
+        Collider[] col = Physics.OverlapSphere(owner.transform.position, interactRange, owner.interactionLayers);
         if(col.Length > 0)
         {
-            col[0].GetComponent<EnemyInteractable>().EnemyInteract();
+            for(int i = 0; i < col.Length; i++)
+            {
+                if (Interactable.interactables.ContainsKey(col[i].gameObject) && Interactable.interactables[col[i].gameObject].allowEnemyHysterics)
+                {
+                    col[0].GetComponent<EnemyInteractable>().EnemyInteractHysterics();
 
-            interactReady = false;
-            interactCooldownTimer = interactCooldownTime;
+                    interactReady = false;
+                    interactCooldownTimer = interactCooldownTime;
+
+                    break;
+                }
+            }
+            
         }
     }
 
@@ -69,6 +78,8 @@ public class ev_Hysterics : Evidence
                 // Chance succeeded and now the enemy will interact and reset it's odds back to base
                 currentInteractChance = baseInteractChance;
                 interactReady = true;
+
+                Debug.Log("Hysterics Ready");
             }
             else
             {

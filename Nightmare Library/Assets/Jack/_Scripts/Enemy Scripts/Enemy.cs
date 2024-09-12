@@ -44,7 +44,7 @@ public class Enemy : MonoBehaviour
     protected List<Evidence> evidence = new List<Evidence>();
 
     [Space(10)]
-    public LayerMask hystericsInteractionLayers = 1 << 7;
+    public LayerMask interactionLayers = 1 << 10;
 
     [Space(10)]
     public AudioClip musicLoverSound;
@@ -72,7 +72,6 @@ public class Enemy : MonoBehaviour
 
     [Space(10)]
     public float lightFlickerRange = 40f;
-    public LayerMask lightFlickerInteractionLayers = 1 << 7;
     public event EventHandler OnLightFlicker;
 
     #region Initialization
@@ -155,7 +154,7 @@ public class Enemy : MonoBehaviour
         float dt = Time.deltaTime;
 
         activeAttackTree.UpdateTree(dt);
-        passiveAttackTree.UpdateTree(dt);
+        passiveAttackTree.Update(dt);
 
         foreach (Evidence e in evidence)
         {
@@ -241,7 +240,7 @@ public class Enemy : MonoBehaviour
     }
     public void FlickerLights(bool invokeEvent = true)
     {
-        Collider[] col = Physics.OverlapSphere(transform.position, lightFlickerRange, lightFlickerInteractionLayers);
+        Collider[] col = Physics.OverlapSphere(transform.position, lightFlickerRange, interactionLayers);
 
         if (col.Length > 0)
         {

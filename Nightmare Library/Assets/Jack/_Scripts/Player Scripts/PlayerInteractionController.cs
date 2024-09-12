@@ -32,9 +32,12 @@ public class PlayerInteractionController : MonoBehaviour
     private bool actionBuffering = false;
 
     [SerializeField]
-    private Material placementMaterial;
+    private Material clearPlacementMaterial;
+    [SerializeField]
+    private Material blockedPlacementMaterial;
     private bool isPlacingItem = false;
     private Interactable currentPlacingItem;
+    private bool isPlacementValid = false;
 
     // Start is called before the first frame update
     void Start()
@@ -94,7 +97,7 @@ public class PlayerInteractionController : MonoBehaviour
                 {
                     if (isPlaceStart)
                     {
-                        currentPlacingItem.SetMeshMaterial(placementMaterial);
+                        currentPlacingItem.SetMeshMaterial(clearPlacementMaterial);
                         currentPlacingItem.EnableMesh(true);
 
                         if (currentPlacingItem.precisePlacement)
@@ -116,28 +119,59 @@ public class PlayerInteractionController : MonoBehaviour
                         {
                             if (currentPlacingItem.precisePlacement)
                             {
-                                currentPlacingItem.transform.Rotate(hit.normal, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                switch (type)
+                                {
+                                    case PlacementType.FLOOR:
+                                        currentPlacingItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                        break;
+                                    case PlacementType.WALL:
+                                        if(currentPlacingItem.wallPlacementType == 0)
+                                            currentPlacingItem.transform.Rotate(Vector3.forward, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                        else
+                                            currentPlacingItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                        break;
+                                }
                             }
                             else
                             {
                                 SetObjectTransform(type, hit);
                             }
                         }
+
+                        // Check if the object is colliding with other stuff
+                        if (!Physics.CheckBox(currentPlacingItem.transform.position, currentPlacingItem.GetColliderSize() * 0.45f, currentPlacingItem.transform.rotation, interactLayers))
+                        {
+                            currentPlacingItem.SetMeshMaterial(clearPlacementMaterial);
+                            isPlacementValid = true;
+                        }
+                        else
+                        {
+                            currentPlacingItem.SetMeshMaterial(blockedPlacementMaterial);
+                            isPlacementValid = false;
+                        }
                     }
                     else if (isPlaceFinish && isPlacingItem)
                     {
-                        PlacementType type = CheckPlacementType(hit);
-
-                        if (currentPlacingItem.placementTypes.Contains(type))
+                        if (isPlacementValid)
                         {
-                            currentPlacingItem.Place();
-                            InventoryController.Instance.RemoveCurrentItem();
+                            PlacementType type = CheckPlacementType(hit);
+
+                            if (currentPlacingItem.placementTypes.Contains(type))
+                            {
+                                currentPlacingItem.Place();
+                                InventoryController.Instance.RemoveCurrentItem();
+                            }
+
+                            currentPlacingItem = null;
+                            actionBuffering = true;
+                        }
+                        else
+                        {
+                            currentPlacingItem.EnableMesh(false);
                         }
 
                         isPlacingItem = false;
                         playerCont.Lock(false);
-                        currentPlacingItem = null;
-                        actionBuffering = true;
                     }
                 }
 
@@ -167,30 +201,29 @@ public class PlayerInteractionController : MonoBehaviour
         switch (type)
         {
             case PlacementType.FLOOR:
-                float xRot = Mathf.RoundToInt(Mathf.Atan2(Mathf.Sqrt(-hit.normal.x * -hit.normal.x + hit.normal.z * hit.normal.z), hit.normal.y) * Mathf.Rad2Deg);
-                float yRot;
+                // Find the slope of the wall that is being hit. This would be the x rotation if the player is facing 0 degrees
+                float slope = Mathf.RoundToInt(Mathf.Atan2(Mathf.Sqrt(-hit.normal.x * -hit.normal.x + hit.normal.z * hit.normal.z), hit.normal.y) * Mathf.Rad2Deg);
+                // Find the y angle of the normal vector of the raycasthit
+                float hitAngle = Mathf.RoundToInt(Mathf.Atan2(hit.normal.x, hit.normal.z) * Mathf.Rad2Deg);
 
-                // Makes sure that there is a value to base this off of
-                if(xRot != 0)
-                    yRot = Mathf.Atan2(hit.normal.x, hit.normal.z) * Mathf.Rad2Deg;
-                else
-                    yRot = Mathf.Atan2(transform.position.x - hit.point.x, transform.position.z - hit.point.z) * Mathf.Rad2Deg;
-
-                currentPlacingItem.transform.position = hit.point + MultiplyVector(hit.normal, currentPlacingItem.GetColliderSize()) / 2;
-
+                // Get the various components of the rotation
+                float yRot = 0;
                 switch (currentPlacingItem.floorPlacementType)
                 {
                     case 0:
                         // Face toward the player
-                        //currentPlacingItem.transform.LookAt(new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z));
-                        currentPlacingItem.transform.rotation = Quaternion.Euler(xRot, yRot, 0);
+                        yRot = transform.rotation.eulerAngles.y - 180;
                         break;
                     case 1:
                         // Face away from the player
-                        Vector3 diff = new Vector3(transform.position.x, currentPlacingItem.transform.position.y, transform.position.z) - currentPlacingItem.transform.position;
-                        currentPlacingItem.transform.rotation = Quaternion.Euler(xRot, -yRot, 0);
+                        yRot = transform.rotation.eulerAngles.y;
                         break;
                 }
+                float xRot = Mathf.Cos((yRot - hitAngle) * Mathf.Deg2Rad) * slope;
+                float zRot = Mathf.Sin((yRot - hitAngle) * Mathf.Deg2Rad) * slope;
+
+                currentPlacingItem.transform.position = hit.point + MultiplyVector(hit.normal, currentPlacingItem.GetColliderSize()) / 2;
+                currentPlacingItem.transform.rotation = Quaternion.Euler(xRot, yRot, zRot);
                 break;
             case PlacementType.WALL:
                 float wallAngleY = Mathf.Atan2(hit.normal.x, hit.normal.z) * Mathf.Rad2Deg;

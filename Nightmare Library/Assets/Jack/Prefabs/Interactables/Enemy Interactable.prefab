@@ -114,7 +114,7 @@ GameObject:
   - component: {fileID: 548352891794984358}
   - component: {fileID: 9208442971139297789}
   - component: {fileID: 7199471378955340405}
-  m_Layer: 10
+  m_Layer: 11
   m_Name: Skin
   m_TagString: Untagged
   m_Icon: {fileID: 0}

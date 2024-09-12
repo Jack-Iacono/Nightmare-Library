@@ -73,7 +73,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 1783
+    m_Bits: 7927
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -430,7 +430,10 @@ MonoBehaviour:
   interactLayers:
     serializedVersion: 2
     m_Bits: 1025
-  placementMaterial: {fileID: 2100000, guid: 2b949a86e09e35f4793bc8227e65dd46, type: 2}
+  clearPlacementMaterial: {fileID: 2100000, guid: 2b949a86e09e35f4793bc8227e65dd46,
+    type: 2}
+  blockedPlacementMaterial: {fileID: 2100000, guid: ca440a96a5795a345bd51286f3c61ef9,
+    type: 2}
 --- !u!143 &6176258763298536126
 CharacterController:
   m_ObjectHideFlags: 0

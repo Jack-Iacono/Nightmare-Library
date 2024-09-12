@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2933878046344708327}
   - component: {fileID: 6160164035294888133}
   - component: {fileID: 5229129976443673935}
-  m_Layer: 10
+  m_Layer: 11
   m_Name: Front (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -130,9 +130,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   placementTypes: 0000000001000000
-  floorPlacementType: 0
-  wallPlacementType: 0
-  precisePlacement: 0
+  floorPlacementType: 1
+  wallPlacementType: 1
+  precisePlacement: 1
   allowPlayerClick: 0
   allowPlayerPickup: 1
   allowEnemyHysterics: 0
@@ -170,7 +170,7 @@ GameObject:
   - component: {fileID: 626776899204933964}
   - component: {fileID: 4492844897341502427}
   - component: {fileID: 6253591556371342975}
-  m_Layer: 10
+  m_Layer: 11
   m_Name: Front
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -253,7 +253,7 @@ GameObject:
   - component: {fileID: 8912513545089529293}
   - component: {fileID: 6766140381849993382}
   - component: {fileID: 3453811485337483858}
-  m_Layer: 10
+  m_Layer: 11
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -339,7 +339,7 @@ GameObject:
   - component: {fileID: 7881550811553050151}
   - component: {fileID: 6077936201343342321}
   - component: {fileID: 2522483015311203199}
-  m_Layer: 10
+  m_Layer: 11
   m_Name: View
   m_TagString: Untagged
   m_Icon: {fileID: 0}

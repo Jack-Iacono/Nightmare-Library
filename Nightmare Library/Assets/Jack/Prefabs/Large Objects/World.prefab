@@ -221,7 +221,6 @@ GameObject:
   - component: {fileID: 9203177851520138802}
   - component: {fileID: 3747575056596109310}
   - component: {fileID: 3208980765957805196}
-  - component: {fileID: 1270827448065207913}
   m_Layer: 0
   m_Name: Patrol Point
   m_TagString: Untagged
@@ -294,27 +293,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &1270827448065207913
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 629686845170149241}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2203004127555209752
 GameObject:
   m_ObjectHideFlags: 0
@@ -369,7 +347,6 @@ GameObject:
   - component: {fileID: 8149298480477800806}
   - component: {fileID: 4208932000865908848}
   - component: {fileID: 7689133961806685968}
-  - component: {fileID: 320242963346911937}
   m_Layer: 0
   m_Name: Patrol Point
   m_TagString: Untagged
@@ -442,27 +419,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &320242963346911937
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3139863729039785155}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3381949818520697280
 GameObject:
   m_ObjectHideFlags: 0
@@ -670,7 +626,7 @@ MonoBehaviour:
   m_OverrideVoxelSize: 0
   m_VoxelSize: 0.16666667
   m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 23800000, guid: 32682feb340ce994899534781d10dfa6, type: 2}
+  m_NavMeshData: {fileID: 23800000, guid: 00cafcd431114e446aeb87fa7cf7a15f, type: 2}
   m_BuildHeightMesh: 0
 --- !u!1 &5204939849384196066
 GameObject:
@@ -788,7 +744,6 @@ GameObject:
   - component: {fileID: 1535501886291420775}
   - component: {fileID: 2763800345134943461}
   - component: {fileID: 2696405585870876876}
-  - component: {fileID: 7922696350770479845}
   m_Layer: 0
   m_Name: Patrol Point
   m_TagString: Untagged
@@ -861,27 +816,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7922696350770479845
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5335925858443880101}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6210280395799680199
 GameObject:
   m_ObjectHideFlags: 0
@@ -998,7 +932,6 @@ GameObject:
   - component: {fileID: 2446184374421043339}
   - component: {fileID: 923236771092088043}
   - component: {fileID: 2125656171761370178}
-  - component: {fileID: 6611090575147629273}
   m_Layer: 0
   m_Name: Patrol Point
   m_TagString: Untagged
@@ -1071,27 +1004,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &6611090575147629273
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6694204335364007364}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7160474254291615724
 GameObject:
   m_ObjectHideFlags: 0

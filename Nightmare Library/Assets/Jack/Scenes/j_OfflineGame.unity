@@ -1023,6 +1023,12 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1929684839864467471, guid: b47e740cb3261a1409bb6af0d6120aec,
+        type: 3}
+      propertyPath: m_NavMeshData
+      value: 
+      objectReference: {fileID: 23800000, guid: 125f7f8f6034f5844a8353f15da6442a,
+        type: 2}
     - target: {fileID: 2400966839104636242, guid: b47e740cb3261a1409bb6af0d6120aec,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1078,7 +1084,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Offline World
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6611090575147629273, guid: b47e740cb3261a1409bb6af0d6120aec, type: 3}
+    - {fileID: 1270827448065207913, guid: b47e740cb3261a1409bb6af0d6120aec, type: 3}
+    - {fileID: 320242963346911937, guid: b47e740cb3261a1409bb6af0d6120aec, type: 3}
+    - {fileID: 7922696350770479845, guid: b47e740cb3261a1409bb6af0d6120aec, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

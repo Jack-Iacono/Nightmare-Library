@@ -32,8 +32,10 @@ public abstract class Interactable : MonoBehaviour
     private List<Collider> colliders = new List<Collider>();
     private Vector3 mainColliderSize = Vector3.zero;
 
-    private bool hasRigidBody = false;
-    protected Rigidbody rb;
+    [NonSerialized]
+    public bool hasRigidBody = false;
+    [NonSerialized]
+    public Rigidbody rb;
 
     [Header("Interactable Variables")]
     [SerializeField]
@@ -51,6 +53,8 @@ public abstract class Interactable : MonoBehaviour
     public event OnPickupDelegate OnPickup;
     public delegate void OnPlaceDelegate(bool fromNetwork = false);
     public event OnPlaceDelegate OnPlace;
+    public delegate void OnThrowDelegate(bool fromNetwork = false);
+    public event OnPlaceDelegate OnThrow;
 
     public delegate void OnEnemyInteractHystericsDelegate(bool fromNetwork = false);
     public event OnEnemyInteractHystericsDelegate OnEnemyInteractHysterics;
@@ -116,6 +120,16 @@ public abstract class Interactable : MonoBehaviour
         Place(fromNetwork);
     }
 
+    public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
+    {
+        EnableAll(true);
+        transform.position = pos;
+        if (hasRigidBody)
+            rb.AddForce(force, ForceMode.Impulse);
+
+        OnThrow?.Invoke(fromNetwork);
+    }
+
     public virtual void EnemyInteractHysterics(bool fromNetwork = false)
     {
         OnEnemyInteractHysterics?.Invoke(fromNetwork);
@@ -123,6 +137,14 @@ public abstract class Interactable : MonoBehaviour
     public virtual void EnemyInteractFlicker(bool fromNetwork = false)
     {
         OnEnemyInteractFlicker?.Invoke(fromNetwork);
+    }
+
+    public void EnableAll(bool b)
+    {
+        EnableColliders(b);
+        EnableMesh(b);
+        if (b)
+            ResetMeshMaterial();
     }
 
     public void EnableColliders(bool b)

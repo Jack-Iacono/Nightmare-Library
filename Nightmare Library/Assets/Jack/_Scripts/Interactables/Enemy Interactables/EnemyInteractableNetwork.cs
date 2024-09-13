@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(EnemyInteractable))]
-public class EnemyInteractableNetwork : NetworkBehaviour
+public class EnemyInteractableNetwork : InteractableNetwork
 {
     private NetworkVariable<TransformData> transformData;
     private void Awake()

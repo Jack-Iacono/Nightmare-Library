@@ -31,17 +31,19 @@ public class PlayerControllerNetwork : NetworkBehaviour
 
         playerCont = GetComponent<PlayerController>();
         playerCont.OnPlayerAttacked += OnPlayerAttacked;
-
-        if (IsOwner)
-            PlayerController.ownerInstance = playerCont;
     }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
+        if (IsOwner)
+            PlayerController.ownerInstance = playerCont;
+        else
+            GetComponent<PlayerInteractionController>().enabled = false;
+
         // Changes the player data for all versions of this gameobject
-        if(IsOwner)
+        if (IsOwner)
         {
             ownerInstance = this;
             playerCont.Activate(true);

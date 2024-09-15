@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Interactable : MonoBehaviour
+public class Interactable : MonoBehaviour
 {
     // Used for quick interactable look up
     public static Dictionary<GameObject, Interactable> interactables { get; private set; } = new Dictionary<GameObject, Interactable>();
+    public Transform trans { get; private set; }
 
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
@@ -53,8 +54,8 @@ public abstract class Interactable : MonoBehaviour
     public event OnPickupDelegate OnPickup;
     public delegate void OnPlaceDelegate(bool fromNetwork = false);
     public event OnPlaceDelegate OnPlace;
-    public delegate void OnThrowDelegate(bool fromNetwork = false);
-    public event OnPlaceDelegate OnThrow;
+    public delegate void OnThrowDelegate(Vector3 force, bool fromNetwork = false);
+    public event OnThrowDelegate OnThrow;
 
     public delegate void OnEnemyInteractHystericsDelegate(bool fromNetwork = false);
     public event OnEnemyInteractHystericsDelegate OnEnemyInteractHysterics;
@@ -77,6 +78,7 @@ public abstract class Interactable : MonoBehaviour
         mainColliderSize = colliders[0].bounds.size;
 
         hasRigidBody = TryGetComponent(out rb);
+        trans = transform;
     }
 
     public virtual void Click(bool fromNetwork = false)
@@ -124,14 +126,28 @@ public abstract class Interactable : MonoBehaviour
     {
         EnableAll(true);
         transform.position = pos;
-        if (hasRigidBody)
-            rb.AddForce(force, ForceMode.Impulse);
 
-        OnThrow?.Invoke(fromNetwork);
+        if (NetworkConnectionController.HasAuthority)
+        {
+            if (hasRigidBody)
+                rb.AddForce(force, ForceMode.Impulse);   
+        }
+
+        OnThrow?.Invoke(force, fromNetwork);
     }
 
     public virtual void EnemyInteractHysterics(bool fromNetwork = false)
     {
+        rb.AddForce
+            (
+            new Vector3
+                (UnityEngine.Random.Range(0, 10),
+                UnityEngine.Random.Range(4, 10),
+                UnityEngine.Random.Range(0, 10)
+                ) * 10,
+            ForceMode.Impulse
+            );
+
         OnEnemyInteractHysterics?.Invoke(fromNetwork);
     }
     public virtual void EnemyInteractFlicker(bool fromNetwork = false)
@@ -153,7 +169,7 @@ public abstract class Interactable : MonoBehaviour
         {
             c.enabled = b;
         }
-        if (hasRigidBody)
+        if (hasRigidBody && NetworkConnectionController.HasAuthority)
             rb.isKinematic = !b;
     }
 

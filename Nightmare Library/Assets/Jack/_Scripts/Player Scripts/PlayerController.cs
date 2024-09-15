@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     public static LayerMask playerLayerMask;
 
     public CameraController camCont;
+    private PlayerInteractionController interactionCont;
 
     private Collider playerCollider;
     [SerializeField]
@@ -73,6 +74,7 @@ public class PlayerController : MonoBehaviour
 
         charCont = GetComponent<CharacterController>();
         playerCollider = GetComponent<Collider>();
+        interactionCont = GetComponent<PlayerInteractionController>();
 
         // TEMPORARY
         charCont.enabled = false;
@@ -222,6 +224,7 @@ public class PlayerController : MonoBehaviour
         enabled = b;
         camCont.SetEnabled(b);
         //charCont.enabled = b;
+        interactionCont.enabled = b;
 
         if (b)
         {

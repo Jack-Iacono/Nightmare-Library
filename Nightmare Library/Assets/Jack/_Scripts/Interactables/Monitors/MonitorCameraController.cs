@@ -25,7 +25,7 @@ public class MonitorCameraController : Interactable
     {
         SetBroadcasting(false);
 
-        base.Pickup();
+        base.Pickup(fromNetwork);
     }
     public override void Place(bool fromNetwork = false)
     {

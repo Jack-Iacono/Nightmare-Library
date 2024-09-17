@@ -34,7 +34,7 @@ public class pa_Idols : PassiveAttack
     public override void Update(float dt)
     {
         // Make sure the game isn't paused
-        if (!GameController.gamePaused)
+        if (!GameController.gamePaused && DeskController.playersAtDesk.Count > 0)
         {
             // Check if there are less than the max amount of idols
             if (currentIdolCount < maxIdolCount)

@@ -108,16 +108,13 @@ public class Interactable : MonoBehaviour
 
     public virtual void Place(bool fromNetwork = false)
     {
-        EnableColliders(true);
-        EnableMesh(true);
-        ResetMeshMaterial();
-
+        EnableAll(true);
         OnPlace?.Invoke(fromNetwork);
     }
     public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
-        transform.position = pos;
-        transform.rotation = rot;
+        trans.position = pos;
+        trans.rotation = rot;
 
         Place(fromNetwork);
     }
@@ -125,13 +122,10 @@ public class Interactable : MonoBehaviour
     public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
     {
         EnableAll(true);
-        transform.position = pos;
+        trans.position = pos;
 
-        if (NetworkConnectionController.HasAuthority)
-        {
-            if (hasRigidBody)
-                rb.AddForce(force, ForceMode.Impulse);   
-        }
+        if (hasRigidBody)
+            rb.AddForce(force, ForceMode.Impulse);
 
         OnThrow?.Invoke(force, fromNetwork);
     }
@@ -169,7 +163,7 @@ public class Interactable : MonoBehaviour
         {
             c.enabled = b;
         }
-        if (hasRigidBody && NetworkConnectionController.HasAuthority)
+        if (hasRigidBody)
             rb.isKinematic = !b;
     }
 

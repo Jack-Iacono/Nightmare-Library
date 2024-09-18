@@ -152,7 +152,7 @@ MonoBehaviour:
   spawnLocation: {x: 20, y: 1, z: 0}
   aAttack: 0
   pAttack: 0
-  evidenceList: 00000000
+  evidenceList: 0000000005000000
   interactionLayers:
     serializedVersion: 2
     m_Bits: 1024

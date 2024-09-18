@@ -256,7 +256,7 @@ public class InteractableNetwork : NetworkBehaviour
     #region Enemy Interact Hysterics
     protected virtual void OnEnemyInteractHysterics(bool fromNetwork)
     {
-        ownInteraction = true;
+        
     }
     [ServerRpc(RequireOwnership = false)]
     protected virtual void TransmitEnemyInteractHystericsServerRpc(ulong sender)
@@ -274,7 +274,8 @@ public class InteractableNetwork : NetworkBehaviour
     #region Enemy Interact Flicker
     protected virtual void OnEnemyInteractFlicker(bool fromNetwork)
     {
-        throw new NotImplementedException();
+        if (IsServer && !fromNetwork)
+            ConsumeEnemyInteractFlickerClientRpc(NetworkManager.LocalClientId);
     }
     [ServerRpc(RequireOwnership = false)]
     protected virtual void TransmitEnemyInteractFlickerServerRpc(ulong sender)
@@ -285,7 +286,7 @@ public class InteractableNetwork : NetworkBehaviour
     protected virtual void ConsumeEnemyInteractFlickerClientRpc(ulong sender)
     {
         if (NetworkManager.LocalClientId != sender)
-            Debug.Log("Click on client " + sender);
+            parent.EnemyInteractFlicker();
     }
     #endregion
 

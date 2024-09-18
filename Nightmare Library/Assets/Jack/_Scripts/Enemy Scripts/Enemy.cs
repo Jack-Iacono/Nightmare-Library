@@ -246,7 +246,8 @@ public class Enemy : MonoBehaviour
         {
             for(int i = 0; i < col.Length; i++)
             {
-                col[i].GetComponent<InteractableLightController>().FlickerLight();
+                if(Interactable.interactables[col[i].gameObject].allowEnemyFlicker)
+                    Interactable.interactables[col[i].gameObject].EnemyInteractFlicker();
             }
         }
 

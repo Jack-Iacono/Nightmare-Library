@@ -62,6 +62,20 @@ public class Interactable : MonoBehaviour
     public delegate void OnEnemyInteractFlickerDelegate(bool fromNetwork = false);
     public event OnEnemyInteractFlickerDelegate OnEnemyInteractFlicker;
 
+    [Header("Flicker Variables")]
+    public Light attachedLight;
+
+    int LightFlickerAvg = 5;
+    int lightFlickerDev = 2;
+
+    float lightFlickerDurationAvg = 0.2f;
+    float lightFlickerDurationDev = 0.19f;
+
+    float lightFlickerCooldownAvg = 1f;
+    float lightFlickerCooldownDev = 0.9f;
+
+    private bool isFlickering = false;
+
     protected virtual void Awake()
     {
         interactables.Add(gameObject, this);
@@ -121,8 +135,8 @@ public class Interactable : MonoBehaviour
 
     public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
     {
-        EnableAll(true);
         trans.position = pos;
+        EnableAll(true);
 
         if (hasRigidBody)
             rb.AddForce(force, ForceMode.Impulse);
@@ -146,7 +160,25 @@ public class Interactable : MonoBehaviour
     }
     public virtual void EnemyInteractFlicker(bool fromNetwork = false)
     {
+        Debug.Log("Flicker");
+        if (!isFlickering)
+            StartCoroutine(FlickerLightCoroutine());
         OnEnemyInteractFlicker?.Invoke(fromNetwork);
+    }
+    IEnumerator FlickerLightCoroutine()
+    {
+        isFlickering = true;
+
+        int flickerAmount = UnityEngine.Random.Range(LightFlickerAvg - lightFlickerDev, LightFlickerAvg + lightFlickerDev);
+        for (int i = 0; i < flickerAmount; i++)
+        {
+            attachedLight.enabled = false;
+            yield return new WaitForSeconds(UnityEngine.Random.Range(lightFlickerDurationAvg - lightFlickerDurationDev, lightFlickerDurationAvg + lightFlickerDurationDev));
+            attachedLight.enabled = true;
+            yield return new WaitForSeconds(UnityEngine.Random.Range(lightFlickerCooldownAvg - lightFlickerCooldownDev, lightFlickerCooldownAvg + lightFlickerCooldownDev));
+        }
+
+        isFlickering = false;
     }
 
     public void EnableAll(bool b)

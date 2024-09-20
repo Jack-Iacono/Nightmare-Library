@@ -140,7 +140,7 @@ public class Interactable : MonoBehaviour
 
         if (hasRigidBody)
             rb.AddForce(force, ForceMode.Impulse);
-
+            
         OnThrow?.Invoke(force, fromNetwork);
     }
 
@@ -149,9 +149,9 @@ public class Interactable : MonoBehaviour
         rb.AddForce
             (
             new Vector3
-                (UnityEngine.Random.Range(0, 10),
-                UnityEngine.Random.Range(4, 10),
-                UnityEngine.Random.Range(0, 10)
+                (UnityEngine.Random.Range(0, 1),
+                UnityEngine.Random.Range(0.1f, 1),
+                UnityEngine.Random.Range(0, 1)
                 ) * 10,
             ForceMode.Impulse
             );
@@ -160,7 +160,6 @@ public class Interactable : MonoBehaviour
     }
     public virtual void EnemyInteractFlicker(bool fromNetwork = false)
     {
-        Debug.Log("Flicker");
         if (!isFlickering)
             StartCoroutine(FlickerLightCoroutine());
         OnEnemyInteractFlicker?.Invoke(fromNetwork);

@@ -10,14 +10,15 @@ using UnityEngine;
 public class InteractableNetwork : NetworkBehaviour
 {
     protected Interactable parent;
-    private const float interpolationStrength = 0.8f;
+    private const float interpolationStrength = 0.1f;
 
     private bool canUpdateRigidbody = false;
     protected bool ownInteraction = false;
-    protected float velocityThreshold = 0.01f;
+    protected float velocityThreshold = 0.001f;
     protected Vector3 previousPosition = Vector3.zero;
 
     private int updateTransformFrequency = 3;
+    private bool wasUpdating = false;
     private int currentUpdateFrame = 0;
 
     private bool isUpdatingTransform = false;
@@ -54,55 +55,70 @@ public class InteractableNetwork : NetworkBehaviour
         if(parent.allowEnemyFlicker)
             parent.OnEnemyInteractFlicker += OnEnemyInteractFlicker;
 
-        if (IsOwner)
-            canUpdateRigidbody = parent.hasRigidBody;
-        else
+
+        canUpdateRigidbody = parent.hasRigidBody;
+        if (!IsOwner)
             transformData.OnValueChanged += ConsumeTransformData;
     }
 
     private void FixedUpdate()
     {
         // Check to make sure the network is running to avoid calls going out without being connected and that this is on the server/owner
-        if (NetworkConnectionController.IsRunning && IsOwner)
+        if (NetworkConnectionController.IsRunning)
         {
             // Check to see if the object has a rigidbody to update
             if (canUpdateRigidbody)
             {
-                // ensures the update only runs every few frames
-                if (currentUpdateFrame >= updateTransformFrequency)
+                if (IsOwner)
                 {
-                    // Check if the object is moving enough to pass the velocity check
-                    if (Vector3.SqrMagnitude(parent.rb.velocity) > velocityThreshold * velocityThreshold)
+                    // ensures the update only runs every few frames
+                    if (currentUpdateFrame >= updateTransformFrequency)
                     {
-                        // Transmit this object's transform data
-                        TransmitTransformData();
-                    }
-                    else
-                    {
+                        // Check if the object is moving enough to pass the velocity check
+                        if (Vector3.SqrMagnitude(parent.rb.velocity) > velocityThreshold * velocityThreshold)
+                        {
+                            // Transmit this object's transform data
+                            TransmitTransformData();
+                            wasUpdating = true;
+                        }
+                        // Sends one more update just as the object stops moving
+                        else if (wasUpdating)
+                        {
+                            // Transmit this object's transform data
+                            TransmitTransformData();
+                            wasUpdating = false;
+                        }
+
                         // Reset the frame counter
                         currentUpdateFrame = 0;
                     }
+                    else
+                    {
+                        // Increment the frame counter
+                        currentUpdateFrame++;
+                    }
                 }
-                else
+                // Check if the object should be updating it's transform
+                else if (isUpdatingTransform && !parent.rb.isKinematic)
                 {
-                    // Increment the frame counter
-                    currentUpdateFrame++;
+                    // Interpolate the position and velocity toward the desired values
+                    // Higher Interpolation strength means more accuracy, but also more visual skipping
+                    parent.trans.position = Vector3.Slerp(parent.trans.position, targetPosition, interpolationStrength);
+
+                    if (parent.hasRigidBody)
+                        parent.rb.velocity = Vector3.Slerp(parent.rb.velocity, targetVelocity, interpolationStrength);
+
+                    // Check if the object is done moving. Turn off the updating to save processing speed
+                    if (parent.trans.position == targetPosition)
+                    {
+                        isUpdatingTransform = false;
+                        if(parent.hasRigidBody)
+                            parent.rb.velocity = Vector3.zero;
+                    }
                 }
             }
 
-            // Check if the object should be updating it's transform
-            if (isUpdatingTransform)
-            {
-                // Interpolate the position and velocity toward the desired values
-                // Higher Interpolation strength means more accuracy, but also more visual skipping
-                parent.trans.position = Vector3.Slerp(parent.trans.position, targetPosition, interpolationStrength);
-                if (parent.hasRigidBody)
-                    parent.rb.velocity = Vector3.Slerp(parent.rb.velocity, targetVelocity, interpolationStrength);
-
-                // Check if the object is done moving. Turn off the updating to save processing speed
-                if (parent.trans.position == targetPosition && (!parent.hasRigidBody || parent.rb.velocity == targetVelocity))
-                    isUpdatingTransform = false;
-            }
+            
         }
     }
 
@@ -112,8 +128,8 @@ public class InteractableNetwork : NetworkBehaviour
     {
         var state = new RbData
         {
-            Position = transform.position,
-            Rotation = transform.rotation,
+            Position = parent.trans.position,
+            Rotation = parent.trans.rotation,
             Velocity = parent.rb.velocity
         };
 
@@ -142,11 +158,9 @@ public class InteractableNetwork : NetworkBehaviour
 
             // Directly set the rotation to be completly accurate
             transform.rotation = transformData.Value.Rotation;
-
-            targetPosition = newValue.Position;
+            
+            targetPosition = transformData.Value.Position;
             targetVelocity = newValue.Velocity;
-
-            isUpdatingTransform = true;
         }
     }
 
@@ -244,6 +258,9 @@ public class InteractableNetwork : NetworkBehaviour
     protected virtual void TransmitThrowServerRpc(ulong sender, Vector3 pos, Vector3 force, Quaternion rot)
     {
         parent.Throw(pos, force);
+
+        // Tell the game to update the transform
+        currentUpdateFrame = updateTransformFrequency;
     }
     [ClientRpc]
     protected virtual void ConsumeThrowClientRpc(ulong sender)

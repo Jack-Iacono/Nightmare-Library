@@ -26,14 +26,8 @@ public abstract class LobbyController : NetworkBehaviour
     protected virtual void Awake()
     {
         if (instance != null)
-        {
             Destroy(instance);
-            instance = this;
-        }
-        else
-        {
-            instance = this;
-        }
+        instance = this;
     }
 
     private void Update()
@@ -105,7 +99,9 @@ public abstract class LobbyController : NetworkBehaviour
 
     public virtual async void LeaveLobby()
     {
+        Debug.Log("Leaving Lobby");
         await DisconnectFromLobby();
+        Debug.Log("Disconnected");
         SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU, true);
     }
     public virtual async Task DisconnectFromLobby()
@@ -158,6 +154,7 @@ public abstract class LobbyController : NetworkBehaviour
         }
         else if(NetworkManager.Singleton != null && !NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
         {
+            Debug.Log(name);
             LeaveLobby();
         }
     }
@@ -185,6 +182,8 @@ public abstract class LobbyController : NetworkBehaviour
         // Should never not be this, but just better to check
         if (instance == this)
             instance = null;
+
+        UnRegisterCallbacks();
     }
     private void OnApplicationQuit()
     {

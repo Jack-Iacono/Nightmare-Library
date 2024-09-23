@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Interactable : MonoBehaviour
+public class Interactable : MonoBehaviour
 {
     // Used for quick interactable look up
     public static Dictionary<GameObject, Interactable> interactables { get; private set; } = new Dictionary<GameObject, Interactable>();
+    public Transform trans { get; private set; }
 
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
@@ -32,8 +33,10 @@ public abstract class Interactable : MonoBehaviour
     private List<Collider> colliders = new List<Collider>();
     private Vector3 mainColliderSize = Vector3.zero;
 
-    private bool hasRigidBody = false;
-    protected Rigidbody rb;
+    [NonSerialized]
+    public bool hasRigidBody = false;
+    [NonSerialized]
+    public Rigidbody rb;
 
     [Header("Interactable Variables")]
     [SerializeField]
@@ -51,11 +54,27 @@ public abstract class Interactable : MonoBehaviour
     public event OnPickupDelegate OnPickup;
     public delegate void OnPlaceDelegate(bool fromNetwork = false);
     public event OnPlaceDelegate OnPlace;
+    public delegate void OnThrowDelegate(Vector3 force, bool fromNetwork = false);
+    public event OnThrowDelegate OnThrow;
 
     public delegate void OnEnemyInteractHystericsDelegate(bool fromNetwork = false);
     public event OnEnemyInteractHystericsDelegate OnEnemyInteractHysterics;
     public delegate void OnEnemyInteractFlickerDelegate(bool fromNetwork = false);
     public event OnEnemyInteractFlickerDelegate OnEnemyInteractFlicker;
+
+    [Header("Flicker Variables")]
+    public Light attachedLight;
+
+    int LightFlickerAvg = 5;
+    int lightFlickerDev = 2;
+
+    float lightFlickerDurationAvg = 0.2f;
+    float lightFlickerDurationDev = 0.19f;
+
+    float lightFlickerCooldownAvg = 1f;
+    float lightFlickerCooldownDev = 0.9f;
+
+    private bool isFlickering = false;
 
     protected virtual void Awake()
     {
@@ -73,6 +92,7 @@ public abstract class Interactable : MonoBehaviour
         mainColliderSize = colliders[0].bounds.size;
 
         hasRigidBody = TryGetComponent(out rb);
+        trans = transform;
     }
 
     public virtual void Click(bool fromNetwork = false)
@@ -102,27 +122,70 @@ public abstract class Interactable : MonoBehaviour
 
     public virtual void Place(bool fromNetwork = false)
     {
-        EnableColliders(true);
-        EnableMesh(true);
-        ResetMeshMaterial();
-
+        EnableAll(true);
         OnPlace?.Invoke(fromNetwork);
     }
     public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
-        transform.position = pos;
-        transform.rotation = rot;
+        trans.position = pos;
+        trans.rotation = rot;
 
         Place(fromNetwork);
     }
 
+    public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
+    {
+        trans.position = pos;
+        EnableAll(true);
+
+        if (hasRigidBody)
+            rb.AddForce(force, ForceMode.Impulse);
+            
+        OnThrow?.Invoke(force, fromNetwork);
+    }
+
     public virtual void EnemyInteractHysterics(bool fromNetwork = false)
     {
+        rb.AddForce
+            (
+            new Vector3
+                (UnityEngine.Random.Range(0, 1),
+                UnityEngine.Random.Range(0.1f, 1),
+                UnityEngine.Random.Range(0, 1)
+                ) * 10,
+            ForceMode.Impulse
+            );
+
         OnEnemyInteractHysterics?.Invoke(fromNetwork);
     }
     public virtual void EnemyInteractFlicker(bool fromNetwork = false)
     {
+        if (!isFlickering)
+            StartCoroutine(FlickerLightCoroutine());
         OnEnemyInteractFlicker?.Invoke(fromNetwork);
+    }
+    IEnumerator FlickerLightCoroutine()
+    {
+        isFlickering = true;
+
+        int flickerAmount = UnityEngine.Random.Range(LightFlickerAvg - lightFlickerDev, LightFlickerAvg + lightFlickerDev);
+        for (int i = 0; i < flickerAmount; i++)
+        {
+            attachedLight.enabled = false;
+            yield return new WaitForSeconds(UnityEngine.Random.Range(lightFlickerDurationAvg - lightFlickerDurationDev, lightFlickerDurationAvg + lightFlickerDurationDev));
+            attachedLight.enabled = true;
+            yield return new WaitForSeconds(UnityEngine.Random.Range(lightFlickerCooldownAvg - lightFlickerCooldownDev, lightFlickerCooldownAvg + lightFlickerCooldownDev));
+        }
+
+        isFlickering = false;
+    }
+
+    public void EnableAll(bool b)
+    {
+        EnableColliders(b);
+        EnableMesh(b);
+        if (b)
+            ResetMeshMaterial();
     }
 
     public void EnableColliders(bool b)

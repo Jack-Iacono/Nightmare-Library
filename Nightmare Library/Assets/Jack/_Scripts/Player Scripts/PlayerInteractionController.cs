@@ -17,11 +17,13 @@ public class PlayerInteractionController : MonoBehaviour
 
     private static KeyCode keyPickup = KeyCode.E;
     private static KeyCode keyPlace = KeyCode.F;
+    private static KeyCode keyThrow = KeyCode.T;
     private static KeyCode keyClick = KeyCode.Mouse0;
 
     private bool isActive = false;
     private bool isPickup = false;
     private bool isClick = false;
+    private bool isThrow = false;
 
     private bool isPlaceStart = false;
     private bool isPlacePressed = false;
@@ -36,7 +38,7 @@ public class PlayerInteractionController : MonoBehaviour
     [SerializeField]
     private Material blockedPlacementMaterial;
     private bool isPlacingItem = false;
-    private Interactable currentPlacingItem;
+    private Interactable currentHeldItem;
     private bool isPlacementValid = false;
 
     // Start is called before the first frame update
@@ -73,34 +75,49 @@ public class PlayerInteractionController : MonoBehaviour
     {
         isClick = Input.GetKeyDown(keyClick);
         isPickup = Input.GetKeyDown(keyPickup);
+        isThrow = Input.GetKeyDown(keyThrow);
 
         isPlaceStart = Input.GetKeyDown(keyPlace);
         isPlaceFinish = Input.GetKeyUp(keyPlace);
         isPlacePressed = Input.GetKey(keyPlace);
         
-        isActive = isClick || isPickup || isPlaceFinish || isPlacePressed || isPlaceStart;
+        isActive = isClick || isPickup || isPlaceFinish || isPlacePressed || isPlaceStart || isThrow;
     }
     private void Check()
     {
         if (!actionBuffering && isActive)
         {
+            // Create the ray that represents where the player is looking
             Ray ray = playerCont.camCont.GetCameraRay();
             RaycastHit hit;
 
+            // Get the currently held item, if there is one, from the Inventory controller
+            InventoryItem temp = InventoryController.Instance.GetCurrentItem();
+            if (!temp.IsEmpty())
+                currentHeldItem = interactables[temp.realObject];
+
+            // Check if the player is throwing the current item
+            if (currentHeldItem != null && isThrow)
+            {
+                // TEMPORARY
+                currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
+                InventoryController.Instance.RemoveCurrentItem();
+                currentHeldItem = null;
+                actionBuffering = true;
+            }
+
+            // Check if the player is looking at a surface
             if (Physics.Raycast(ray, out hit, interactDistance, interactLayers))
             {
-                InventoryItem temp = InventoryController.Instance.GetCurrentItem();
-                if (!temp.IsEmpty())
-                    currentPlacingItem = interactables[temp.realObject];
-
-                if (currentPlacingItem != null)
+                // Check if the player is holding an item
+                if (currentHeldItem != null)
                 {
                     if (isPlaceStart)
                     {
-                        currentPlacingItem.SetMeshMaterial(clearPlacementMaterial);
-                        currentPlacingItem.EnableMesh(true);
+                        currentHeldItem.SetMeshMaterial(clearPlacementMaterial);
+                        currentHeldItem.EnableMesh(true);
 
-                        if (currentPlacingItem.precisePlacement)
+                        if (currentHeldItem.precisePlacement)
                         {
                             PlacementType type = CheckPlacementType(hit);
 
@@ -115,20 +132,20 @@ public class PlayerInteractionController : MonoBehaviour
                     {
                         PlacementType type = CheckPlacementType(hit);
 
-                        if (currentPlacingItem != null && currentPlacingItem.placementTypes.Contains(type))
+                        if (currentHeldItem != null && currentHeldItem.placementTypes.Contains(type))
                         {
-                            if (currentPlacingItem.precisePlacement)
+                            if (currentHeldItem.precisePlacement)
                             {
                                 switch (type)
                                 {
                                     case PlacementType.FLOOR:
-                                        currentPlacingItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                        currentHeldItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         break;
                                     case PlacementType.WALL:
-                                        if(currentPlacingItem.wallPlacementType == 0)
-                                            currentPlacingItem.transform.Rotate(Vector3.forward, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                        if(currentHeldItem.wallPlacementType == 0)
+                                            currentHeldItem.transform.Rotate(Vector3.forward, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         else
-                                            currentPlacingItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                            currentHeldItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         break;
                                 }
                             }
@@ -139,14 +156,14 @@ public class PlayerInteractionController : MonoBehaviour
                         }
 
                         // Check if the object is colliding with other stuff
-                        if (!Physics.CheckBox(currentPlacingItem.transform.position, currentPlacingItem.GetColliderSize() * 0.45f, currentPlacingItem.transform.rotation, interactLayers))
+                        if (!Physics.CheckBox(currentHeldItem.transform.position, currentHeldItem.GetColliderSize() * 0.45f, currentHeldItem.transform.rotation, interactLayers))
                         {
-                            currentPlacingItem.SetMeshMaterial(clearPlacementMaterial);
+                            currentHeldItem.SetMeshMaterial(clearPlacementMaterial);
                             isPlacementValid = true;
                         }
                         else
                         {
-                            currentPlacingItem.SetMeshMaterial(blockedPlacementMaterial);
+                            currentHeldItem.SetMeshMaterial(blockedPlacementMaterial);
                             isPlacementValid = false;
                         }
                     }
@@ -156,18 +173,18 @@ public class PlayerInteractionController : MonoBehaviour
                         {
                             PlacementType type = CheckPlacementType(hit);
 
-                            if (currentPlacingItem.placementTypes.Contains(type))
+                            if (currentHeldItem.placementTypes.Contains(type))
                             {
-                                currentPlacingItem.Place();
+                                currentHeldItem.Place();
                                 InventoryController.Instance.RemoveCurrentItem();
                             }
 
-                            currentPlacingItem = null;
+                            currentHeldItem = null;
                             actionBuffering = true;
                         }
                         else
                         {
-                            currentPlacingItem.EnableMesh(false);
+                            currentHeldItem.EnableMesh(false);
                         }
 
                         isPlacingItem = false;
@@ -175,6 +192,7 @@ public class PlayerInteractionController : MonoBehaviour
                     }
                 }
 
+                // Check for interactions that aren't placing or throwing
                 if (interactables.ContainsKey(hit.collider.gameObject))
                 {
                     if(isClick)
@@ -188,8 +206,8 @@ public class PlayerInteractionController : MonoBehaviour
             else if(isPlacingItem)
             {
                 // Resets the item if it was being placed and the player is now too far from the placement range
-                currentPlacingItem.ResetMeshMaterial();
-                currentPlacingItem.EnableMesh(false);
+                currentHeldItem.ResetMeshMaterial();
+                currentHeldItem.EnableMesh(false);
                 isPlacingItem = false;
                 playerCont.Lock(false);
             }
@@ -208,7 +226,7 @@ public class PlayerInteractionController : MonoBehaviour
 
                 // Get the various components of the rotation
                 float yRot = 0;
-                switch (currentPlacingItem.floorPlacementType)
+                switch (currentHeldItem.floorPlacementType)
                 {
                     case 0:
                         // Face toward the player
@@ -222,23 +240,23 @@ public class PlayerInteractionController : MonoBehaviour
                 float xRot = Mathf.Cos((yRot - hitAngle) * Mathf.Deg2Rad) * slope;
                 float zRot = Mathf.Sin((yRot - hitAngle) * Mathf.Deg2Rad) * slope;
 
-                currentPlacingItem.transform.position = hit.point + MultiplyVector(hit.normal, currentPlacingItem.GetColliderSize()) / 2;
-                currentPlacingItem.transform.rotation = Quaternion.Euler(xRot, yRot, zRot);
+                currentHeldItem.transform.position = hit.point + MultiplyVector(hit.normal, currentHeldItem.GetColliderSize()) / 2;
+                currentHeldItem.transform.rotation = Quaternion.Euler(xRot, yRot, zRot);
                 break;
             case PlacementType.WALL:
                 float wallAngleY = Mathf.Atan2(hit.normal.x, hit.normal.z) * Mathf.Rad2Deg;
                 
-                switch (currentPlacingItem.wallPlacementType)
+                switch (currentHeldItem.wallPlacementType)
                 {
                     case 0:
                         // Back against wall, facing perpendicular
-                        currentPlacingItem.transform.position = hit.point + hit.normal * currentPlacingItem.GetColliderSize().z / 2;
-                        currentPlacingItem.transform.rotation = Quaternion.Euler(0, wallAngleY, 0);
+                        currentHeldItem.transform.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().z / 2;
+                        currentHeldItem.transform.rotation = Quaternion.Euler(0, wallAngleY, 0);
                         break;
                     case 1:
                         // Have bottom against the wall
-                        currentPlacingItem.transform.position = hit.point + hit.normal * currentPlacingItem.GetColliderSize().y / 2;
-                        currentPlacingItem.transform.rotation = Quaternion.Euler(90, wallAngleY, 0);
+                        currentHeldItem.transform.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().y / 2;
+                        currentHeldItem.transform.rotation = Quaternion.Euler(90, wallAngleY, 0);
                         break;
                 }
                 break;

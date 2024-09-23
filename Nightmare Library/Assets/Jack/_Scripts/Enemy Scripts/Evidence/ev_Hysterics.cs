@@ -53,7 +53,7 @@ public class ev_Hysterics : Evidence
             {
                 if (Interactable.interactables.ContainsKey(col[i].gameObject) && Interactable.interactables[col[i].gameObject].allowEnemyHysterics)
                 {
-                    col[0].GetComponent<EnemyInteractable>().EnemyInteractHysterics();
+                    Interactable.interactables[col[i].gameObject].EnemyInteractHysterics();
 
                     interactReady = false;
                     interactCooldownTimer = interactCooldownTime;

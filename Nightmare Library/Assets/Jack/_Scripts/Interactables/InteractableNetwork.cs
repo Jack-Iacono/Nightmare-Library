@@ -199,7 +199,10 @@ public class InteractableNetwork : NetworkBehaviour
             if (IsOwner)
                 ConsumePickupClientRpc(NetworkManager.LocalClientId);
             else
+            {
                 TransmitPickupServerRpc(NetworkManager.LocalClientId);
+                isUpdatingTransform = false;
+            }
         }
     }
     [ServerRpc(RequireOwnership = false)]
@@ -221,7 +224,6 @@ public class InteractableNetwork : NetworkBehaviour
     {
         if (!fromNetwork)
         {
-            Debug.Log(transform.rotation);
             if (IsOwner)
                 ConsumePlaceClientRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation));
             else
@@ -249,9 +251,12 @@ public class InteractableNetwork : NetworkBehaviour
         {
             // Owner will be server
             if (!IsOwner)
+            {
+                isUpdatingTransform = false;
                 TransmitThrowServerRpc(NetworkManager.LocalClientId, parent.trans.position, force, parent.trans.rotation);
+            }
             else
-                ConsumeThrowClientRpc(NetworkManager.LocalClientId);
+                ConsumeThrowClientRpc(NetworkManager.LocalClientId, parent.trans.position, force, parent.trans.rotation);
         }
     }
     [ServerRpc(RequireOwnership = false)]
@@ -263,10 +268,10 @@ public class InteractableNetwork : NetworkBehaviour
         currentUpdateFrame = updateTransformFrequency;
     }
     [ClientRpc]
-    protected virtual void ConsumeThrowClientRpc(ulong sender)
+    protected virtual void ConsumeThrowClientRpc(ulong sender, Vector3 pos, Vector3 force, Quaternion rot)
     {
         if (NetworkManager.LocalClientId != sender)
-            parent.EnableAll(true);
+            parent.Throw(pos, force, true);
     }
     #endregion
 

@@ -13,6 +13,9 @@ public class TaskRushTarget : Node
     private float speedStore = 1;
     private float accelerationStore = 1000;
 
+    private float wallCheckDistance = 2;
+    private LayerMask wallLayers = 1;
+
     public TaskRushTarget(Transform transform, NavMeshAgent navAgent)
     {
         this.transform = transform;
@@ -29,20 +32,25 @@ public class TaskRushTarget : Node
 
         if(navAgent.pathStatus == NavMeshPathStatus.PathComplete)
         {
-            // Check if the agent is still not at the target
-            if (Vector3.Distance(TrimVector(transform.position), TrimVector(target)) > 0.5f)
-            {
-                navAgent.speed = speedStore * 10;
+            Ray wallRay = new Ray(navAgent.transform.position, navAgent.transform.forward);
 
-                navAgent.destination = target;
-                status = Status.RUNNING;
+            Debug.Log("Checking");
+            Debug.DrawRay(wallRay.origin, wallRay.direction, Color.cyan, 0.1f);
+
+            // Check for the ray hitting a wall
+            if (Physics.Raycast(wallRay, wallCheckDistance, wallLayers))
+            {
+                navAgent.speed = speedStore;
+
+                status = Status.SUCCESS;
                 return status;
             }
         }
 
-        navAgent.speed = speedStore;
+        navAgent.speed = speedStore * 10;
 
-        status = Status.SUCCESS;
+        navAgent.destination = target;
+        status = Status.RUNNING;
         return status;
     }
 

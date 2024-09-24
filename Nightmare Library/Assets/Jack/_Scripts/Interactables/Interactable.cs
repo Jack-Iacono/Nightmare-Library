@@ -101,23 +101,25 @@ public class Interactable : MonoBehaviour
     }
     public virtual void Pickup(bool fromNetwork = false)
     {
-        // Decyphers between local pickup and pickup via notification
-        if (!fromNetwork)
+        if (allowPlayerPickup)
         {
-            if (InventoryController.Instance.AddItem(gameObject))
+            // Decyphers between local pickup and pickup via notification
+            if (!fromNetwork)
+            {
+                if (InventoryController.Instance.AddItem(gameObject))
+                {
+                    EnableColliders(false);
+                    EnableMesh(false);
+                    OnPickup?.Invoke(fromNetwork);
+                }
+            }
+            else
             {
                 EnableColliders(false);
                 EnableMesh(false);
                 OnPickup?.Invoke(fromNetwork);
             }
         }
-        else
-        {
-            EnableColliders(false);
-            EnableMesh(false);
-            OnPickup?.Invoke(fromNetwork);
-        }
-        
     }
 
     public virtual void Place(bool fromNetwork = false)

@@ -31,11 +31,7 @@ public class aa_Rush : ActiveAttack
             new Sequence(new List<Node>
             {
                 new CheckIsRushing(),
-                new Selector(new List<Node>
-                {
-                    new TaskRushTarget(owner.transform, owner.navAgent),
-                    new CheckRushStop(owner)
-                }),
+                new TaskRushTarget(owner.transform, owner.navAgent),
                 new TaskStopRush(owner)
             }),
             new Sequence(new List<Node>

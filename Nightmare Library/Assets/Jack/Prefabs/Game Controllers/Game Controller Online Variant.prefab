@@ -75,6 +75,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 8760830056995773257}
+    - targetCorrespondingSourceObject: {fileID: 3131128105750626201, guid: 54117c7e2179bbc4e8cc3427745d15ec,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6480586349976279826}
   m_SourcePrefab: {fileID: 100100000, guid: 54117c7e2179bbc4e8cc3427745d15ec, type: 3}
 --- !u!1 &2256602305233021242 stripped
 GameObject:
@@ -94,7 +98,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3809414350
+  GlobalObjectIdHash: 1077108347
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -118,3 +122,16 @@ MonoBehaviour:
     type: 3}
   onlineEnemyPrefab: {fileID: 6076354374733784215, guid: 56cb585b0c12a6f43bcc76003d82cac7,
     type: 3}
+  spawnedPrefabs: []
+--- !u!114 &-6480586349976279826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2256602305233021242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a1b501ccdb32444cb5dc9b86b71d9ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

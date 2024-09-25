@@ -30,8 +30,11 @@ public class CheckRushStop : Node
         {
             Ray wallRay = new Ray(user.transform.position, user.transform.forward);
 
+            Debug.Log("Checking");
+            Debug.DrawRay(wallRay.origin, wallRay.direction, Color.cyan, 0.1f);
+
             // Check for the ray hitting a wall
-            if(Physics.Raycast(wallRay, wallCheckDistance, wallLayers))
+            if (Physics.Raycast(wallRay, wallCheckDistance, wallLayers))
             {
                 status = Status.SUCCESS;
                 return status;

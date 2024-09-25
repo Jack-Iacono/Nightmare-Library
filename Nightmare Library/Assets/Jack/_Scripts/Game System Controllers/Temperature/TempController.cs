@@ -8,28 +8,38 @@ public class TempController : MonoBehaviour
     public const int maxTemp = 130;
 
     public static int currentTemp = maxTemp / 2;
+    private static int targetTemp = 0;
 
     protected const int tempTickAvg = 2;
     protected const int tempTickDev = 1;
 
-    private const float tickTimeAvg = 4;
-    private const float tickTimeDev = 1;
-    private float tickTimer = 0;
+    private const float updateTickAvg = 4;
+    private const float updateTickDev = 1;
+    private float updateTick = 0;
+
+    private const float tempTickTime = 1;
+    private float tempTick = tempTickTime;
 
     // 0: None, 1: Raising, 2: Lowering
     public static int tempChangeState { get; private set; } = 0;
 
     public delegate void OnTempChangeDelegate(int temp);
     public static event OnTempChangeDelegate OnTempChanged;
-    public static event OnTempChangeDelegate OnTempStateChanged;
+    public delegate void OnTempStateChangeDelegate(int state, bool fromServer);
+    public static event OnTempStateChangeDelegate OnTempStateChanged;
 
+    private void Start()
+    {
+        targetTemp = currentTemp;
+    }
     public void Update()
     {
         // Make sure the game isn't paused
         if (!GameController.gamePaused)
         {
-            if (tickTimer > 0)
-                tickTimer -= Time.deltaTime;
+            // Controls the movement of the target temperature based on external factors
+            if (updateTick > 0)
+                updateTick -= Time.deltaTime;
             else
             {
                 switch (tempChangeState)
@@ -45,46 +55,65 @@ public class TempController : MonoBehaviour
                         break;
                 }
 
-                tickTimer = Random.Range(tickTimeAvg - tickTimeDev, tickTimeAvg + tickTimeDev);
+                updateTick = Random.Range(updateTickAvg - updateTickDev, updateTickAvg + updateTickDev);
+            }
+
+            // Moves the temperature smoothly
+            if(tempTick > 0)
+                tempTick -= Time.deltaTime;
+            else
+            {
+                Debug.Log("Updating Temp");
+                currentTemp = (int)Mathf.MoveTowards(currentTemp, targetTemp, 1);
+                OnTempChanged?.Invoke(currentTemp);
+                tempTick = tempTickTime;
             }
         }
     }
 
     protected void WaverTemp()
     {
-        currentTemp = Mathf.Clamp(currentTemp - Random.Range(-tempTickAvg - tempTickDev, tempTickAvg + tempTickDev), minTemp, maxTemp);
-        OnTempChanged?.Invoke(currentTemp);
+        targetTemp = Mathf.Clamp(targetTemp - Random.Range(-tempTickAvg - tempTickDev, tempTickAvg + tempTickDev), minTemp, maxTemp);
     }
     protected void LowerTemp()
     {
-        currentTemp = Mathf.Clamp(currentTemp - Random.Range(tempTickAvg - tempTickDev, tempTickAvg + tempTickDev), minTemp, maxTemp);
-        OnTempChanged?.Invoke(currentTemp);
+        targetTemp = Mathf.Clamp(targetTemp - Random.Range(tempTickAvg - tempTickDev, tempTickAvg + tempTickDev), minTemp, maxTemp);
     }
     protected void RaiseTemp()
     {
-        currentTemp = Mathf.Clamp(currentTemp + Random.Range(tempTickAvg - tempTickDev, tempTickAvg + tempTickDev), minTemp, maxTemp);
-        OnTempChanged?.Invoke(currentTemp);
+        targetTemp = Mathf.Clamp(targetTemp + Random.Range(tempTickAvg - tempTickDev, tempTickAvg + tempTickDev), minTemp, maxTemp);
+        
     }
 
     public static void LowerTemp(int amount)
     {
-        currentTemp = Mathf.Clamp(currentTemp - amount, minTemp, maxTemp);
-        OnTempChanged?.Invoke(currentTemp);
+        targetTemp = Mathf.Clamp(targetTemp - amount, minTemp, maxTemp);
     }
     public static void RaiseTemp(int amount)
     {
-        currentTemp = Mathf.Clamp(currentTemp + amount, minTemp, maxTemp);
-        OnTempChanged?.Invoke(currentTemp);
+        targetTemp = Mathf.Clamp(targetTemp + amount, minTemp, maxTemp);
     }
 
+    public static void SetTemp(int temp)
+    {
+        targetTemp = temp;
+        currentTemp = temp;
+        OnTempChanged?.Invoke(currentTemp);
+    }
+    public static void SetState(int state)
+    {
+        tempChangeState = state;
+        OnTempStateChanged?.Invoke(tempChangeState, true);
+    }
     public static void ResetTemp()
     {
         currentTemp = Mathf.RoundToInt(maxTemp / 2);
+        targetTemp = currentTemp;
     }
 
     public static void ChangeTempState()
     {
         tempChangeState = (tempChangeState + 1) % 3;
-        OnTempStateChanged?.Invoke(tempChangeState);    
+        OnTempStateChanged?.Invoke(tempChangeState, false);    
     }
 }

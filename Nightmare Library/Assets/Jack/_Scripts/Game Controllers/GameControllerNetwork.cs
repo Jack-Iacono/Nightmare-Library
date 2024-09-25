@@ -104,14 +104,8 @@ public class GameControllerNetwork : NetworkBehaviour
         ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
         ePrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
 
-        GameObject ePrefab2 = Instantiate(onlineEnemyPrefab);
-
-        ePrefab2.name = "Basic Enemy 2 " + instance.OwnerClientId;
-        ePrefab2.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
-
         spawnedPrefabs.Add(pPrefab);
         spawnedPrefabs.Add(ePrefab);
-        spawnedPrefabs.Add(ePrefab2);
     }
     private void ClientSpawn()
     {

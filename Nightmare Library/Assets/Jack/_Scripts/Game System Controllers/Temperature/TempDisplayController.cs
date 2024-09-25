@@ -28,7 +28,7 @@ public class TempDisplayController : MonoBehaviour
     {
         displayText.text = temp.ToString();
     }
-    private void OnTempStateChanged(int state)
+    private void OnTempStateChanged(int state, bool fromNetwork)
     {
         switch (state)
         {

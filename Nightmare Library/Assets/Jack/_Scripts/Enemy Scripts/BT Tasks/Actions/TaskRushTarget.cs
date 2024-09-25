@@ -34,7 +34,6 @@ public class TaskRushTarget : Node
         {
             Ray wallRay = new Ray(navAgent.transform.position, navAgent.transform.forward);
 
-            Debug.Log("Checking");
             Debug.DrawRay(wallRay.origin, wallRay.direction, Color.cyan, 0.1f);
 
             // Check for the ray hitting a wall

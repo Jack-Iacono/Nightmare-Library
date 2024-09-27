@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     public static LayerMask playerLayerMask;
 
     public CameraController camCont;
+    private PlayerInteractionController interactionCont;
 
     private Collider playerCollider;
     [SerializeField]
@@ -57,8 +58,6 @@ public class PlayerController : MonoBehaviour
 
     private CharacterController charCont;
 
-    public static KeyCode keyInteract = KeyCode.Mouse0;
-
     private KeyCode keySprint = KeyCode.LeftShift;
     private bool isSprinting = false;
 
@@ -75,6 +74,7 @@ public class PlayerController : MonoBehaviour
 
         charCont = GetComponent<CharacterController>();
         playerCollider = GetComponent<Collider>();
+        interactionCont = GetComponent<PlayerInteractionController>();
 
         // TEMPORARY
         charCont.enabled = false;
@@ -95,8 +95,8 @@ public class PlayerController : MonoBehaviour
             if (!isTrapped)
             {
                 GetInput();
-                CalculateNormalPlayerMove();
-                MovePlayer();
+                CalculateNormalMove();
+                Move();
             }
             else
             {
@@ -123,7 +123,7 @@ public class PlayerController : MonoBehaviour
             );
         isSprinting = Input.GetKey(keySprint);
     }
-    private void CalculateNormalPlayerMove()
+    private void CalculateNormalMove()
     {
         float moveX = currentInput.x * transform.right.x * moveSpeed + currentInput.z * transform.forward.x * moveSpeed;
         float moveZ = currentInput.x * transform.right.z * moveSpeed + currentInput.z * transform.forward.z * moveSpeed;
@@ -163,7 +163,7 @@ public class PlayerController : MonoBehaviour
             currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
         }
     }
-    private void MovePlayer()
+    private void Move()
     {
         charCont.Move(currentMove * Time.deltaTime);
     }
@@ -183,17 +183,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void AttackPlayer()
+    public void ReceiveAttack()
     {
         if (!NetworkConnectionController.IsOnline)
         {
-            KillPlayer();
+            Kill();
         }
         OnPlayerAttacked?.Invoke(this, EventArgs.Empty);
     }
-    public void KillPlayer()
+    public void Kill()
     {
-        ActivatePlayer(false);
+        Activate(false);
         isAlive = false;
 
         playerCollider.enabled = false;
@@ -219,17 +219,23 @@ public class PlayerController : MonoBehaviour
         trapTimer = duration;
     }
 
-    public void ActivatePlayer(bool b)
+    public void Activate(bool b)
     {
         enabled = b;
         camCont.SetEnabled(b);
         //charCont.enabled = b;
+        interactionCont.enabled = b;
 
         if (b)
         {
             name = "My Player";
             ownerInstance = this;
         }
+    }
+    public void Lock(bool b)
+    {
+        enabled = !b;
+        camCont.enabled = !b;
     }
 
     public static void SpectatePlayer(int index)

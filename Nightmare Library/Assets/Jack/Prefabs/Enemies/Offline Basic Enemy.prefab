@@ -151,11 +151,11 @@ MonoBehaviour:
   attackRange: 2
   spawnLocation: {x: 20, y: 1, z: 0}
   aAttack: 0
-  pAttack: 0
-  evidenceList: 05000000
-  hystericsInteractionLayers:
+  pAttack: 1
+  evidenceList: 000000000100000002000000030000000400000005000000
+  interactionLayers:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 1024
   musicLoverSound: {fileID: 8300000, guid: 8b1299309f3d3f445bb65d62b5352337, type: 3}
   footprintPrefab: {fileID: 462350817080059154, guid: 59f37b89cd452be47915e99718acc448,
     type: 3}
@@ -169,9 +169,6 @@ MonoBehaviour:
   hallucinationMaterial: {fileID: 2100000, guid: e562bb9e10d7cd648babc2c37b64217c,
     type: 2}
   lightFlickerRange: 25
-  lightFlickerInteractionLayers:
-    serializedVersion: 2
-    m_Bits: 512
 --- !u!82 &8230787585620633159
 AudioSource:
   m_ObjectHideFlags: 0

@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2796021658733578478}
   - component: {fileID: 8277916014497907763}
+  - component: {fileID: 1626611085352431638}
+  - component: {fileID: -7234603397361866382}
   m_Layer: 0
   m_Name: Game Controller Offline
   m_TagString: Untagged
@@ -54,3 +56,27 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   gameTimer: 120
+--- !u!114 &1626611085352431638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3131128105750626201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83b2bea92fa683a44ba1374332da525b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-7234603397361866382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3131128105750626201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83d1a7cdcbb4b0845873c5a8a3a7d553, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

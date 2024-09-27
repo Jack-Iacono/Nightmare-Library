@@ -12,11 +12,11 @@ TagManager:
   - Water
   - UI
   - Player
-  - Hysterics Interactable
+  - Ignore NavMesh
   - Monitor Only
-  - Light Flicker Interactable
   - 
-  - 
+  - Interactable
+  - Ignore Physics
   - 
   - 
   - 

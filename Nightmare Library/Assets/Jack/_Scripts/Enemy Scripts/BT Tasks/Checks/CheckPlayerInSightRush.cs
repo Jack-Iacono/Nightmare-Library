@@ -86,7 +86,7 @@ public class CheckPlayerInSightRush : Node
         Ray ray = new Ray(user.transform.position, (currentTarget.position - user.transform.position).normalized);
         RaycastHit hit;
 
-        Physics.Raycast(ray, out hit, 1000, 1);
+        Physics.Raycast(ray, out hit, 1000, aa_Rush.envLayers);
         Debug.DrawRay(ray.origin, ray.direction * 1000, Color.cyan, 0.1f);
 
         user.transform.rotation = Quaternion.Slerp(user.transform.rotation, Quaternion.Euler(user.transform.rotation.x, Mathf.Atan2(ray.direction.x, ray.direction.z) * Mathf.Rad2Deg, user.transform.rotation.z), 0.05f);

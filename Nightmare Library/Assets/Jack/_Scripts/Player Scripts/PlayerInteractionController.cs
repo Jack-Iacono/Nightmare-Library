@@ -29,7 +29,7 @@ public class PlayerInteractionController : MonoBehaviour
     private bool isPlacePressed = false;
     private bool isPlaceFinish = false;
 
-    private float actionBufferTime = 0.5f;
+    private float actionBufferTime = 0.1f;
     private float actionBufferTimer = 0f;
     private bool actionBuffering = false;
 

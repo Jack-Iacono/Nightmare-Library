@@ -20,7 +20,7 @@ public class CheckRushStop : Node
 
     public override Status Check(float dt)
     {
-        object temp = GetData(TaskStartRush.RUSH_KEY);
+        object temp = GetData(TaskRushTarget.RUSH_KEY);
         bool isRushing = false;
 
         if (temp != null)

@@ -10,6 +10,8 @@ public class aa_Rush : ActiveAttack
     private float postRushPause = 3;
     private float sightAngle = -0.4f;
 
+    public static readonly LayerMask envLayers = 1 << 9;
+
     public aa_Rush(Enemy owner) : base(owner)
     {
 

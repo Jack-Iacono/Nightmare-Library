@@ -4,17 +4,24 @@ using UnityEngine;
 using UnityEngine.AI;
 
 using BehaviorTree;
+using Unity.VisualScripting;
+using static UnityEngine.UI.GridLayoutGroup;
 
 public class TaskRushTarget : Node
 {
+    public const string RUSH_KEY = "isRushing";
+
     private NavMeshAgent navAgent;
     private Transform transform;
 
     private float speedStore = 1;
     private float accelerationStore = 1000;
 
-    private float wallCheckDistance = 2;
-    private LayerMask wallLayers = 1;
+    private bool doInitialize = true;
+    private bool isRushing = false;
+    private Vector3 previousFramePosition = Vector3.zero;
+
+    Vector3 target;
 
     public TaskRushTarget(Transform transform, NavMeshAgent navAgent)
     {
@@ -27,26 +34,44 @@ public class TaskRushTarget : Node
 
     public override Status Check(float dt)
     {
-        // Get the current target node
-        Vector3 target = (Vector3)GetData(CheckPlayerInSightChase.PLAYER_KEY);
-
-        if(navAgent.pathStatus == NavMeshPathStatus.PathComplete)
+        // Runs the first time this node is called
+        if (doInitialize)
         {
-            Ray wallRay = new Ray(navAgent.transform.position, navAgent.transform.forward);
+            // Set the settings for the rush
+            navAgent.speed = speedStore * 20;
+            navAgent.acceleration = 10000;
 
-            Debug.DrawRay(wallRay.origin, wallRay.direction, Color.cyan, 0.1f);
+            // Get the current target node
+            target = (Vector3)GetData(CheckPlayerInSightChase.PLAYER_KEY);
 
-            // Check for the ray hitting a wall
-            if (Physics.Raycast(wallRay, wallCheckDistance, wallLayers))
-            {
-                navAgent.speed = speedStore;
+            previousFramePosition = navAgent.transform.position;
 
-                status = Status.SUCCESS;
-                return status;
-            }
+            doInitialize = false;
         }
 
-        navAgent.speed = speedStore * 10;
+        Debug.Log(isRushing);
+
+        if (!isRushing && previousFramePosition != navAgent.transform.position)
+        {
+            navAgent.acceleration = accelerationStore * 0.5f;
+            isRushing = true;
+        }
+        // Check for the ray hitting a wall
+        else if (isRushing && previousFramePosition == navAgent.transform.position)
+        {
+            // Return the navAgent to normal settings
+            navAgent.acceleration = accelerationStore;
+            navAgent.SetDestination(navAgent.transform.position);
+            navAgent.speed = speedStore;
+
+            doInitialize = true;
+            isRushing = false;
+
+            status = Status.SUCCESS;
+            return status;
+        }
+
+        previousFramePosition = navAgent.transform.position;
 
         navAgent.destination = target;
         status = Status.RUNNING;

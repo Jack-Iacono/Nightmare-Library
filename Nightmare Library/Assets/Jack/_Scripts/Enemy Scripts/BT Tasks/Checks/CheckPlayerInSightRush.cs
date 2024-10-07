@@ -58,8 +58,6 @@ public class CheckPlayerInSightRush : Node
 
                         SetPlayerPosition();
 
-                        //user.navAgent.destination = user.transform.position;
-
                         user.navAgent.speed = 0;
 
                         status = Status.SUCCESS;

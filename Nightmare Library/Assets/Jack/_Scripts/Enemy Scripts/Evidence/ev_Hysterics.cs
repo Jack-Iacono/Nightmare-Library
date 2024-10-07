@@ -78,8 +78,6 @@ public class ev_Hysterics : Evidence
                 // Chance succeeded and now the enemy will interact and reset it's odds back to base
                 currentInteractChance = baseInteractChance;
                 interactReady = true;
-
-                Debug.Log("Hysterics Ready");
             }
             else
             {

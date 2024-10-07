@@ -112,6 +112,7 @@ public class PlayerInteractionController : MonoBehaviour
                 // Check if the player is holding an item
                 if (currentHeldItem != null)
                 {
+                    Debug.Log(isPlaceStart + " || " + isPlacePressed + " || " + isPlaceFinish);
                     if (isPlaceStart)
                     {
                         currentHeldItem.SetMeshMaterial(clearPlacementMaterial);

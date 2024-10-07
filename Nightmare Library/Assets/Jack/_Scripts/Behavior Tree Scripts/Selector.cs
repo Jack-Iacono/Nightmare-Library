@@ -13,6 +13,7 @@ namespace BehaviorTree
 
         public override Status Check(float dt)
         {
+            // Will continue running other nodes if the node returns failure or some other result that doesn't exist
             foreach (Node node in children)
             {
                 switch (node.Check(dt))

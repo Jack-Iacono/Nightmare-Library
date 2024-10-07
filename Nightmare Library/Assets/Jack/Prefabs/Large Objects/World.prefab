@@ -221,6 +221,7 @@ GameObject:
   - component: {fileID: 9203177851520138802}
   - component: {fileID: 3747575056596109310}
   - component: {fileID: 3208980765957805196}
+  - component: {fileID: 5560280340990144908}
   m_Layer: 0
   m_Name: Patrol Point
   m_TagString: Untagged
@@ -293,6 +294,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &5560280340990144908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 629686845170149241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ca442bbadd755844b2b7bcc72819c7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2203004127555209752
 GameObject:
   m_ObjectHideFlags: 0
@@ -347,6 +360,7 @@ GameObject:
   - component: {fileID: 8149298480477800806}
   - component: {fileID: 4208932000865908848}
   - component: {fileID: 7689133961806685968}
+  - component: {fileID: 2022938672378537837}
   m_Layer: 0
   m_Name: Patrol Point
   m_TagString: Untagged
@@ -419,6 +433,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &2022938672378537837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3139863729039785155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ca442bbadd755844b2b7bcc72819c7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3381949818520697280
 GameObject:
   m_ObjectHideFlags: 0
@@ -757,6 +783,7 @@ GameObject:
   - component: {fileID: 1535501886291420775}
   - component: {fileID: 2763800345134943461}
   - component: {fileID: 2696405585870876876}
+  - component: {fileID: 426756623008615455}
   m_Layer: 0
   m_Name: Patrol Point
   m_TagString: Untagged
@@ -829,6 +856,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &426756623008615455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5335925858443880101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ca442bbadd755844b2b7bcc72819c7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6210280395799680199
 GameObject:
   m_ObjectHideFlags: 0
@@ -945,6 +984,7 @@ GameObject:
   - component: {fileID: 2446184374421043339}
   - component: {fileID: 923236771092088043}
   - component: {fileID: 2125656171761370178}
+  - component: {fileID: 4303102995875203060}
   m_Layer: 0
   m_Name: Patrol Point
   m_TagString: Untagged
@@ -1017,6 +1057,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4303102995875203060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6694204335364007364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ca442bbadd755844b2b7bcc72819c7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7160474254291615724
 GameObject:
   m_ObjectHideFlags: 0

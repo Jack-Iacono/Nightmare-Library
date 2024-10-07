@@ -7,11 +7,10 @@ public class TaskWait : Node
     protected float waitTimer { get; private set; }
     protected float waitDiff { get; private set; }
 
-    protected string waitLabel { get; private set; }
+    private bool timerFinished = false;
 
-    public TaskWait(string waitLabel, float waitTime, float waitDiff = 0)
+    public TaskWait(float waitTime, float waitDiff = 0)
     {
-        this.waitLabel = waitLabel;
         this.waitTime = waitTime;
         this.waitDiff = waitDiff;
     }
@@ -20,40 +19,39 @@ public class TaskWait : Node
     {
         if (TickCondition())
         {
-            if (GetData(waitLabel) == null)
-                parent.SetData(waitLabel, false);
-
-            if ((bool)GetData(waitLabel))
+            if (!timerFinished)
             {
-                waitTimer -= dt;
                 if (waitTimer > 0)
                 {
-                    OnTick(waitTimer);
+                    waitTimer -= dt;
+
+                    if (waitTimer > 0)
+                    {
+                        OnTick(waitTimer);
+
+                        status = Status.RUNNING;
+                        return status;
+                    }
+
+                    timerFinished = true;
+                    OnEnd();
+                }
+                else
+                {
+                    // Gets a random time within the given contraints
+                    waitTimer = Random.Range(waitTime + waitDiff / 2, waitTime - waitDiff / 2);
+
+                    OnStart();
 
                     status = Status.RUNNING;
                     return status;
                 }
 
-                OnEnd();
-                parent.SetData(waitLabel, false);
-
                 status = Status.SUCCESS;
-                return status;
-            }
-            else
-            {
-                // Gets a random time within the given contraints
-                waitTimer = Random.Range(waitTime + waitDiff / 2, waitTime - waitDiff / 2);
-                parent.SetData(waitLabel, true);
-
-                OnStart();
-
-                status = Status.RUNNING;
                 return status;
             }
         }
 
-        parent.SetData(waitLabel, false);
         waitTimer = 0;
 
         status = Status.FAILURE;
@@ -66,4 +64,14 @@ public class TaskWait : Node
 
     protected virtual bool TickCondition() { return true; }
 
+    protected override void SetParent(Node n)
+    {
+        base.SetParent(n);
+        parent.OnReset += OnParentReset;
+    }
+    protected virtual void OnParentReset()
+    {
+        timerFinished = false;
+        waitTimer = 0;
+    }
 }

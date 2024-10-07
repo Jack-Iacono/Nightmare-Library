@@ -6,7 +6,7 @@ public class TaskIdolWait : TaskWait
 {
     private string placementLabel;
 
-    public TaskIdolWait(string waitLabel, string placementLabel, float waitTime, float waitDiff = 0) : base(waitLabel, waitTime, waitDiff)
+    public TaskIdolWait(string placementLabel, float waitTime, float waitDiff = 0) : base(waitTime, waitDiff)
     {
         this.placementLabel = placementLabel;
     }

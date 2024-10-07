@@ -95,8 +95,8 @@ GameObject:
   - component: {fileID: 6893969277345650875}
   - component: {fileID: 3953284871925788144}
   - component: {fileID: 8861432142527287153}
-  - component: {fileID: 2887163469648423159}
-  m_Layer: 2
+  - component: {fileID: 5501774863480536854}
+  m_Layer: 0
   m_Name: Desk Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -171,22 +171,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07d808bd830416b4eae67c605d8ff0d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &2887163469648423159
-MonoBehaviour:
+--- !u!208 &5501774863480536854
+NavMeshObstacle:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6627387788945454114}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 35e95dc5ff2b64380880dd7ac5922847, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Size: {x: 10, y: 5, z: 10}
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 5, y: 2.5, z: 5}
+  m_MoveThreshold: 0.1
+  m_Carve: 1
+  m_CarveOnlyStationary: 1
   m_Center: {x: 0, y: 0, z: 0}
-  m_Area: 1
-  m_AffectedAgents: ffffffff
+  m_TimeToStationary: 0.5
 --- !u!1001 &392651609307319057
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -195,10 +195,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -269,10 +279,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -343,10 +363,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -417,10 +447,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -491,10 +531,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -565,10 +615,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -639,10 +699,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -713,10 +783,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -787,10 +867,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -861,10 +951,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
@@ -935,10 +1035,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Name
       value: Idol 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 5014641453759392885, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6290304446189724128, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}

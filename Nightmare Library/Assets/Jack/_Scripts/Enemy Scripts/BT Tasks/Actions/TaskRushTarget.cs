@@ -49,11 +49,9 @@ public class TaskRushTarget : Node
             doInitialize = false;
         }
 
-        Debug.Log(isRushing);
-
         if (!isRushing && previousFramePosition != navAgent.transform.position)
         {
-            navAgent.acceleration = accelerationStore * 0.5f;
+            //navAgent.acceleration = accelerationStore * 0.5f;
             isRushing = true;
         }
         // Check for the ray hitting a wall

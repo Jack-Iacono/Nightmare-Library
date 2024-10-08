@@ -6,13 +6,18 @@ public class TaskWait : Node
     protected float waitTime { get; private set; }
     protected float waitTimer { get; private set; }
     protected float waitDiff { get; private set; }
+    /// <summary>
+    /// When the timer will restart, 0 = On Reset, 1 = On End
+    /// </summary>
+    protected int resetType { get; private set; }
 
     private bool timerFinished = false;
 
-    public TaskWait(float waitTime, float waitDiff = 0)
+    public TaskWait(float waitTime, float waitDiff = 0, int resetType = 0)
     {
         this.waitTime = waitTime;
         this.waitDiff = waitDiff;
+        this.resetType = resetType;
     }
 
     public override Status Check(float dt)
@@ -33,7 +38,11 @@ public class TaskWait : Node
                         return status;
                     }
 
-                    timerFinished = true;
+                    if (resetType == 1)
+                        ResetTimer();
+                    else
+                        timerFinished = true;
+
                     OnEnd();
                 }
                 else
@@ -58,6 +67,12 @@ public class TaskWait : Node
         return status;
     }
 
+    private void ResetTimer() 
+    {
+        timerFinished = false;
+        waitTimer = 0;
+    }
+
     protected virtual void OnStart() { }
     protected virtual void OnEnd() { }
     protected virtual void OnTick(float time) { }
@@ -67,11 +82,12 @@ public class TaskWait : Node
     protected override void SetParent(Node n)
     {
         base.SetParent(n);
-        parent.OnReset += OnParentReset;
+        parent.OnReset += OnResetNode;
     }
-    protected virtual void OnParentReset()
+    protected override void OnResetNode()
     {
-        timerFinished = false;
-        waitTimer = 0;
+        base.OnResetNode();
+        if(resetType == 0)
+            ResetTimer();
     }
 }

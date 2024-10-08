@@ -99,8 +99,14 @@ namespace BehaviorTree
         protected virtual void SetParent(Node n)
         {
             parent = n;
+            parent.OnReset += OnResetNode;
         }
+
         protected void InvokeReset()
+        {
+            OnReset?.Invoke();
+        }
+        protected virtual void OnResetNode()
         {
             OnReset?.Invoke();
         }

@@ -9,7 +9,7 @@ public class TaskRushCooldown : TaskWait
     Enemy owner;
     NavMeshAgent navAgent;
 
-    public TaskRushCooldown(float waitTimer, Enemy owner) : base(waitTimer)
+    public TaskRushCooldown(float waitTimer, Enemy owner, int resetType = 0) : base(waitTimer, default, resetType)
     {
         this.owner = owner;
         navAgent = owner.navAgent;
@@ -18,11 +18,9 @@ public class TaskRushCooldown : TaskWait
     protected override void OnStart()
     {
         navAgent.destination = navAgent.transform.position;
-        Debug.Log("Starting Rush Cooldown");
     }
     protected override void OnEnd()
     {
-        OnParentReset();
         parent.SetData(TaskStopRush.COOLDOWN_KEY, false);
     }
 
@@ -32,9 +30,5 @@ public class TaskRushCooldown : TaskWait
         if (temp != null)
             return (bool)temp;
         return false;
-    }
-    protected override void OnParentReset()
-    {
-        base.OnParentReset(); 
     }
 }

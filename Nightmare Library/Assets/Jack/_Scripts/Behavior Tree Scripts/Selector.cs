@@ -21,6 +21,7 @@ namespace BehaviorTree
                     case Status.FAILURE:
                         continue;
                     case Status.SUCCESS:
+                        InvokeReset();
                         status = Status.SUCCESS;
                         return status;
                     case Status.RUNNING:
@@ -31,6 +32,7 @@ namespace BehaviorTree
                 }
             }
 
+            InvokeReset();
             status = Status.FAILURE;
             return status;
         }

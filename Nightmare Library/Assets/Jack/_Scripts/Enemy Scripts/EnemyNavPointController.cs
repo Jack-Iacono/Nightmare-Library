@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
 
@@ -14,43 +15,49 @@ public class EnemyNavPointController : MonoBehaviour
         position = transform.position;
     }
 
-    public static Vector3 GetClosestNavPoint(Vector3 pos)
+    public static EnemyNavPointController GetClosestNavPoint(Vector3 pos)
     {
         // TEMPORARY!!! using this method to save memory, I do know that this isn't the distance formula
         float minDistance = float.MaxValue;
-        Vector3 closest = Vector3.zero;
+        EnemyNavPointController closest = null;
 
-        foreach(EnemyNavPointController e in enemyNavPoints)
+        foreach (EnemyNavPointController e in enemyNavPoints)
         {
             float dist = Mathf.Abs(pos.x - e.position.x) + Mathf.Abs(pos.y - e.position.y) + Mathf.Abs(pos.z - e.position.z);
-            if(dist < minDistance)
+            if (dist < minDistance)
             {
-                closest = e.position;
+                closest = e;
                 minDistance = dist;
             }
         }
         return closest;
     }
-    public static Vector3 GetFarthestNavPoint(Vector3 pos)
+    public static EnemyNavPointController GetFarthestNavPoint(Vector3 pos)
     {
         // TEMPORARY!!! using this method to save memory, I do know that this isn't the distance formula
         float maxDistance = float.MinValue;
-        Vector3 farthest = Vector3.zero;
+        EnemyNavPointController farthest = null;
 
         foreach (EnemyNavPointController e in enemyNavPoints)
         {
             float dist = Mathf.Abs(pos.x - e.position.x) + Mathf.Abs(pos.y - e.position.y) + Mathf.Abs(pos.z - e.position.z);
             if (dist > maxDistance)
             {
-                farthest = e.position;
+                farthest = e;
                 maxDistance = dist;
             }
         }
         return farthest;
     }
-    public static Vector3 GetRandomNavPoint()
+    public static EnemyNavPointController GetRandomNavPoint()
     {
-        return enemyNavPoints[Random.Range(0, enemyNavPoints.Count)].position;
+        return enemyNavPoints[Random.Range(0, enemyNavPoints.Count)];
+    }
+    public static EnemyNavPointController GetRandomNavPoint(EnemyNavPointController exclude)
+    {
+        List<EnemyNavPointController> newList = new List<EnemyNavPointController>(enemyNavPoints);
+        newList.Remove(exclude);
+        return newList[Random.Range(0, newList.Count)];
     }
 
     private void OnDestroy()

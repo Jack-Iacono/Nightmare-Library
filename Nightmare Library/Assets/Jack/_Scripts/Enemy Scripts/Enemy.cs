@@ -24,8 +24,8 @@ public class Enemy : MonoBehaviour
 
     public ObjectPool objPool = new ObjectPool();
 
-    public enum aAttackEnum { RUSH };
-    public enum pAttackEnum { IDOLS, TEMP };
+    public enum aAttackEnum { RUSH, STALKER, NULL };
+    public enum pAttackEnum { IDOLS, TEMP, NULL };
 
     [Header("Attack Variables")]
     [SerializeField]
@@ -97,6 +97,9 @@ public class Enemy : MonoBehaviour
             case aAttackEnum.RUSH:
                 activeAttackTree = new aa_Rush(this);
                 break;
+            case aAttackEnum.STALKER:
+                activeAttackTree = new aa_Stalk(this);
+                break;
         }
 
         switch (pAttack)
@@ -109,8 +112,10 @@ public class Enemy : MonoBehaviour
                 break;
         }
 
-        activeAttackTree.Initialize();
-        passiveAttackTree.Initialize();
+        if(activeAttackTree != null)
+            activeAttackTree.Initialize();
+        if(passiveAttackTree != null)
+            passiveAttackTree.Initialize();
 
         for(int i = 0; i < evidenceList.Count; i++)
         {
@@ -156,8 +161,10 @@ public class Enemy : MonoBehaviour
     {
         float dt = Time.deltaTime;
 
-        activeAttackTree.UpdateTree(dt);
-        passiveAttackTree.Update(dt);
+        if(activeAttackTree != null )
+            activeAttackTree.UpdateTree(dt);
+        if(passiveAttackTree != null )
+            passiveAttackTree.Update(dt);
 
         foreach (Evidence e in evidence)
         {

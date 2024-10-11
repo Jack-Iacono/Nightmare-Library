@@ -55,10 +55,10 @@ public class TaskWait : Node
                     status = Status.RUNNING;
                     return status;
                 }
-
-                status = Status.SUCCESS;
-                return status;
             }
+
+            status = Status.SUCCESS;
+            return status;
         }
 
         waitTimer = 0;

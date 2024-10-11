@@ -12,7 +12,7 @@ public class aa_Stalk : ActiveAttack
     private int stalkAttemptMax = 4;
     public int stalkAttemptCounter = 0;
 
-    public PlayerController currentTarget;
+    public PlayerController currentTarget { get; private set; } = null;
 
     public static readonly LayerMask envLayers = 1 << 9 | 1 << 2;
 
@@ -30,7 +30,21 @@ public class aa_Stalk : ActiveAttack
         {
             new Sequence(new List<Node>()
             {
-                new TaskTimedWander(owner.navAgent),
+                new CheckInPlayerSight(this, owner),
+                new TaskWait(1),
+                new TaskRunAway(owner.navAgent),
+            }),
+            new Sequence(new List<Node>()
+            {
+                new CheckStalkCloseIn(this, owner.navAgent, 10),
+                new TaskMakeNoise(),
+                new TaskWait(3),
+                new TaskStalkCloseIn(this, owner.navAgent)
+            }),
+            new TaskStalkApproach(this, owner.navAgent),
+            new Sequence(new List<Node>()
+            {
+                new TaskTimedWander(this, owner.navAgent),
                 new TaskStartStalking(this)
             })
         });
@@ -47,5 +61,13 @@ public class aa_Stalk : ActiveAttack
         stalkAttemptCounter = Random.Range(stalkAttemptMin, stalkAttemptMax + 1);
         // Set the stalking target for this attack
         currentTarget = PlayerController.playerInstances[Random.Range(0, PlayerController.playerInstances.Count)];
+    }
+    public void RemoveTarget()
+    {
+        currentTarget = null;
+    }
+    public void UseStalkAttempt()
+    {
+        stalkAttemptCounter--;
     }
 }

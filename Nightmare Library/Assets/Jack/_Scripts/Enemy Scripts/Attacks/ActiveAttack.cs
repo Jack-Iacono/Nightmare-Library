@@ -11,6 +11,9 @@ public abstract class ActiveAttack : BehaviorTree.Tree
 
     protected Enemy owner;
 
+    // These variables are used among almost all attacks
+    public Transform currentTarget { get; protected set; } = null;
+
     public ActiveAttack(Enemy owner)
     {
         this.owner = owner;

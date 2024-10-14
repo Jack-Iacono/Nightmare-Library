@@ -36,7 +36,7 @@ public class CheckInPlayerSight : Node
         }
         else if(owner.currentTarget != null)
         {
-            Transform player = owner.currentTarget.transform;
+            Transform player = owner.currentTarget;
 
             RaycastHit hit;
             Ray ray = new Ray(player.transform.position, (transform.position - player.position).normalized);
@@ -64,7 +64,6 @@ public class CheckInPlayerSight : Node
 
     protected override void OnResetNode()
     {
-        Debug.Log("Reset");
         base.OnResetNode();
         passCheck = false;
     }

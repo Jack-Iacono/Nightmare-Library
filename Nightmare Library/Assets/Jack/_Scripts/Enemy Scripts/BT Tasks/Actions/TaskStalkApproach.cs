@@ -23,7 +23,7 @@ public class TaskStalkApproach : Node
     {
         if(owner.stalkAttemptCounter > 0)
         {
-            navAgent.destination = owner.currentTarget.transform.position;
+            navAgent.destination = owner.currentTarget.position;
             navAgent.speed = speed;
             navAgent.acceleration = acceleration;
 

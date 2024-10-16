@@ -7,6 +7,7 @@ using UnityEngine.AI;
 public class aa_Stalk : ActiveAttack
 {
     private float sightAngle = -0.4f;
+    public PlayerController currentTargetPlayer;
 
     protected int stalkAttemptMin = 2;
     protected int stalkAttemptMax = 4;
@@ -26,6 +27,19 @@ public class aa_Stalk : ActiveAttack
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
         {
+            // Handle Players Entering Office Area
+            new Sequence(new List<Node>()
+            {
+                // Check if the target player is at the desk
+                new CheckStalkTargetInMap(this),
+                new Selector(new List<Node>()
+                {
+                    // Attempt to assign a new target
+                    new TaskAssignStalkTarget(this),
+                    // End the stalk phase due to lack of players
+                    new TaskResetStalk(this)
+                })
+            }),
             // Attack Behavior
             new Sequence(new List<Node>()
             {
@@ -38,7 +52,7 @@ public class aa_Stalk : ActiveAttack
             new Sequence(new List<Node>()
             {
                 new CheckInPlayerSight(this, owner),
-                new TaskWait(1),
+                new TaskWait(0.5f),
                 new TaskRunAway(owner.navAgent),
             }),
             // Close In Behavior
@@ -59,7 +73,7 @@ public class aa_Stalk : ActiveAttack
             new Sequence(new List<Node>()
             {
                 new TaskTimedWander(this, owner.navAgent),
-                new TaskStartStalking(this)
+                new TaskAssignStalkTarget(this)
             })
         });
 
@@ -69,16 +83,34 @@ public class aa_Stalk : ActiveAttack
         return root;
     }
 
-    public void BeginStalking()
+    public bool BeginStalking()
     {
-        // Set the amount of stalking attempts this attack will have
-        stalkAttemptCounter = Random.Range(stalkAttemptMin, stalkAttemptMax + 1);
-        // Set the stalking target for this attack
-        currentTarget = PlayerController.playerInstances[Random.Range(0, PlayerController.playerInstances.Count)].transform;
+        if(DeskController.playersAtDesk.Count < PlayerController.playerInstances.Count)
+        {
+            // Set the amount of stalking attempts this attack will have
+            stalkAttemptCounter = Random.Range(stalkAttemptMin, stalkAttemptMax + 1);
+
+            // Remove any players that are at the desk
+            List<PlayerController> validPlayers = new List<PlayerController>(PlayerController.playerInstances);
+            foreach(PlayerController p in DeskController.playersAtDesk)
+            {
+                validPlayers.Remove(p);
+            }
+
+            // Set the stalking target for this attack
+            int rand = Random.Range(0, validPlayers.Count);
+            currentTargetPlayer = validPlayers[rand];
+            SetCurrentTarget(currentTargetPlayer.transform);
+
+            return true;
+        }
+
+        return false;
     }
     public void RemoveTarget()
     {
-        currentTarget = null;
+        SetCurrentTarget(null);
+        currentTargetPlayer = null;
     }
 
     public void UseStalkAttempt()

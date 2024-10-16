@@ -14,6 +14,8 @@ public class TaskResetStalk : Node
     }
     public override Status Check(float dt)
     {
+        Debug.Log("Reset Stalk");
+
         owner.EmptyStalkAttempts();
         owner.RemoveTarget();
 

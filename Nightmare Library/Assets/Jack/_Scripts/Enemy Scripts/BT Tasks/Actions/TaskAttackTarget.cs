@@ -16,7 +16,7 @@ public class TaskAttackTarget : Node
     }
     public override Status Check(float dt)
     {
-        if(hasAttacked) 
+        if(!hasAttacked) 
         {
             agent.speed = 0;
             Debug.Log("Attack Player");

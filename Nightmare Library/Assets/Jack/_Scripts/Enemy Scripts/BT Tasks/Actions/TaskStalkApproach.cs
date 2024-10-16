@@ -12,7 +12,7 @@ public class TaskStalkApproach : Node
     private float speed;
     private float acceleration;
 
-    public TaskStalkApproach(aa_Stalk owner, NavMeshAgent navAgent, float speed = 5, float acceleration = 400)
+    public TaskStalkApproach(aa_Stalk owner, NavMeshAgent navAgent, float speed = 20, float acceleration = 400)
     {
         this.owner = owner;
         this.navAgent = navAgent;
@@ -21,9 +21,11 @@ public class TaskStalkApproach : Node
     }
     public override Status Check(float dt)
     {
+        
+
         if(owner.stalkAttemptCounter > 0)
         {
-            navAgent.destination = owner.currentTarget.position;
+            navAgent.destination = owner.currentTargetDynamic.position;
             navAgent.speed = speed;
             navAgent.acceleration = acceleration;
 

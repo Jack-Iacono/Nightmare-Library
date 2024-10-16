@@ -27,7 +27,7 @@ public class TaskTimedWander : Node
     private EnemyNavPointController currentNavPoint = null;
     private Vector3 targetLocation;
 
-    public TaskTimedWander(aa_Stalk owner, NavMeshAgent navAgent, float wanderTimeMin = 5, float wanderTimeMax = 10)
+    public TaskTimedWander(aa_Stalk owner, NavMeshAgent navAgent, float wanderTimeMin = 1, float wanderTimeMax = 5)
     {
         transform = navAgent.transform;
         this.navAgent = navAgent;
@@ -38,16 +38,12 @@ public class TaskTimedWander : Node
     }
     public override Status Check(float dt)
     {
-        if (owner.currentTarget != null)
-            owner.RemoveTarget();
-
         // Timer for how long the enemy should wander for
         if (wanderTimer > 0)
             wanderTimer -= dt;
         else
         {
             wanderTimer = Random.Range(wanderTimeMin, wanderTimeMax);
-            GetNewTarget();
             status = Status.SUCCESS;
             return status;
         }

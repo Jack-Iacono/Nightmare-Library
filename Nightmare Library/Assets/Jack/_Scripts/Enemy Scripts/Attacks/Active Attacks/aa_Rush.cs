@@ -6,11 +6,11 @@ using UnityEngine.AI;
 
 public class aa_Rush : ActiveAttack
 {
+    public bool isRushing = false;
+
     private float preRushPause = 1;
     private float postRushPause = 3;
     private float sightAngle = -0.4f;
-
-    public static readonly LayerMask envLayers = 1 << 9 | 1 << 2;
 
     public aa_Rush(Enemy owner) : base(owner)
     {
@@ -24,23 +24,20 @@ public class aa_Rush : ActiveAttack
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
         {
-            new TaskRushCooldown(postRushPause, owner),
-            new Sequence(new List<Node>()
+            // Attack any player that gets within range
+            new TaskAttackPlayersInRange(owner.navAgent, 3),
+            new Sequence(new List<Node>
             {
-                new CheckInAttackRange(owner),
-                new TaskAttackPlayerQuick(3, owner)
+                new CheckIsRushing(this),
+                new TaskRushTarget(this, owner.navAgent),
+                new TaskWait(postRushPause),
+                new TaskStopRush(this)
             }),
             new Sequence(new List<Node>
             {
-                new CheckIsRushing(),
-                new TaskRushTarget(owner.transform, owner.navAgent),
-                new TaskStopRush(owner)
-            }),
-            new Sequence(new List<Node>
-            {
-                new CheckPlayerInSightRush(owner, owner.fovRange, sightAngle),
+                new CheckPlayerInSight(this, owner.navAgent, owner.fovRange, sightAngle),
                 new TaskWait(preRushPause),
-                new TaskStartRush(owner)
+                new TaskStartRush(this)
             }),
             new TaskPatrol(owner.transform, EnemyNavPointController.enemyNavPoints, owner.navAgent)
         });

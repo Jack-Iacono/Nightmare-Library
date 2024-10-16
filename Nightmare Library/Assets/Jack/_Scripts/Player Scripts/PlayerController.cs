@@ -6,6 +6,7 @@ using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEditor.PackageManager;
 using UnityEngine;
+using static UnityEngine.UI.GridLayoutGroup;
 
 public class PlayerController : MonoBehaviour
 {
@@ -166,6 +167,14 @@ public class PlayerController : MonoBehaviour
     private void Move()
     {
         charCont.Move(currentMove * Time.deltaTime);
+
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            float pAng = transform.rotation.eulerAngles.y;
+            float sightAng = 30;
+            float rand = UnityEngine.Random.Range(pAng + sightAng, pAng + (360 - sightAng));
+            Debug.Log((rand % 360).ToString() + " || Bounds: " + (pAng + sightAng).ToString() + " - " + (pAng + (360 - sightAng)).ToString());
+        }
     }
 
     public void OnDestroy()

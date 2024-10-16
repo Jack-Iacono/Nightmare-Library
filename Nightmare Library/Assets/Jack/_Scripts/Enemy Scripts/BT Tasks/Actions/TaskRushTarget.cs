@@ -4,18 +4,15 @@ using UnityEngine;
 using UnityEngine.AI;
 
 using BehaviorTree;
-using Unity.VisualScripting;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class TaskRushTarget : Node
 {
-    public const string RUSH_KEY = "isRushing";
-
+    private ActiveAttack owner;
     private NavMeshAgent navAgent;
     private Transform transform;
 
-    private float speedStore = 1;
-    private float accelerationStore = 1000;
+    private float speed = 50;
+    private float acceleration = 1000;
 
     private bool doInitialize = true;
     private bool isRushing = false;
@@ -23,13 +20,13 @@ public class TaskRushTarget : Node
 
     Vector3 target;
 
-    public TaskRushTarget(Transform transform, NavMeshAgent navAgent)
+    public TaskRushTarget(ActiveAttack owner, NavMeshAgent navAgent, float speed = 50, float acceleration = 1000)
     {
-        this.transform = transform;
+        this.owner = owner;
+        transform = navAgent.transform;
         this.navAgent = navAgent;
-
-        speedStore = navAgent.speed;
-        accelerationStore = navAgent.acceleration;
+        this.speed = speed;
+        this.acceleration = acceleration;
     }
 
     public override Status Check(float dt)
@@ -38,29 +35,22 @@ public class TaskRushTarget : Node
         if (doInitialize)
         {
             // Set the settings for the rush
-            navAgent.speed = speedStore * 20;
-            navAgent.acceleration = 10000;
+            navAgent.speed = speed;
+            navAgent.acceleration = acceleration;
 
             // Get the current target node
-            target = (Vector3)GetData(CheckPlayerInSightChase.PLAYER_KEY);
-
+            navAgent.destination = owner.currentTargetStatic;
             previousFramePosition = navAgent.transform.position;
-
             doInitialize = false;
         }
 
         if (!isRushing && previousFramePosition != navAgent.transform.position)
-        {
-            //navAgent.acceleration = accelerationStore * 0.5f;
             isRushing = true;
-        }
         // Check for the ray hitting a wall
         else if (isRushing && previousFramePosition == navAgent.transform.position)
         {
             // Return the navAgent to normal settings
-            navAgent.acceleration = accelerationStore;
             navAgent.SetDestination(navAgent.transform.position);
-            navAgent.speed = speedStore;
 
             doInitialize = true;
             isRushing = false;
@@ -71,9 +61,13 @@ public class TaskRushTarget : Node
 
         previousFramePosition = navAgent.transform.position;
 
-        navAgent.destination = target;
         status = Status.RUNNING;
         return status;
+    }
+    protected override void OnResetNode()
+    {
+        base.OnResetNode();
+        doInitialize = true;
     }
 
     /// <summary>

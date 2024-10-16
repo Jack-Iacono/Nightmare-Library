@@ -22,7 +22,7 @@ public class CheckTargetInRange : Node
     }
     public override Status Check(float dt)
     {
-        if (passCheck || (owner.currentTarget != null && Vector3.SqrMagnitude(transform.position - owner.currentTarget.position) < range * range))
+        if (passCheck || (owner.currentTargetDynamic != null && Vector3.SqrMagnitude(transform.position - owner.currentTargetDynamic.position) < range * range))
         {
             if (!passCheck)
                 InRangeAction();

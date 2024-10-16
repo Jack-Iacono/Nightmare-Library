@@ -21,7 +21,7 @@ public class TaskStalkCloseIn : Node
     }
     public override Status Check(float dt)
     {
-        navAgent.destination = owner.currentTarget.position;
+        navAgent.destination = owner.currentTargetDynamic.position;
         navAgent.speed = speed;
         navAgent.acceleration = acceleration;
 

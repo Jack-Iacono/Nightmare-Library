@@ -1,25 +1,22 @@
+using BehaviorTree;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-using BehaviorTree;
-
-public class CheckIsRushing : Node
+public class CheckStalkTargetInMap : Node
 {
-    private aa_Rush owner;
-
-    public CheckIsRushing(aa_Rush owner) : base()
+    private aa_Stalk owner;
+    public CheckStalkTargetInMap(aa_Stalk owner)
     {
         this.owner = owner;
     }
     public override Status Check(float dt)
     {
-        if (owner.isRushing)
+        if (DeskController.playersAtDesk.Contains(owner.currentTargetPlayer))
         {
             status = Status.SUCCESS;
             return status;
         }
-
         status = Status.FAILURE;
         return status;
     }

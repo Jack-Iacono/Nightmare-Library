@@ -34,25 +34,28 @@ public class CheckInPlayerSight : Node
             status = Status.SUCCESS;
             return status;
         }
-        else if(owner.currentTarget != null)
+        else if(owner.currentTargetDynamic != null)
         {
-            Transform player = owner.currentTarget;
-
-            RaycastHit hit;
-            Ray ray = new Ray(player.transform.position, (transform.position - player.position).normalized);
-
-            // Check if the player is within the vision arc
-            if (Vector3.Dot(player.forward, ray.direction) >= sightAngle)
+            foreach(PlayerController p in PlayerController.playerInstances)
             {
-                // Check if the player is behind any walls / obstructions
-                if (Physics.Raycast(ray.origin, ray.direction, out hit, fovRange))
-                {
-                    if (hit.collider.gameObject == user.gameObject)
-                    {
-                        passCheck = true;
+                Transform player = p.transform;
 
-                        status = Status.SUCCESS;
-                        return status;
+                RaycastHit hit;
+                Ray ray = new Ray(player.transform.position, (transform.position - player.position).normalized);
+
+                // Check if the player is within the vision arc
+                if (Vector3.Dot(player.forward, ray.direction) >= sightAngle)
+                {
+                    // Check if the player is behind any walls / obstructions
+                    if (Physics.Raycast(ray.origin, ray.direction, out hit, fovRange))
+                    {
+                        if (hit.collider.gameObject == user.gameObject)
+                        {
+                            passCheck = true;
+
+                            status = Status.SUCCESS;
+                            return status;
+                        }
                     }
                 }
             }

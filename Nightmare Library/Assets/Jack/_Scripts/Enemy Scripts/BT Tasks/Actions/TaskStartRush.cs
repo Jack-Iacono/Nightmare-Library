@@ -7,11 +7,9 @@ using UnityEngine.AI;
 
 public class TaskStartRush : Node
 {
-    
+    private aa_Rush owner;
 
-    Enemy owner;
-
-    public TaskStartRush(Enemy owner) 
+    public TaskStartRush(aa_Rush owner) 
     {
         this.owner = owner;
     }
@@ -19,7 +17,7 @@ public class TaskStartRush : Node
     public override Status Check(float dt)
     {
         // Set up the enemy for the rush
-        parent.parent.SetData(TaskRushTarget.RUSH_KEY, true);
+        owner.isRushing = true;
 
         status = Status.SUCCESS;
         return status;

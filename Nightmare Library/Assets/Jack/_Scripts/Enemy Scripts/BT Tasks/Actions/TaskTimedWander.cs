@@ -27,7 +27,7 @@ public class TaskTimedWander : Node
     private EnemyNavPointController currentNavPoint = null;
     private Vector3 targetLocation;
 
-    public TaskTimedWander(aa_Stalk owner, NavMeshAgent navAgent, float wanderTimeMin = 1, float wanderTimeMax = 5)
+    public TaskTimedWander(aa_Stalk owner, NavMeshAgent navAgent, float wanderTimeMin = 10, float wanderTimeMax = 20)
     {
         transform = navAgent.transform;
         this.navAgent = navAgent;

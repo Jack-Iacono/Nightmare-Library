@@ -25,28 +25,16 @@ public class TaskRunAway : Node
     }
     public override Status Check(float dt)
     {
-        if(!hasTarget)
+        if (!passCheck)
         {
-            hasTarget = true;
             targetLocation = EnemyNavPointController.GetFarthestNavPoint(transform.position).position;
+
+            navAgent.speed = 0;
+            navAgent.Warp(targetLocation);
+
+            hasTarget = false;
+            passCheck = true;
         }
-
-        // Check if the player is close enough to the wander point
-        if (Vector3.SqrMagnitude(transform.position - targetLocation) > dist * dist)
-        {
-            // Ensure the agent is going to the correct location
-            if (navAgent.destination != targetLocation)
-                navAgent.destination = targetLocation;
-
-            // Ensure the agent is going at the correct speed
-            if (navAgent.speed != speed)
-                navAgent.speed = speed;
-
-            status = Status.RUNNING;
-            return status;
-        }
-
-        hasTarget = false;
 
         status = Status.SUCCESS;
         return status;

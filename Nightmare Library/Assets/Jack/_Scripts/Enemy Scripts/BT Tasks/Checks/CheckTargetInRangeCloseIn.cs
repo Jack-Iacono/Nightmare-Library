@@ -18,6 +18,6 @@ public class CheckTargetInRangeCloseIn : CheckTargetInRange
     protected override void InRangeAction()
     {
         navAgent.speed = 0;
-        Debug.Log("Make Noise");
+        
     }
 }

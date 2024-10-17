@@ -16,6 +16,7 @@ public class CheckConditionStalkCounter : CheckCondition
 
     protected override bool EvaluateCondition()
     {
+        Debug.Log(owner.stalkAttemptCounter);
         return owner.stalkAttemptCounter > 0;
     }
     protected override void OnPass()

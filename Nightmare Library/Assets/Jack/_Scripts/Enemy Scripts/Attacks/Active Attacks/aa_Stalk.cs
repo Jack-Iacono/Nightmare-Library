@@ -13,7 +13,7 @@ public class aa_Stalk : ActiveAttack
     protected int stalkAttemptMax = 4;
     public int stalkAttemptCounter = 0;
 
-    public static readonly LayerMask envLayers = 1 << 9 | 1 << 2;
+    public float closeInRange = 15;
 
     public aa_Stalk(Enemy owner) : base(owner)
     {
@@ -27,7 +27,7 @@ public class aa_Stalk : ActiveAttack
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
         {
-            // Handle Players Entering Office Area
+            // Handle Players Entering Office Area (this goes before just in case the target is set while not attacking
             new Sequence(new List<Node>()
             {
                 // Check if the target player is at the desk
@@ -40,34 +40,35 @@ public class aa_Stalk : ActiveAttack
                     new TaskResetStalk(this)
                 })
             }),
-            // Attack Behavior
-            new Sequence(new List<Node>()
-            {
-                new CheckTargetInRange(this, owner.transform, 4),
-                new TaskAttackTarget(owner.navAgent),
-                new TaskWait(2),
-                new TaskResetStalk(this)
-            }),
-            // Run Away Behavior
-            new Sequence(new List<Node>()
-            {
-                new CheckInPlayerSight(this, owner),
-                new TaskWait(0.5f),
-                new TaskRunAway(owner.navAgent),
-            }),
-            // Close In Behavior
-            new Sequence(new List<Node>()
-            {
-                new CheckTargetInRangeCloseIn(this, owner.navAgent, 10),
-                new TaskWait(3),
-                new TaskStalkCloseIn(this, owner.navAgent)
-            }),
-            // Approach Behavior
             new Sequence(new List<Node>()
             {
                 new CheckConditionStalkCounter(this, owner.navAgent),
-                new TaskWait(4),
-                new TaskStalkApproach(this, owner.navAgent),
+                new Selector(new List<Node>()
+                {
+                    // Run Away Behavior
+                    new Sequence(new List<Node>()
+                    {
+                        new CheckInPlayerSight(this, owner),
+                        new TaskWait(1f),
+                        new TaskRunAway(owner.navAgent),
+                        new TaskWait(5, 2)
+                    }),
+                    // Attack Behavior
+                    new Sequence(new List<Node>()
+                    {
+                        new CheckTargetInRange(this, owner.transform, 4),
+                        new TaskAttackTarget(owner.navAgent),
+                        new TaskWait(2),
+                        new TaskResetStalk(this)
+                    }),
+                    // Warp behind and approach
+                    new Sequence(new List<Node>()
+                    {
+                        new TaskStalkWarpBehind(this, owner.navAgent),
+                        new TaskWait(5),
+                        new TaskStalkCloseIn(this, owner.navAgent)
+                    })
+                }),
             }),
             // Wandering Behavior
             new Sequence(new List<Node>()

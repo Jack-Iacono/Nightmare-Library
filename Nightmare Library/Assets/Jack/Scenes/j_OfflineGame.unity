@@ -1089,6 +1089,16 @@ PrefabInstance:
       propertyPath: m_Area
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5762936907801003753, guid: b47e740cb3261a1409bb6af0d6120aec,
+        type: 3}
+      propertyPath: m_ProvidesContacts
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5762936907801003753, guid: b47e740cb3261a1409bb6af0d6120aec,
+        type: 3}
+      propertyPath: m_IncludeLayers.m_Bits
+      value: 65
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6611090575147629273, guid: b47e740cb3261a1409bb6af0d6120aec, type: 3}
     - {fileID: 1270827448065207913, guid: b47e740cb3261a1409bb6af0d6120aec, type: 3}

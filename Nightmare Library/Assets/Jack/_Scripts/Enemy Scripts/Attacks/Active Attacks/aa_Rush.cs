@@ -6,13 +6,15 @@ using UnityEngine.AI;
 
 public class aa_Rush : ActiveAttack
 {
+    public bool isRushing = false;
+
     private float preRushPause = 1;
     private float postRushPause = 3;
     private float sightAngle = -0.4f;
 
     public aa_Rush(Enemy owner) : base(owner)
     {
-
+        
     }
 
     protected override Node SetupTree()
@@ -22,25 +24,22 @@ public class aa_Rush : ActiveAttack
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
         {
-            new TaskRushCooldown("RushCooldownTimer", postRushPause, owner),
-            new Sequence(new List<Node>()
+            // Attack any player that gets within range
+            new TaskAttackPlayersInRange(owner.navAgent, 3),
+            new Sequence(new List<Node>
             {
-                new CheckInAttackRange(owner),
-                new TaskAttackPlayerQuick("Attacking Player Timer", 3, owner)
+                new CheckIsRushing(this),
+                new TaskRushTarget(this, owner.navAgent),
+                new TaskWait(postRushPause),
+                new TaskStopRush(this)
             }),
             new Sequence(new List<Node>
             {
-                new CheckIsRushing(),
-                new TaskRushTarget(owner.transform, owner.navAgent),
-                new TaskStopRush(owner)
+                new CheckPlayerInSight(this, owner.navAgent, owner.fovRange, sightAngle),
+                new TaskWait(preRushPause),
+                new TaskStartRush(this)
             }),
-            new Sequence(new List<Node>
-            {
-                new CheckPlayerInSightRush(owner, owner.fovRange, sightAngle),
-                new TaskWait("RushWait", preRushPause),
-                new TaskStartRush(owner)
-            }),
-            new TaskPatrol(owner.transform, GameController.instance.patrolPoints, owner.navAgent)
+            new TaskPatrol(owner.transform, EnemyNavPointController.enemyNavPoints, owner.navAgent)
         });
 
         root.SetData("speed", owner.moveSpeed);

@@ -7,50 +7,67 @@ using BehaviorTree;
 
 public class TaskRushTarget : Node
 {
+    private ActiveAttack owner;
     private NavMeshAgent navAgent;
     private Transform transform;
 
-    private float speedStore = 1;
-    private float accelerationStore = 1000;
+    private float speed = 50;
+    private float acceleration = 1000;
 
-    private float wallCheckDistance = 2;
-    private LayerMask wallLayers = 1;
+    private bool doInitialize = true;
+    private bool isRushing = false;
+    private Vector3 previousFramePosition = Vector3.zero;
 
-    public TaskRushTarget(Transform transform, NavMeshAgent navAgent)
+    Vector3 target;
+
+    public TaskRushTarget(ActiveAttack owner, NavMeshAgent navAgent, float speed = 50, float acceleration = 1000)
     {
-        this.transform = transform;
+        this.owner = owner;
+        transform = navAgent.transform;
         this.navAgent = navAgent;
-
-        speedStore = navAgent.speed;
-        accelerationStore = navAgent.acceleration;
+        this.speed = speed;
+        this.acceleration = acceleration;
     }
 
     public override Status Check(float dt)
     {
-        // Get the current target node
-        Vector3 target = (Vector3)GetData(CheckPlayerInSightChase.PLAYER_KEY);
-
-        if(navAgent.pathStatus == NavMeshPathStatus.PathComplete)
+        // Runs the first time this node is called
+        if (doInitialize)
         {
-            Ray wallRay = new Ray(navAgent.transform.position, navAgent.transform.forward);
+            // Set the settings for the rush
+            navAgent.speed = speed;
+            navAgent.acceleration = acceleration;
 
-            Debug.DrawRay(wallRay.origin, wallRay.direction, Color.cyan, 0.1f);
-
-            // Check for the ray hitting a wall
-            if (Physics.Raycast(wallRay, wallCheckDistance, wallLayers))
-            {
-                navAgent.speed = speedStore;
-
-                status = Status.SUCCESS;
-                return status;
-            }
+            // Get the current target node
+            navAgent.destination = owner.currentTargetStatic;
+            previousFramePosition = navAgent.transform.position;
+            doInitialize = false;
         }
 
-        navAgent.speed = speedStore * 10;
+        if (!isRushing && previousFramePosition != navAgent.transform.position)
+            isRushing = true;
+        // Check for the ray hitting a wall
+        else if (isRushing && previousFramePosition == navAgent.transform.position)
+        {
+            // Return the navAgent to normal settings
+            navAgent.SetDestination(navAgent.transform.position);
 
-        navAgent.destination = target;
+            doInitialize = true;
+            isRushing = false;
+
+            status = Status.SUCCESS;
+            return status;
+        }
+
+        previousFramePosition = navAgent.transform.position;
+
         status = Status.RUNNING;
         return status;
+    }
+    protected override void OnResetNode()
+    {
+        base.OnResetNode();
+        doInitialize = true;
     }
 
     /// <summary>

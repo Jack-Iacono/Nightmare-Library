@@ -1,23 +1,23 @@
+using BehaviorTree;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-using BehaviorTree;
 using UnityEngine.AI;
 
-public class TaskStartRush : Node
+public class TaskResetStalk : Node
 {
-    private aa_Rush owner;
+    private aa_Stalk owner;
 
-    public TaskStartRush(aa_Rush owner) 
+    public TaskResetStalk(aa_Stalk owner)
     {
         this.owner = owner;
     }
-
     public override Status Check(float dt)
     {
-        // Set up the enemy for the rush
-        owner.isRushing = true;
+        Debug.Log("Reset Stalk");
+
+        owner.EmptyStalkAttempts();
+        owner.RemoveTarget();
 
         status = Status.SUCCESS;
         return status;

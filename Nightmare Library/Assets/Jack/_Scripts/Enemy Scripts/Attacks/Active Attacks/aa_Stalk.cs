@@ -47,7 +47,7 @@ public class aa_Stalk : ActiveAttack
                     new Sequence(new List<Node>()
                     {
                         new CheckInPlayerSight(this, owner),
-                        new TaskWait(1f),
+                        new TaskWait(0.25f),
                         new TaskRunAway(owner.navAgent),
                         new TaskWait(5, 2)
                     }),

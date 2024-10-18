@@ -39,7 +39,7 @@ public class aa_Rush : ActiveAttack
                 new TaskWait(preRushPause),
                 new TaskStartRush(this)
             }),
-            new TaskPatrol(owner.transform, EnemyNavPointController.enemyNavPoints, owner.navAgent)
+            new TaskPatrol(owner.transform, EnemyNavGraph.enemyNavPoints, owner.navAgent)
         });
 
         root.SetData("speed", owner.moveSpeed);

@@ -27,7 +27,7 @@ public class TaskRunAway : Node
     {
         if (!passCheck)
         {
-            targetLocation = EnemyNavPointController.GetFarthestNavPoint(transform.position).position;
+            targetLocation = EnemyNavGraph.GetFarthestNavPoint(transform.position).position;
 
             navAgent.speed = 0;
             navAgent.Warp(targetLocation);

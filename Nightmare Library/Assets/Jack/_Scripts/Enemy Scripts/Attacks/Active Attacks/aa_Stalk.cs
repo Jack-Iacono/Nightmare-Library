@@ -13,8 +13,6 @@ public class aa_Stalk : ActiveAttack
     protected int stalkAttemptMax = 4;
     public int stalkAttemptCounter = 0;
 
-    public float closeInRange = 15;
-
     public aa_Stalk(Enemy owner) : base(owner)
     {
 
@@ -58,13 +56,13 @@ public class aa_Stalk : ActiveAttack
                     {
                         new CheckTargetInRange(this, owner.transform, 4),
                         new TaskAttackTarget(owner.navAgent),
-                        new TaskWait(2),
+                        new TaskWait(3),
                         new TaskResetStalk(this)
                     }),
                     // Warp behind and approach
                     new Sequence(new List<Node>()
                     {
-                        new TaskStalkWarpBehind(this, owner.navAgent),
+                        new TaskStalkWarpBehind(this, owner),
                         new TaskWait(5),
                         new TaskStalkCloseIn(this, owner.navAgent)
                     })

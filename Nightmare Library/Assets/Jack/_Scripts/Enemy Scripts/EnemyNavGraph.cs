@@ -69,4 +69,67 @@ public static class EnemyNavGraph
         newList.Remove(exclude);
         return newList[Random.Range(0, newList.Count)];
     }
+
+    /// <summary>
+    /// Gets the path from one node to another using neighboring nodes
+    /// </summary>
+    /// <param name="start">The node that the user is currently at</param>
+    /// <param name="goal">The node that the user wants to go to</param>
+    /// <returns>A list of EnemyNavPoints that will get the user from the starting point to the goal point</returns>
+    public static List<EnemyNavPoint> GetPathToPoint(EnemyNavPoint start, EnemyNavPoint goal)
+    {
+        // Create a Priority Queue to hold the nodes
+        PriorityQueue<EnemyNavPoint> nodes = new PriorityQueue<EnemyNavPoint>();
+        nodes.Insert(new PriorityQueue<EnemyNavPoint>.Element(start, 0));
+
+        // Create a Dictionary for backtracking later and for keeping track of costs
+        Dictionary<EnemyNavPoint, EnemyNavPoint> cameFrom = new Dictionary<EnemyNavPoint, EnemyNavPoint>();
+        Dictionary<EnemyNavPoint, int> costSoFar = new Dictionary<EnemyNavPoint, int>();    
+
+        // Initialize both lists with the starting location
+        cameFrom.Add(start, null);
+        costSoFar.Add(start, 0);
+
+        // Continue until you are out of nodes
+        while(nodes.Count > 0)
+        {
+            // Get the next closest node
+            EnemyNavPoint current = nodes.Extract();
+            
+            // If we are at the goal, stop running
+            if (current == goal) break;
+
+            // Run through all of this node's neighbors
+            foreach(EnemyNavPoint next in current.neighbors.Keys)
+            {
+                // Get the cost to move to the next node and add to the cost to get to this node
+                float newCost = costSoFar[current] + current.neighbors[next];
+
+                // Check if there is a cost associated with this node, if yes, check to see if the new cost to get there is less than the one already present
+                if(!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
+                {
+                    costSoFar[next] = (int)newCost;
+                    // Would add Heuristic here to convert to A*, may add later
+                    int priority = (int)newCost;
+                    nodes.Insert(new PriorityQueue<EnemyNavPoint>.Element(next, priority));
+                    cameFrom[next] = current;
+                }
+            }
+        }
+
+        // Reconstruct the path
+        List<EnemyNavPoint> path = new List<EnemyNavPoint>();
+        EnemyNavPoint evalPoint = goal;
+
+        while (true)
+        {
+            path.Insert(0, evalPoint);
+            if (cameFrom[evalPoint] != null)
+                evalPoint = cameFrom[evalPoint];
+            else
+                break;
+        }
+
+        return path;
+    }
 }

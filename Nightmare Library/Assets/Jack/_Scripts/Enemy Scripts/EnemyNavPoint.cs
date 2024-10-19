@@ -7,7 +7,7 @@ using static UnityEditor.PlayerSettings;
 public class EnemyNavPoint : MonoBehaviour
 {
     public Vector3 position { get; private set; } = Vector3.zero;
-    public List<EnemyNavPoint> neighbors;
+    public Dictionary<EnemyNavPoint, float> neighbors = new Dictionary<EnemyNavPoint, float>();
 
     private LayerMask pointLayers = 1 << 12 | 1 << 9;
 
@@ -26,10 +26,10 @@ public class EnemyNavPoint : MonoBehaviour
         {
             if(hit.collider.gameObject == p.gameObject)
             {
-                neighbors.Add(p);
+                float dist = hit.distance;
+                neighbors.Add(p, dist);
 
                 // Visualizes the paths
-                //float dist = Vector3.Distance(position, p.position);
                 //Debug.DrawRay(ray.origin, ray.direction * dist, Color.yellow, 10);
             }
         }

@@ -2,19 +2,17 @@ using BehaviorTree;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.UI.GridLayoutGroup;
 using UnityEngine.AI;
 
 public class aa_Rush : ActiveAttack
 {
-    public bool isRushing = false;
-
-    private float preRushPause = 1;
-    private float postRushPause = 3;
-    private float sightAngle = -0.4f;
+    private float reachGoalPause = 5;
+    private float atNodePause = 0.5f;
+    private float rushSpeed = 50;
 
     public aa_Rush(Enemy owner) : base(owner)
     {
-        
     }
 
     protected override Node SetupTree()
@@ -25,21 +23,16 @@ public class aa_Rush : ActiveAttack
         Node root = new Selector(new List<Node>()
         {
             // Attack any player that gets within range
-            new TaskAttackPlayersInRange(owner.navAgent, 3),
-            new Sequence(new List<Node>
+            new Sequence(new List<Node>()
             {
-                new CheckIsRushing(this),
-                new TaskRushTarget(this, owner.navAgent),
-                new TaskWait(postRushPause),
-                new TaskStopRush(this)
+                new CheckPlayerInRange(owner, 3),
+                new TaskAttackPlayersInRange(owner.navAgent, 3)
             }),
             new Sequence(new List<Node>
             {
-                new CheckPlayerInSight(this, owner.navAgent, owner.fovRange, sightAngle),
-                new TaskWait(preRushPause),
-                new TaskStartRush(this)
+                new TaskRushTarget(this, owner.navAgent, atNodePause, rushSpeed),
+                new TaskWait(reachGoalPause)
             }),
-            new TaskPatrol(owner.transform, EnemyNavGraph.enemyNavPoints, owner.navAgent)
         });
 
         root.SetData("speed", owner.moveSpeed);

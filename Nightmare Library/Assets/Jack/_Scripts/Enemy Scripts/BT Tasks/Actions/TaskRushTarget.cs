@@ -12,54 +12,68 @@ public class TaskRushTarget : Node
     private Transform transform;
 
     private float speed = 50;
-    private float acceleration = 1000;
 
-    private bool doInitialize = true;
-    private bool isRushing = false;
-    private Vector3 previousFramePosition = Vector3.zero;
+    private List<EnemyNavPoint> path;
 
-    Vector3 target;
+    private float nodeWaitTime = 1;
+    private float nodeWaitTimer = 1;
 
-    public TaskRushTarget(ActiveAttack owner, NavMeshAgent navAgent, float speed = 50, float acceleration = 1000)
+    private bool pathFinished = false;
+    private bool atNodeWait = false;
+
+    private EnemyNavPoint currentGoal;
+    private EnemyNavPoint previousGoal;
+
+    public TaskRushTarget(ActiveAttack owner, NavMeshAgent navAgent, float nodeWaitTime = 1, float speed = 50)
     {
         this.owner = owner;
         transform = navAgent.transform;
         this.navAgent = navAgent;
         this.speed = speed;
-        this.acceleration = acceleration;
+
+        this.nodeWaitTime = nodeWaitTime;
+        nodeWaitTimer = nodeWaitTime;   
     }
 
     public override Status Check(float dt)
     {
-        // Runs the first time this node is called
-        if (doInitialize)
+        if(path == null)
+            GetNewPath();
+
+        if (pathFinished)
         {
-            // Set the settings for the rush
-            navAgent.speed = speed;
-            navAgent.acceleration = acceleration;
-
-            // Get the current target node
-            navAgent.destination = owner.currentTargetStatic;
-            previousFramePosition = navAgent.transform.position;
-            doInitialize = false;
-        }
-
-        if (!isRushing && previousFramePosition != navAgent.transform.position)
-            isRushing = true;
-        // Check for the ray hitting a wall
-        else if (isRushing && previousFramePosition == navAgent.transform.position)
-        {
-            // Return the navAgent to normal settings
-            navAgent.SetDestination(navAgent.transform.position);
-
-            doInitialize = true;
-            isRushing = false;
-
             status = Status.SUCCESS;
             return status;
         }
 
-        previousFramePosition = navAgent.transform.position;
+        if (atNodeWait)
+        {
+            if (nodeWaitTimer > 0)
+                nodeWaitTimer -= dt;
+            else
+            {
+                nodeWaitTimer = nodeWaitTime;
+                atNodeWait = false;
+            }
+        }
+        else if (path.Count > 0)
+        {
+            navAgent.destination = path[0].position;
+            navAgent.speed = speed;
+
+            // Is the player close enough to the point in the beginning of the list
+            if (Vector3.SqrMagnitude(transform.position - path[0].position) < 1)
+            {
+                atNodeWait = true;
+                path.RemoveAt(0);
+            }
+        }
+        else
+        {
+            // Get a new path and return success;
+            pathFinished = true;
+            GetNewPath();
+        }
 
         status = Status.RUNNING;
         return status;
@@ -67,15 +81,17 @@ public class TaskRushTarget : Node
     protected override void OnResetNode()
     {
         base.OnResetNode();
-        doInitialize = true;
+        pathFinished = false;
     }
 
-    /// <summary>
-    /// Trims the y axis out of a vector3
-    /// </summary>
-    /// <returns>The given Vector3 without the y component</returns>
-    private Vector3 TrimVector(Vector3 org)
+    private void GetNewPath()
     {
-        return new Vector3(org.x, 1, org.z);
+        if (currentGoal == null)
+            currentGoal = EnemyNavGraph.GetClosestNavPoint(transform.position);
+
+        previousGoal = currentGoal;
+        currentGoal = EnemyNavGraph.GetRandomNavPoint();
+
+        path = EnemyNavGraph.GetPathToPoint(previousGoal, currentGoal);
     }
 }

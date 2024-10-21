@@ -4,20 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class TaskRunAway : Node
+public class TaskWarpAway : Node
 {
     private Transform transform;
     private NavMeshAgent navAgent;
 
     private float dist = 10;
-    private float speed = 30;
 
     private bool passCheck = false;
 
-    private bool hasTarget = false;
     private Vector3 targetLocation = Vector3.zero;
 
-    public TaskRunAway(NavMeshAgent navAgent, float dist = 2)
+    public TaskWarpAway(NavMeshAgent navAgent, float dist = 2)
     {
         this.navAgent = navAgent;
         this.dist = dist;
@@ -32,7 +30,6 @@ public class TaskRunAway : Node
             navAgent.speed = 0;
             navAgent.Warp(targetLocation);
 
-            hasTarget = false;
             passCheck = true;
         }
 

@@ -6,7 +6,7 @@ using UnityEngine.AI;
 
 public class aa_Stalk : ActiveAttack
 {
-    private float sightAngle = -0.4f;
+    //private float sightAngle = -0.4f;
     public PlayerController currentTargetPlayer;
 
     protected int stalkAttemptMin = 2;
@@ -48,7 +48,7 @@ public class aa_Stalk : ActiveAttack
                     {
                         new CheckInPlayerSight(this, owner),
                         new TaskWait(0.25f),
-                        new TaskRunAway(owner.navAgent),
+                        new TaskWarpAway(owner.navAgent),
                         new TaskWait(5, 2)
                     }),
                     // Attack Behavior

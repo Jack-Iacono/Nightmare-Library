@@ -95,7 +95,7 @@ public static class EnemyNavGraph
         {
             // Get the next closest node
             EnemyNavPoint current = nodes.Extract();
-            
+
             // If we are at the goal, stop running
             if (current == goal) break;
 
@@ -124,7 +124,7 @@ public static class EnemyNavGraph
         while (true)
         {
             path.Insert(0, evalPoint);
-            if (cameFrom[evalPoint] != null)
+            if (cameFrom.ContainsKey(evalPoint) && cameFrom[evalPoint] != null)
                 evalPoint = cameFrom[evalPoint];
             else
                 break;

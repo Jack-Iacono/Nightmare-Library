@@ -8,6 +8,7 @@ public class EnemyNavPoint : MonoBehaviour
 {
     public Vector3 position { get; private set; } = Vector3.zero;
     public Dictionary<EnemyNavPoint, float> neighbors = new Dictionary<EnemyNavPoint, float>();
+    public List<EnemyNavPoint> n = new List<EnemyNavPoint>();
 
     private LayerMask pointLayers = 1 << 12 | 1 << 9;
 
@@ -19,19 +20,18 @@ public class EnemyNavPoint : MonoBehaviour
 
     public void CheckNeighbor(EnemyNavPoint p)
     {
-        RaycastHit hit;
         Ray ray = new Ray(position, (p.position - position).normalized);
+        float dist = Vector3.Distance(p.position, position);
 
-        if(Physics.Raycast(ray, out hit, 1000, pointLayers))
+        // If nothing is blocking this path
+        if (!Physics.Raycast(ray, dist, pointLayers))
         {
-            if(hit.collider.gameObject == p.gameObject)
-            {
-                float dist = hit.distance;
-                neighbors.Add(p, dist);
+            float modDist = 10000 / (dist * dist + 1000);
+            neighbors.Add(p, modDist);
+            n.Add(p);
 
-                // Visualizes the paths
-                //Debug.DrawRay(ray.origin, ray.direction * dist, Color.yellow, 10);
-            }
+            // Visualizes the paths
+            Debug.DrawRay(ray.origin, ray.direction * dist, Color.black, 10);
         }
     }
 

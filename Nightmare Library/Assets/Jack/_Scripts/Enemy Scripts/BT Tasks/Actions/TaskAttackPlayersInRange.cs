@@ -13,6 +13,9 @@ public class TaskAttackPlayersInRange : Node
     private NavMeshAgent agent;
     private float range = 5;
 
+    // Checks the player, static world
+    private LayerMask attackLayers = 1 << 6 | 1 << 9;
+
     public TaskAttackPlayersInRange(NavMeshAgent agent, float range = 5)
     {
         this.agent = agent;
@@ -29,7 +32,16 @@ public class TaskAttackPlayersInRange : Node
             {
                 if(Vector3.Distance(p.transform.position, transform.position) <= range)
                 {
-                    Debug.Log("Attack " + p.name);
+                    Ray ray = new Ray(transform.position, transform.position - p.transform.position);
+                    RaycastHit hit;
+
+                    if(Physics.Raycast(ray, out hit, range, attackLayers))
+                    {
+                        if(hit.collider.gameObject == p)
+                        {
+                            Debug.Log("Attack " + p.name);
+                        }
+                    }
                 }
             }
             

@@ -8,7 +8,7 @@ using UnityEngine.AI;
 public class TaskPatrol : Node
 {
     private Transform transform;
-    private List<EnemyNavPointController> navPoints;
+    private List<EnemyNavPoint> navPoints;
     private NavMeshAgent navAgent;
 
     private int currentNavPointIndex = 0;
@@ -17,7 +17,7 @@ public class TaskPatrol : Node
     private float waitTimer = 0f;
     private bool waiting = false;
 
-    public TaskPatrol(Transform transform, List<EnemyNavPointController> navPoints, NavMeshAgent navAgent)
+    public TaskPatrol(Transform transform, List<EnemyNavPoint> navPoints, NavMeshAgent navAgent)
     {
         this.transform = transform;
         this.navPoints = navPoints;

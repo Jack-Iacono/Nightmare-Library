@@ -6,12 +6,12 @@ using BehaviorTree;
 
 public class CheckRushStop : Node
 {
-    aa_Rush owner;
+    aa_RushOutdated owner;
     Enemy user;
 
     private float wallCheckDistance = 5;
 
-    public CheckRushStop(Enemy user, aa_Rush owner)
+    public CheckRushStop(Enemy user, aa_RushOutdated owner)
     {
         this.user = user;
     }

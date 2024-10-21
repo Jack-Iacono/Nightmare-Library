@@ -7,9 +7,9 @@ using UnityEngine.AI;
 
 public class TaskStopRush : Node
 {
-    private aa_Rush owner;
+    private aa_RushOutdated owner;
 
-    public TaskStopRush(aa_Rush owner)
+    public TaskStopRush(aa_RushOutdated owner)
     {
         this.owner = owner;
     }

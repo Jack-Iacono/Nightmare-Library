@@ -7,9 +7,9 @@ using UnityEngine.AI;
 
 public class TaskStartRush : Node
 {
-    private aa_Rush owner;
+    private aa_RushOutdated owner;
 
-    public TaskStartRush(aa_Rush owner) 
+    public TaskStartRush(aa_RushOutdated owner) 
     {
         this.owner = owner;
     }

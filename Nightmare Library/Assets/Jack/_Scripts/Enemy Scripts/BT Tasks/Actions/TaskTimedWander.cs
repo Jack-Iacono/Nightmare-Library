@@ -24,7 +24,7 @@ public class TaskTimedWander : Node
     private float wanderSpeed = 7;
     private float wanderAcceleration = 50;
 
-    private EnemyNavPointController currentNavPoint = null;
+    private EnemyNavPoint currentNavPoint = null;
     private Vector3 targetLocation;
 
     public TaskTimedWander(aa_Stalk owner, NavMeshAgent navAgent, float wanderTimeMin = 10, float wanderTimeMax = 20)
@@ -85,7 +85,7 @@ public class TaskTimedWander : Node
 
     private void GetNewTarget()
     {
-        currentNavPoint = EnemyNavPointController.GetRandomNavPoint();
+        currentNavPoint = EnemyNavGraph.GetRandomNavPoint();
         targetLocation = currentNavPoint.position;
 
         navAgent.destination = targetLocation;

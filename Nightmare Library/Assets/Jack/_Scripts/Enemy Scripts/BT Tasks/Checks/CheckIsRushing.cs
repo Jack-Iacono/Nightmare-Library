@@ -6,9 +6,9 @@ using BehaviorTree;
 
 public class CheckIsRushing : Node
 {
-    private aa_Rush owner;
+    private aa_RushOutdated owner;
 
-    public CheckIsRushing(aa_Rush owner) : base()
+    public CheckIsRushing(aa_RushOutdated owner) : base()
     {
         this.owner = owner;
     }

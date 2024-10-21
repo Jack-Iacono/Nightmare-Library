@@ -7,27 +7,16 @@ using UnityEngine.AI;
 
 public class TaskStopRush : Node
 {
-    public const string RUSH_KEY = TaskStartRush.RUSH_KEY;
-    public const string COOLDOWN_KEY = "RushCooldown";
+    private aa_RushOutdated owner;
 
-    Enemy owner;
-    NavMeshAgent navAgent;
-
-    public TaskStopRush(Enemy owner)
+    public TaskStopRush(aa_RushOutdated owner)
     {
         this.owner = owner;
-        navAgent = owner.navAgent;
     }
 
     public override Status Check(float dt)
     {
-        // Set up the enemy for the rush
-        parent.parent.SetData(COOLDOWN_KEY, true);
-        parent.parent.SetData(RUSH_KEY, false);
-        parent.parent.ClearData(CheckPlayerInSightChase.PLAYER_KEY);
-
-        navAgent.acceleration = 100;
-        navAgent.SetDestination(owner.transform.position);
+        owner.isRushing = false;
 
         status = Status.SUCCESS;
         return status;

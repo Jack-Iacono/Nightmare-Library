@@ -18,7 +18,6 @@ public class pa_Temps : PassiveAttack
     {
         // Gets a random movement for the temp
         upOrDown = Random.Range(0,2) == 0 ? true : false;
-        Debug.Log(upOrDown);
     }
 
     public override void Initialize()

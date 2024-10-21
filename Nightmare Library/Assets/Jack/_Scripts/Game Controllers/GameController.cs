@@ -13,8 +13,6 @@ public class GameController : MonoBehaviour
     public GameObject offlinePlayerPrefab;
     public GameObject offlineEnemyPrefab;
 
-    public Transform[] patrolPoints;
-
     public float gameTimer = 120;
 
     // Local Events

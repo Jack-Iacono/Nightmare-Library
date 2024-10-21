@@ -17,6 +17,9 @@ namespace BehaviorTree
 
         private Dictionary<string, object> sharedData = new Dictionary<string, object>();
 
+        public delegate void OnResetDelegate();
+        public event OnResetDelegate OnReset;
+
         public Node()
         {
             parent = null;
@@ -31,7 +34,7 @@ namespace BehaviorTree
 
         private void AddChild(Node child)
         {
-            child.parent = this;
+            child.SetParent(this);
             children.Add(child);
         }
 
@@ -91,6 +94,21 @@ namespace BehaviorTree
 
             // At the root of the tree
             return false;
+        }
+
+        protected virtual void SetParent(Node n)
+        {
+            parent = n;
+            parent.OnReset += OnResetNode;
+        }
+
+        protected void InvokeReset()
+        {
+            OnReset?.Invoke();
+        }
+        protected virtual void OnResetNode()
+        {
+            OnReset?.Invoke();
         }
     }
 

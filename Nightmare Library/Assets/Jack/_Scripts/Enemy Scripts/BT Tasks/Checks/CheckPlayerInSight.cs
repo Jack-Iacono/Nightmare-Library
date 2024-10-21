@@ -3,21 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using BehaviorTree;
+using UnityEngine.AI;
 
-public class CheckPlayerInSightRush : Node
+public class CheckPlayerInSight : Node
 {
-    private Enemy user;
+    private ActiveAttack owner;
+    private NavMeshAgent navAgent;
+    private Transform transform;
 
     private float fovRange;
     private float sightAngle;
 
-    public const string PLAYER_KEY = "playerKnownPosition";
+    private bool seenPlayer;
 
-    private Transform currentTarget;
-
-    public CheckPlayerInSightRush(Enemy user, float fovRange, float sightAngle)
+    public CheckPlayerInSight(ActiveAttack owner, NavMeshAgent navAgent, float fovRange, float sightAngle)
     {
-        this.user = user;
+        this.owner = owner;
+        this.navAgent = navAgent;
+        transform = navAgent.transform;
 
         this.fovRange = fovRange;
         this.sightAngle = sightAngle;
@@ -31,7 +34,7 @@ public class CheckPlayerInSightRush : Node
         // Eliminate the players that are too far from the scan range and place them in closest to furtherst order
         foreach (PlayerController p in PlayerController.playerInstances)
         {
-            float dist = Vector3.Distance(p.transform.position, user.transform.position);
+            float dist = Vector3.Distance(p.transform.position, transform.position);
 
             if (dist <= fovRange)
             {
@@ -39,42 +42,38 @@ public class CheckPlayerInSightRush : Node
             }
         }
 
+        // Go through the queue and evaluate all players
         while (!queue.Is_Empty())
         {
             Transform player = queue.Extract();
 
             RaycastHit hit;
-            Ray ray = new Ray(user.transform.position, (player.position - user.transform.position).normalized);
+            Ray ray = new Ray(transform.position, (player.position - transform.position).normalized);
 
             // Check if the player is within the vision arc
-            if (Vector3.Dot(user.transform.forward, ray.direction) >= sightAngle)
+            if (Vector3.Dot(transform.forward, ray.direction) >= sightAngle)
             {
                 // Check if the player is behind any walls / obstructions
                 if (Physics.Raycast(ray.origin, ray.direction, out hit, fovRange))
                 {
                     if (hit.collider.tag == "Player")
                     {
-                        currentTarget = player;
-
                         SetPlayerPosition();
-
-                        //user.navAgent.destination = user.transform.position;
-
-                        user.navAgent.speed = 0;
-
-                        status = Status.SUCCESS;
-                        return status;
+                        navAgent.speed = 0;
+                        seenPlayer = true;
                     }
                 }
             }
         }
 
         // Check if there is still a known position
-        if (GetData(PLAYER_KEY) != null)
+        if (seenPlayer)
         {
             status = Status.SUCCESS;
             return status;
         }
+
+        seenPlayer = false;
 
         // If the enemy can't see the player and there is no known last position, then it is  a failure
         status = Status.FAILURE;
@@ -83,14 +82,14 @@ public class CheckPlayerInSightRush : Node
 
     public void SetPlayerPosition()
     {
-        Ray ray = new Ray(user.transform.position, (currentTarget.position - user.transform.position).normalized);
+        Ray ray = new Ray(transform.position, (owner.currentTargetDynamic.position - transform.position).normalized);
         RaycastHit hit;
 
-        Physics.Raycast(ray, out hit, 1000, 1);
+        Physics.Raycast(ray, out hit, 1000, aa_RushOutdated.envLayers);
         Debug.DrawRay(ray.origin, ray.direction * 1000, Color.cyan, 0.1f);
 
-        user.transform.rotation = Quaternion.Slerp(user.transform.rotation, Quaternion.Euler(user.transform.rotation.x, Mathf.Atan2(ray.direction.x, ray.direction.z) * Mathf.Rad2Deg, user.transform.rotation.z), 0.05f);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(transform.rotation.x, Mathf.Atan2(ray.direction.x, ray.direction.z) * Mathf.Rad2Deg, transform.rotation.z), 0.05f);
 
-        parent.parent.SetData(PLAYER_KEY, hit.point);
+        owner.SetCurrentTarget(hit.point);
     }
 }

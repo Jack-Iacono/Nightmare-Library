@@ -63,7 +63,6 @@ public class TempController : MonoBehaviour
                 tempTick -= Time.deltaTime;
             else
             {
-                Debug.Log("Updating Temp");
                 currentTemp = (int)Mathf.MoveTowards(currentTemp, targetTemp, 1);
                 OnTempChanged?.Invoke(currentTemp);
                 tempTick = tempTickTime;

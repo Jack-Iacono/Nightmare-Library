@@ -151,7 +151,7 @@ MonoBehaviour:
   attackRange: 2
   spawnLocation: {x: 20, y: 1, z: 0}
   aAttack: 0
-  pAttack: 1
+  pAttack: 2
   evidenceList: 000000000100000002000000030000000400000005000000
   interactionLayers:
     serializedVersion: 2

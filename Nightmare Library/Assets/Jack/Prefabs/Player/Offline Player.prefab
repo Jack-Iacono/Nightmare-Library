@@ -429,7 +429,7 @@ MonoBehaviour:
   interactDistance: 10
   interactLayers:
     serializedVersion: 2
-    m_Bits: 1025
+    m_Bits: 1537
   clearPlacementMaterial: {fileID: 2100000, guid: 2b949a86e09e35f4793bc8227e65dd46,
     type: 2}
   blockedPlacementMaterial: {fileID: 2100000, guid: ca440a96a5795a345bd51286f3c61ef9,

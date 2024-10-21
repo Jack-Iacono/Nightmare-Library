@@ -29,7 +29,7 @@ public class PlayerInteractionController : MonoBehaviour
     private bool isPlacePressed = false;
     private bool isPlaceFinish = false;
 
-    private float actionBufferTime = 0.5f;
+    private float actionBufferTime = 0.1f;
     private float actionBufferTimer = 0f;
     private bool actionBuffering = false;
 
@@ -112,6 +112,7 @@ public class PlayerInteractionController : MonoBehaviour
                 // Check if the player is holding an item
                 if (currentHeldItem != null)
                 {
+                    Debug.Log(isPlaceStart + " || " + isPlacePressed + " || " + isPlaceFinish);
                     if (isPlaceStart)
                     {
                         currentHeldItem.SetMeshMaterial(clearPlacementMaterial);

@@ -6,15 +6,15 @@ using BehaviorTree;
 
 public class CheckIsRushing : Node
 {
+    private aa_RushOutdated owner;
+
+    public CheckIsRushing(aa_RushOutdated owner) : base()
+    {
+        this.owner = owner;
+    }
     public override Status Check(float dt)
     {
-        object temp = GetData(TaskStartRush.RUSH_KEY);
-        bool isRushing = false;
-
-        if (temp != null)
-            isRushing = (bool)temp;
-
-        if (isRushing)
+        if (owner.isRushing)
         {
             status = Status.SUCCESS;
             return status;

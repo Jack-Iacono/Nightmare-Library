@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace BehaviorTree
 {
@@ -12,11 +13,13 @@ namespace BehaviorTree
 
         public override Status Check(float dt)
         {
+            // Will continue running if the node returns success, stops at this node otherwise
             foreach(Node node in children)
             {
                 switch (node.Check(dt))
                 {
                     case Status.FAILURE:
+                        InvokeReset();
                         status = Status.FAILURE;
                         return status;
                     case Status.SUCCESS:
@@ -30,6 +33,7 @@ namespace BehaviorTree
                 }
             }
 
+            InvokeReset();
             status = Status.SUCCESS;
             return status;
         }

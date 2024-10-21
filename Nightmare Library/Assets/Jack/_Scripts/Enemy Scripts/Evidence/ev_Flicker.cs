@@ -49,8 +49,6 @@ public class ev_Flicker : Evidence
 
     protected void Interact()
     {
-        Debug.Log("Flicker");
-
         owner.FlickerLights();
 
         interactReady = false;

@@ -46,7 +46,6 @@ public class ev_MusicLover : Evidence
 
     protected void Interact()
     {
-        Debug.Log("Play Sound");
         owner.PlaySound("musicLover");
 
         interactReady = false;

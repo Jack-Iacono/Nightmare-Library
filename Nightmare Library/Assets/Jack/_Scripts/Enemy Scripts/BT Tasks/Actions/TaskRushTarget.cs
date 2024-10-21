@@ -7,58 +7,91 @@ using BehaviorTree;
 
 public class TaskRushTarget : Node
 {
+    private ActiveAttack owner;
     private NavMeshAgent navAgent;
     private Transform transform;
 
-    private float speedStore = 1;
-    private float accelerationStore = 1000;
+    private float speed = 50;
 
-    private float wallCheckDistance = 2;
-    private LayerMask wallLayers = 1;
+    private List<EnemyNavPoint> path;
 
-    public TaskRushTarget(Transform transform, NavMeshAgent navAgent)
+    private float nodeWaitTime = 1;
+    private float nodeWaitTimer = 1;
+
+    private bool pathFinished = false;
+    private bool atNodeWait = false;
+
+    private EnemyNavPoint currentGoal;
+    private EnemyNavPoint previousGoal;
+
+    public TaskRushTarget(ActiveAttack owner, NavMeshAgent navAgent, float nodeWaitTime = 1, float speed = 50)
     {
-        this.transform = transform;
+        this.owner = owner;
+        transform = navAgent.transform;
         this.navAgent = navAgent;
+        this.speed = speed;
 
-        speedStore = navAgent.speed;
-        accelerationStore = navAgent.acceleration;
+        this.nodeWaitTime = nodeWaitTime;
+        nodeWaitTimer = nodeWaitTime;   
     }
 
     public override Status Check(float dt)
     {
-        // Get the current target node
-        Vector3 target = (Vector3)GetData(CheckPlayerInSightChase.PLAYER_KEY);
+        if(path == null)
+            GetNewPath();
 
-        if(navAgent.pathStatus == NavMeshPathStatus.PathComplete)
+        if (pathFinished)
         {
-            Ray wallRay = new Ray(navAgent.transform.position, navAgent.transform.forward);
-
-            Debug.DrawRay(wallRay.origin, wallRay.direction, Color.cyan, 0.1f);
-
-            // Check for the ray hitting a wall
-            if (Physics.Raycast(wallRay, wallCheckDistance, wallLayers))
-            {
-                navAgent.speed = speedStore;
-
-                status = Status.SUCCESS;
-                return status;
-            }
+            status = Status.SUCCESS;
+            return status;
         }
 
-        navAgent.speed = speedStore * 10;
+        if (atNodeWait)
+        {
+            if (nodeWaitTimer > 0)
+                nodeWaitTimer -= dt;
+            else
+            {
+                nodeWaitTimer = nodeWaitTime;
+                atNodeWait = false;
+            }
+        }
+        else if (path.Count > 0)
+        {
+            navAgent.destination = path[0].position;
+            navAgent.speed = speed;
 
-        navAgent.destination = target;
+            // Is the player close enough to the point in the beginning of the list
+            if (Vector3.SqrMagnitude(transform.position - path[0].position) < 1)
+            {
+                atNodeWait = true;
+                path.RemoveAt(0);
+            }
+        }
+        else
+        {
+            // Get a new path and return success;
+            pathFinished = true;
+            GetNewPath();
+        }
+
         status = Status.RUNNING;
         return status;
     }
-
-    /// <summary>
-    /// Trims the y axis out of a vector3
-    /// </summary>
-    /// <returns>The given Vector3 without the y component</returns>
-    private Vector3 TrimVector(Vector3 org)
+    protected override void OnResetNode()
     {
-        return new Vector3(org.x, 1, org.z);
+        base.OnResetNode();
+        pathFinished = false;
+    }
+
+    private void GetNewPath()
+    {
+        if (currentGoal == null)
+            currentGoal = EnemyNavGraph.GetClosestNavPoint(transform.position);
+
+        previousGoal = currentGoal;
+        currentGoal = EnemyNavGraph.GetRandomNavPoint();
+
+        path = EnemyNavGraph.GetPathToPoint(previousGoal, currentGoal);
     }
 }

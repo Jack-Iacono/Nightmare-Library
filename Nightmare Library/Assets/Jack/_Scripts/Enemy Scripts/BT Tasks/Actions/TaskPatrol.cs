@@ -8,19 +8,19 @@ using UnityEngine.AI;
 public class TaskPatrol : Node
 {
     private Transform transform;
-    private Transform[] waypoints;
+    private List<EnemyNavPoint> navPoints;
     private NavMeshAgent navAgent;
 
-    private int currentWaypointIndex = 0;
+    private int currentNavPointIndex = 0;
 
     private float waitTime = 0.5f;
     private float waitTimer = 0f;
     private bool waiting = false;
 
-    public TaskPatrol(Transform transform, Transform[] waypoints, NavMeshAgent navAgent)
+    public TaskPatrol(Transform transform, List<EnemyNavPoint> navPoints, NavMeshAgent navAgent)
     {
         this.transform = transform;
-        this.waypoints = waypoints;
+        this.navPoints = navPoints;
         this.navAgent = navAgent;
     }
     public override Status Check(float dt)
@@ -40,21 +40,21 @@ public class TaskPatrol : Node
         }
 
         // Get the waypoint that the agent should go to
-        Transform wp = waypoints[currentWaypointIndex];
+        Vector3 point = navPoints[currentNavPointIndex].position;
 
         // Check if the agent is not at the destination yet
-        if(Vector3.Distance(transform.position, wp.position) < 0.5f)
+        if(Vector3.Distance(transform.position, point) < 0.5f)
         {
             waitTimer = 0;
             waiting = true;
 
             // Switch to the next waypoint
-            currentWaypointIndex = (currentWaypointIndex + 1) % waypoints.Length;
+            currentNavPointIndex = (currentNavPointIndex + 1) % navPoints.Count;
         }
         else
         {
             // Make the agent go to the waypoint
-            navAgent.destination = wp.position;
+            navAgent.destination = point;
             navAgent.speed = (float)GetData("speed");
         }
 

@@ -57,6 +57,7 @@ public class aa_Stalk : ActiveAttack
                         new CheckTargetInRange(this, owner.transform, 4),
                         new TaskAttackTarget(owner.navAgent),
                         new TaskWait(3),
+                        new TaskWarpAway(owner.navAgent),
                         new TaskResetStalk(this)
                     }),
                     // Warp behind and approach

@@ -13,7 +13,7 @@ public class GameController : MonoBehaviour
     public GameObject offlinePlayerPrefab;
     public GameObject offlineEnemyPrefab;
 
-    public float gameTimer = 120;
+    public float gameTimer = 480;
 
     // Local Events
     public static event EventHandler<bool> OnGamePause;

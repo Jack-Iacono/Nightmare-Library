@@ -48,7 +48,7 @@ public class aa_Stalk : ActiveAttack
                     {
                         new CheckInPlayerSight(this, owner),
                         new TaskWait(0.25f),
-                        new TaskWarpAway(owner.navAgent),
+                        new TaskWarpAway(this,owner.navAgent),
                         new TaskWait(5, 2)
                     }),
                     // Attack Behavior
@@ -57,7 +57,8 @@ public class aa_Stalk : ActiveAttack
                         new CheckTargetInRange(this, owner.transform, 4),
                         new TaskAttackTarget(owner.navAgent),
                         new TaskWait(3),
-                        new TaskResetStalk(this)
+                        new TaskResetStalk(this),
+                        new TaskWarpAway(this,owner.navAgent),
                     }),
                     // Warp behind and approach
                     new Sequence(new List<Node>()
@@ -75,9 +76,6 @@ public class aa_Stalk : ActiveAttack
                 new TaskAssignStalkTarget(this)
             })
         });
-
-        root.SetData("speed", owner.moveSpeed);
-        root.SetData("angularSpeed", owner.navAgent.angularSpeed);
 
         return root;
     }

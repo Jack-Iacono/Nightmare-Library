@@ -32,20 +32,19 @@ public class TaskAttackPlayersInRange : Node
             {
                 if(Vector3.Distance(p.transform.position, transform.position) <= range)
                 {
-                    Ray ray = new Ray(transform.position, transform.position - p.transform.position);
+                    Ray ray = new Ray(transform.position, p.transform.position - transform.position);
                     RaycastHit hit;
 
                     if(Physics.Raycast(ray, out hit, range, attackLayers))
                     {
-                        if(hit.collider.gameObject == p)
+                        if(hit.collider.gameObject == p.gameObject)
                         {
                             Debug.Log("Attack " + p.name);
+                            hasAttacked = true;
                         }
                     }
                 }
             }
-            
-            hasAttacked = true;
         }
 
         status = Status.SUCCESS;

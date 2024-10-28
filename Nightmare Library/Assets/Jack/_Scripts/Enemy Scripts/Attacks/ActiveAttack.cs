@@ -16,6 +16,9 @@ public abstract class ActiveAttack : BehaviorTree.Tree
     public Vector3 currentTargetStatic { get; protected set; } = Vector3.zero;
     public static readonly LayerMask envLayers = 1 << 9 | 1 << 2;
 
+    public List<List<Vector3>> validWanderLocations { get; protected set; } = new List<List<Vector3>>();
+    public float wanderRange = 25;
+
     public ActiveAttack(Enemy owner)
     {
         this.owner = owner;
@@ -32,6 +35,49 @@ public abstract class ActiveAttack : BehaviorTree.Tree
     public void SetCurrentTarget(Vector3 position)
     {
         currentTargetStatic = position;
+    }
+
+    protected void GetWanderLocations(Vector3 center, int sectorCount)
+    {
+        validWanderLocations.Clear();
+        float diff = wanderRange / sectorCount;
+
+        // Get a large array of valid points to choose from
+        for (int i = 0; i < sectorCount; i++)
+        {
+            validWanderLocations.Add(new List<Vector3>());
+
+            for (int j = 0; j < 360; j += 10)
+            {
+                float min = i * diff;
+                min += i == 0 ? 2 : 0;
+                float dist = Random.Range(min, min + diff);
+
+                Vector3 point = new Vector3
+                (
+                    Mathf.Cos(j) * dist,
+                    center.y,
+                    Mathf.Sin(j) * dist
+                );
+
+                Ray ray = new Ray(point + center, Vector3.down);
+                RaycastHit hit;
+
+                // Check to see if the ray hit the ground
+                if 
+                    (
+                    Physics.Raycast(ray, out hit, 100, envLayers) && 
+                    hit.normal == Vector3.up &&
+                    !Physics.CheckBox(hit.point + Vector3.up * 2, Vector3.one, Quaternion.identity, envLayers)
+                    )
+                {
+                    point = hit.point;
+
+                    Debug.DrawRay(point, Vector3.up * 10, Color.green, 10f);
+                    validWanderLocations[i].Add(point);
+                }
+            }
+        }
     }
 
     public virtual void OnDestroy()

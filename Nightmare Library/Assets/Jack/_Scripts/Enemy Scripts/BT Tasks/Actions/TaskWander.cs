@@ -57,6 +57,11 @@ public class TaskWander : Node
 
     private Vector3 GetNewTarget()
     {
+        Debug.Log("Getting New Target");
+
+        isWaiting = false;
+        pointWaitTimer = Random.Range(pointWaitTimeMin, pointWaitTimeMax);
+
         // Assign weighting so that it is more likely that the agent will move to another ring when choosing a target
         List<int> ringWeight = new List<int>();
         for(int i = 0; i < owner.validWanderLocations.Count; i++)
@@ -70,6 +75,8 @@ public class TaskWander : Node
         int randRing = ringWeight[Random.Range(0, ringWeight.Count)];
         int randPoint = Random.Range(0, owner.validWanderLocations[randRing].Count);
         Vector3 point = owner.validWanderLocations[randRing][randPoint];
+
+        Debug.Log(point);
         return point;
     }
 }

@@ -14,7 +14,7 @@ public abstract class ActiveAttack : BehaviorTree.Tree
     // These variables are used among almost all attacks
     public Transform currentTargetDynamic { get; protected set; } = null;
     public Vector3 currentTargetStatic { get; protected set; } = Vector3.zero;
-    public static readonly LayerMask envLayers = 1 << 9 | 1 << 2;
+    public static readonly LayerMask envLayers = 1 << 9 | 1 << 2 | 1 << 13;
 
     public List<List<Vector3>> validWanderLocations { get; protected set; } = new List<List<Vector3>>();
     public float wanderRange = 25;
@@ -67,6 +67,7 @@ public abstract class ActiveAttack : BehaviorTree.Tree
                 if 
                     (
                     Physics.Raycast(ray, out hit, 100, envLayers) && 
+                    hit.collider.gameObject.layer != 13 && 
                     hit.normal == Vector3.up &&
                     !Physics.CheckBox(hit.point + Vector3.up * 2, Vector3.one, Quaternion.identity, envLayers)
                     )

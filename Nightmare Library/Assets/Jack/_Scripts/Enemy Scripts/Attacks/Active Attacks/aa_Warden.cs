@@ -16,6 +16,8 @@ public class aa_Warden : ActiveAttack
     protected List<WardenSensorController> alertQueue = new List<WardenSensorController>();
     protected int alertQueueMax = 3;
 
+    protected Vector3 lastSeenLocation = Vector3.zero;
+
     public aa_Warden(Enemy owner) : base(owner)
     {
         diff = wanderRange / ringCount;
@@ -31,6 +33,10 @@ public class aa_Warden : ActiveAttack
         // Establishes the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
         {
+            new Sequence(new List<Node>()
+            {
+                new CheckPlayerInSight(this, owner.navAgent, 10, 0.8f),
+            }),
             new Sequence(new List<Node>()
             {
                 new CheckConditionWardenAlert(this),

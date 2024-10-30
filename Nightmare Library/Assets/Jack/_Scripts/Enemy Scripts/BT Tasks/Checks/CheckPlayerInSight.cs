@@ -56,9 +56,9 @@ public class CheckPlayerInSight : Node
                 // Check if the player is behind any walls / obstructions
                 if (Physics.Raycast(ray.origin, ray.direction, out hit, fovRange))
                 {
-                    if (hit.collider.tag == "Player")
+                    if (hit.collider.transform == player)
                     {
-                        SetPlayerPosition();
+                        SetPlayerPosition(player);
                         navAgent.speed = 0;
                         seenPlayer = true;
                     }
@@ -80,16 +80,8 @@ public class CheckPlayerInSight : Node
         return status;
     }
 
-    public void SetPlayerPosition()
+    public void SetPlayerPosition(Transform p)
     {
-        Ray ray = new Ray(transform.position, (owner.currentTargetDynamic.position - transform.position).normalized);
-        RaycastHit hit;
-
-        Physics.Raycast(ray, out hit, 1000, aa_RushOutdated.envLayers);
-        Debug.DrawRay(ray.origin, ray.direction * 1000, Color.cyan, 0.1f);
-
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(transform.rotation.x, Mathf.Atan2(ray.direction.x, ray.direction.z) * Mathf.Rad2Deg, transform.rotation.z), 0.05f);
-
-        owner.SetCurrentTarget(hit.point);
+        owner.SetCurrentTarget(p);
     }
 }

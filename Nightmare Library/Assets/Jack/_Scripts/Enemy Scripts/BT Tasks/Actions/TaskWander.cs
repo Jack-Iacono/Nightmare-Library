@@ -76,7 +76,6 @@ public class TaskWander : Node
         int randPoint = Random.Range(0, owner.validWanderLocations[randRing].Count);
         Vector3 point = owner.validWanderLocations[randRing][randPoint];
 
-        Debug.Log(point);
         return point;
     }
 }

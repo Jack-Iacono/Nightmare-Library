@@ -16,8 +16,6 @@ public class aa_Warden : ActiveAttack
     protected List<WardenSensorController> alertQueue = new List<WardenSensorController>();
     protected int alertQueueMax = 3;
 
-    protected Vector3 lastSeenLocation = Vector3.zero;
-
     public aa_Warden(Enemy owner) : base(owner)
     {
         diff = wanderRange / ringCount;
@@ -33,9 +31,22 @@ public class aa_Warden : ActiveAttack
         // Establishes the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
         {
+            // Attack any player that gets within range
             new Sequence(new List<Node>()
             {
-                new CheckPlayerInSight(this, owner.navAgent, 10, 0.8f),
+                new CheckPlayerInRange(owner, 3),
+                new TaskAttackPlayersInRange(owner.navAgent, 3)
+            }),
+            new Sequence(new List<Node>()
+            {
+                new CheckPlayerInSight(this, owner.navAgent, 30, 0.8f),
+                new TaskWardenClearAlertQueue(this)
+            }),
+            new Sequence(new List<Node>()
+            {
+                new CheckConditionHasStaticTarget(this),
+                new TaskGotoStaticTarget(this, owner),
+                new TaskWait(3)
             }),
             new Sequence(new List<Node>()
             {
@@ -87,6 +98,10 @@ public class aa_Warden : ActiveAttack
     {
         if(alertQueue.Count > 0)
             alertQueue.RemoveAt(0);
+    }
+    public void ClearAlertItems()
+    {
+        alertQueue.Clear();
     }
     
     protected void SpawnSensor(Vector3 pos)

@@ -14,8 +14,6 @@ public class CheckPlayerInSight : Node
     private float fovRange;
     private float sightAngle;
 
-    private bool seenPlayer;
-
     public CheckPlayerInSight(ActiveAttack owner, NavMeshAgent navAgent, float fovRange, float sightAngle)
     {
         this.owner = owner;
@@ -59,21 +57,10 @@ public class CheckPlayerInSight : Node
                     if (hit.collider.transform == player)
                     {
                         SetPlayerPosition(player);
-                        navAgent.speed = 0;
-                        seenPlayer = true;
                     }
                 }
             }
         }
-
-        // Check if there is still a known position
-        if (seenPlayer)
-        {
-            status = Status.SUCCESS;
-            return status;
-        }
-
-        seenPlayer = false;
 
         // If the enemy can't see the player and there is no known last position, then it is  a failure
         status = Status.FAILURE;

@@ -1,18 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using BehaviorTree;
 
-public class TaskRemoveTarget : MonoBehaviour
+public class TaskRemoveTarget : Node
 {
-    // Start is called before the first frame update
-    void Start()
+    ActiveAttack owner;
+    public TaskRemoveTarget(ActiveAttack owner) : base()
     {
-        
+        this.owner = owner;
     }
-
-    // Update is called once per frame
-    void Update()
+    public override Status Check(float dt)
     {
-        
+        owner.SetCurrentTarget(null);
+
+        status = Status.SUCCESS;
+        return status;
     }
 }

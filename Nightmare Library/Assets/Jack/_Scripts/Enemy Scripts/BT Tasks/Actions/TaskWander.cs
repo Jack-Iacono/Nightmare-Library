@@ -15,17 +15,20 @@ public class TaskWander : Node
     private const float pointWaitTimeMax = 5;
     private float pointWaitTimer = pointWaitTimeMin + (pointWaitTimeMax - pointWaitTimeMin);
 
-    private float wanderSpeed = 7;
-    private float wanderAcceleration = 50;
+    private float speed = 7;
+    private float acceleration = 50;
 
     private Vector3 targetLocation;
     private int targetRing = 0;
 
-    public TaskWander(ActiveAttack owner, NavMeshAgent navAgent)
+    public TaskWander(ActiveAttack owner, NavMeshAgent navAgent, float speed = 7, float acceleration = 100)
     {
         transform = navAgent.transform;
         this.navAgent = navAgent;
         this.owner = owner;
+
+        this.speed = speed;
+        this.acceleration = acceleration;
     }
     public override Status Check(float dt)
     {
@@ -43,12 +46,16 @@ public class TaskWander : Node
             if (targetLocation == Vector3.zero)
                 targetLocation = GetNewTarget();
 
-            if(Vector3.Distance(transform.position, targetLocation) < 3f)
+            float dist = Vector3.Distance(transform.position, targetLocation);
+            Debug.Log(dist);
+
+            if (dist < 3f)
                 isWaiting = true;
 
             navAgent.destination = targetLocation;
-            navAgent.speed = wanderSpeed;
-            navAgent.acceleration = wanderAcceleration;
+            // Run faster if further away
+            navAgent.speed = (0.01f * dist + 1) * speed;
+            navAgent.acceleration = acceleration;
         }
 
         status = Status.RUNNING;

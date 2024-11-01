@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8277916014497907763}
   - component: {fileID: 1626611085352431638}
   - component: {fileID: -7234603397361866382}
-  - component: {fileID: 2616550446283963669}
+  - component: {fileID: 492232141707764921}
   m_Layer: 0
   m_Name: Game Controller Offline
   m_TagString: Untagged
@@ -76,7 +76,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83d1a7cdcbb4b0845873c5a8a3a7d553, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &2616550446283963669
+--- !u!114 &492232141707764921
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -85,8 +85,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 3131128105750626201}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26d065db1b9c8ae459adaab513b8c7cd, type: 3}
+  m_Script: {fileID: 11500000, guid: 0d949dc9757e1b24bbf953e21a54dbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wardenSensor: {fileID: 1362234469720430081, guid: da59f9d391b9838429c78acabb4b40e3,
+  e_WardenSensor: {fileID: 1362234469720430081, guid: da59f9d391b9838429c78acabb4b40e3,
     type: 3}

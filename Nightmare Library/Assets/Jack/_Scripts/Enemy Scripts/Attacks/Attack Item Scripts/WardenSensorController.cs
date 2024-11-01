@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WardenSensorController : MonoBehaviour
+public class WardenSensorController : Interactable
 {
     public delegate void OnSensorAlert(WardenSensorController controller);
     public event OnSensorAlert onSensorAlert;

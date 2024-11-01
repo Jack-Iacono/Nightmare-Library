@@ -45,8 +45,9 @@ public class aa_Warden : ActiveAttack
             new Sequence(new List<Node>()
             {
                 new CheckConditionHasStaticTarget(this),
-                new TaskGotoStaticTarget(this, owner),
-                new TaskWait(3)
+                new TaskGotoStaticTarget(this, owner, 10),
+                new TaskWait(3),
+                new TaskRemoveTarget(this)
             }),
             new Sequence(new List<Node>()
             {
@@ -55,7 +56,7 @@ public class aa_Warden : ActiveAttack
                 new TaskWait(3),
                 new TaskClearAlertLocation(this)
             }),
-            new TaskWander(this, owner.navAgent)
+            new TaskWander(this, owner.navAgent, 5)
         });
 
         return root;
@@ -106,8 +107,8 @@ public class aa_Warden : ActiveAttack
     
     protected void SpawnSensor(Vector3 pos)
     {
-        GameObject sensor = GameObject.Instantiate(EnemyPrefabHandler.Instance.wardenSensor, pos, Quaternion.identity);
+        GameObject sensor = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_WardenSensor, pos, Quaternion.identity);
         sensor.name = "Sensor: " + sensor.transform.position;
-        sensor.GetComponentInChildren<WardenSensorController>().onSensorAlert += OnSensorAlert;
+        sensor.GetComponent<WardenSensorController>().onSensorAlert += OnSensorAlert;
     }
 }

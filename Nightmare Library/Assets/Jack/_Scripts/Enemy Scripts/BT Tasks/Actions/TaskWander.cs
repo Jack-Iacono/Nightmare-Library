@@ -47,7 +47,6 @@ public class TaskWander : Node
                 targetLocation = GetNewTarget();
 
             float dist = Vector3.Distance(transform.position, targetLocation);
-            Debug.Log(dist);
 
             if (dist < 3f)
                 isWaiting = true;

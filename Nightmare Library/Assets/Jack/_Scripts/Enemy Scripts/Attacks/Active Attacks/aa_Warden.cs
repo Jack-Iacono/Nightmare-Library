@@ -7,7 +7,7 @@ using UnityEngine.AI;
 
 public class aa_Warden : ActiveAttack
 {
-    EnemyNavNode areaCenter = null;
+    public EnemyNavNode areaCenter { get; private set; } = null;
     protected int sensorCount = 2;
     protected int ringCount = 4;
 
@@ -37,18 +37,31 @@ public class aa_Warden : ActiveAttack
                 new CheckPlayerInRange(owner, 3),
                 new TaskAttackPlayersInRange(owner.navAgent, 3)
             }),
+            // Makes the agent wait if a new target is found
             new Sequence(new List<Node>()
             {
-                new CheckPlayerInSight(this, owner.navAgent, 30, 0.8f),
+                new CheckConditionNewTarget(this, owner),
+                new TaskWait(1)
+            }),
+            // Checks if the player is in sight and removes the alert queue if there is a player
+            new Sequence(new List<Node>()
+            {
+                new CheckPlayerInSight(this, owner.navAgent, 30, 0.2f, areaCenter.position, wanderRange),
                 new TaskWardenClearAlertQueue(this)
             }),
+            // Moves toward the target and freezes once there
             new Sequence(new List<Node>()
             {
                 new CheckConditionHasStaticTarget(this),
                 new TaskGotoStaticTarget(this, owner, 10),
-                new TaskWait(3),
+                new Selector(new List<Node>()
+                {
+                    new CheckPlayerInSight(this, owner.navAgent, 40, -0.8f),
+                    new TaskWait(3),
+                }),
                 new TaskRemoveTarget(this)
             }),
+            // Checks if this warden has any alerts and
             new Sequence(new List<Node>()
             {
                 new CheckConditionWardenAlert(this),
@@ -56,6 +69,7 @@ public class aa_Warden : ActiveAttack
                 new TaskWait(3),
                 new TaskClearAlertLocation(this)
             }),
+            // Wander by default
             new TaskWander(this, owner.navAgent, 5)
         });
 

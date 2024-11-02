@@ -6,7 +6,7 @@ using BehaviorTree;
 using Unity.VisualScripting;
 using UnityEngine.AI;
 
-public class TaskTimedWander : Node
+public class TaskWanderTimed : Node
 {
     private Transform transform;
     private NavMeshAgent navAgent;
@@ -27,7 +27,7 @@ public class TaskTimedWander : Node
     private EnemyNavNode currentNavPoint = null;
     private Vector3 targetLocation;
 
-    public TaskTimedWander(aa_Stalk owner, NavMeshAgent navAgent, float wanderTimeMin = 10, float wanderTimeMax = 20)
+    public TaskWanderTimed(aa_Stalk owner, NavMeshAgent navAgent, float wanderTimeMin = 10, float wanderTimeMax = 20)
     {
         transform = navAgent.transform;
         this.navAgent = navAgent;

@@ -72,7 +72,7 @@ public class aa_Stalk : ActiveAttack
             // Wandering Behavior
             new Sequence(new List<Node>()
             {
-                new TaskTimedWander(this, owner.navAgent),
+                new TaskWanderTimed(this, owner.navAgent),
                 new TaskAssignStalkTarget(this)
             })
         });

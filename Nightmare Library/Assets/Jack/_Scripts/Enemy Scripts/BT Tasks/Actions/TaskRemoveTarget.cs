@@ -1,22 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using BehaviorTree;
-using UnityEngine.AI;
 
-public class TaskStopRush : Node
+public class TaskRemoveTarget : Node
 {
-    private aa_RushOutdated owner;
-
-    public TaskStopRush(aa_RushOutdated owner)
+    ActiveAttack owner;
+    public TaskRemoveTarget(ActiveAttack owner) : base()
     {
         this.owner = owner;
     }
-
     public override Status Check(float dt)
     {
-        owner.isRushing = false;
+        owner.SetCurrentTarget(null);
 
         status = Status.SUCCESS;
         return status;

@@ -4,27 +4,24 @@ using UnityEngine.AI;
 
 public class TaskChasePlayer : Node
 {
-    private Transform player;
+    private ActiveAttack owner;
     private NavMeshAgent navAgent;
     private Transform transform;
 
-    public TaskChasePlayer(Transform transform, NavMeshAgent navAgent)
+    public TaskChasePlayer(ActiveAttack owner, Enemy enemy)
     {
-        player = PlayerController.playerInstances[0].transform;
-        this.transform = transform;
-        this.navAgent = navAgent;
+        this.owner = owner;
+        transform = enemy.transform;
+        navAgent = enemy.navAgent;
     }
 
     public override Status Check(float dt)
     {
-        // Get the current target node
-        Vector3 target = (Vector3)GetData("playerKnownPosition");
-
         // Check if the agent is still not at the target
-        if (Vector3.Distance(transform.position, target) > 0.5f)
+        if (Vector3.Distance(transform.position, owner.currentTargetDynamic.position) > 0.5f)
         {
             navAgent.speed = (float)GetData("speed") * 2;
-            navAgent.destination = target;
+            navAgent.destination = owner.currentTargetDynamic.position;
             status = Status.RUNNING;
             return status;
         }

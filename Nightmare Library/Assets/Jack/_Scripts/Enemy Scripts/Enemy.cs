@@ -25,7 +25,7 @@ public class Enemy : MonoBehaviour
     public ObjectPool objPool = new ObjectPool();
 
     public enum aAttackEnum { RUSH, STALKER, WARDEN, NULL };
-    public enum pAttackEnum { IDOLS, TEMP, NULL };
+    public enum pAttackEnum { IDOLS, TEMP, SEARCH, NULL };
 
     [Header("Attack Variables")]
     [SerializeField]
@@ -112,6 +112,9 @@ public class Enemy : MonoBehaviour
                 break;
             case pAttackEnum.TEMP:
                 passiveAttackTree = new pa_Temps(this);
+                break;
+            case pAttackEnum.SEARCH:
+                passiveAttackTree = new pa_Screech(this);
                 break;
         }
 

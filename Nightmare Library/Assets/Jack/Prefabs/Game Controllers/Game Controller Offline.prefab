@@ -90,3 +90,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   e_WardenSensor: {fileID: 1362234469720430081, guid: da59f9d391b9838429c78acabb4b40e3,
     type: 3}
+  e_ScreechHead: {fileID: 668094590302005263, guid: 6f1fdc0bb82b72d4bba623b80a66f8c0,
+    type: 3}

@@ -9,6 +9,7 @@ public class PrefabHandler : MonoBehaviour
 
     [Header("Enemy Prefabs")]
     public GameObject e_WardenSensor;
+    public GameObject e_ScreechHead;
 
     private void Awake()
     {

@@ -4,17 +4,20 @@ using UnityEngine;
 
 public class pa_Screech : PassiveAttack
 {
-    public float baseChance { get; private set; } = 0.9f;
-    public float chanceIncrease { get; private set; } = 0.5f;
+    private float baseChance = 0.9f;
+    private float chanceIncrease = 0.5f;
+
+    // In ticks of the interval, not seconds
+    private int coolDownTicks = 3;
+    // this is in seconds
+    public float attackTime = 10;
     
-    public float dist { get; private set; } = 2;
+    private float dist = 2;
 
     private float intervalTimer = 0;
     private float intervalTime = 1;
 
-    private List<ScreechHeadController> headControllers = new List<ScreechHeadController>();
-
-    // Variable here for enemy
+    protected Dictionary<ScreechHeadController, HeadData> headControllers = new Dictionary<ScreechHeadController, HeadData>();
 
     public pa_Screech(Enemy owner) : base(owner)
     {
@@ -26,7 +29,7 @@ public class pa_Screech : PassiveAttack
         foreach(PlayerController p in PlayerController.playerInstances)
         {
             ScreechHeadController cont = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_ScreechHead, Vector3.zero, Quaternion.identity).GetComponent<ScreechHeadController>();
-            headControllers.Add(cont);
+            headControllers.Add(cont, new HeadData(baseChance, coolDownTicks));
             cont.Initialize(this, p);
         }
         
@@ -35,49 +38,52 @@ public class pa_Screech : PassiveAttack
 
     public override void Update(float dt)
     {
-        /*
-        if (!isSpawned && DeskController.playersAtDesk.Contains(PlayerController.playerInstances[0]))
+        if (intervalTimer > 0)
+            intervalTimer -= dt;
+        else
         {
-            if (cooldownTimer <= 0)
+            Debug.Log("Interval Tick");
+            foreach(ScreechHeadController s in headControllers.Keys)
             {
-                if (intervalTimer > 0)
-                    intervalTimer -= dt;
-                else
+                if (!s.isSpawned && !s.hasAttacked)
                 {
-                    float rand = Random.Range(0, 1f);
-                    if (rand < currentChance)
-                    {
-                        //Spawn
-                        currentChance = baseChance;
-                        cooldownTimer = 0;
-                        isSpawned = true;
+                    float chance = headControllers[s].chance;
+                    float cooldown = headControllers[s].cooldown;
 
-                        SpawnHead();
+                    if (cooldown <= 0)
+                    {
+                        float rand = Random.Range(0, 1f);
+                        if (rand < chance)
+                        {
+                            Debug.Log("Success");
+                            //Spawn
+                            headControllers[s].SetChance(baseChance);
+                            headControllers[s].SetCooldown(coolDownTicks);
+
+                            s.SpawnHead(GetRandomOffset());
+                        }
+                        else
+                        {
+                            Debug.Log("Failure");
+                            headControllers[s].IncreaseChance(chanceIncrease);
+                        }
                     }
                     else
-                    {
-                        currentChance += chanceIncrease;
-                    }
-
-                    intervalTimer = intervalTime;
+                        headControllers[s].TickCooldown();
                 }
             }
-            else
-                cooldownTimer -= dt;
+
+            intervalTimer = intervalTime;
         }
-        */
     }
 
-    protected void AttackPlayer()
+    public void AttackPlayer(PlayerController player)
     {
-        foreach (PlayerController player in DeskController.playersAtDesk)
-        {
-            player.ReceiveAttack();
-        }
-
+        // Remove to actually attack player
+        //player.ReceiveAttack();
     }
 
-    public void SpawnHead(ScreechHeadController controller)
+    public Vector3 GetRandomOffset()
     {
         float yRot = Random.Range(0, 360);
         float xRot = Random.Range(-45, 45);
@@ -88,14 +94,43 @@ public class pa_Screech : PassiveAttack
         float y = Mathf.Sin(xRot * Mathf.Deg2Rad);
         float z = Mathf.Cos(xRot * Mathf.Deg2Rad) * dist;
 
-        Vector3 offset = new Vector3(a * z, y, b * z);
-
-        controller.SpawnHead(offset);
+        return new Vector3(a * z, y, b * z);
     }
 
     public override void OnDestroy()
     {
-        TempController.currentTemp = 0;
         base.OnDestroy();
     }
+
+    protected class HeadData
+    {
+        public float chance;
+        public int cooldown;
+
+        public HeadData(float chance, int cooldown)
+        {
+            this.chance = chance;
+            this.cooldown = cooldown;
+        }
+
+        public void SetChance(float newChance)
+        {
+            chance =  newChance;
+        }
+        public void IncreaseChance(float increase)
+        {
+            chance += increase;
+        }
+
+        public void SetCooldown(int newCooldown)
+        {
+            cooldown = newCooldown;
+        }
+        public void TickCooldown()
+        {
+            cooldown--;
+            Debug.Log(cooldown);
+        }
+    }
 }
+

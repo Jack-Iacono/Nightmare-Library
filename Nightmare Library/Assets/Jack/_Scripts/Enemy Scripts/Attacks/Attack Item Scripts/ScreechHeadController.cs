@@ -7,17 +7,28 @@ public class ScreechHeadController : MonoBehaviour
     private pa_Screech parent;
 
     private Vector3 offset = Vector3.zero;
-    private PlayerController playerController;
+    public PlayerController targetPlayer;
     private Transform playerCamTrans;
     private Transform trans;
 
-    private bool isSpawned = false;
+    public bool isSpawned = false;
     private float sightTolerance = -0.94f;
 
     private MeshRenderer[] meshRenderers;
 
-    private float currentChance = 0;
-    private float cooldownTimer = 0;
+    private float attackTimer = 0;
+
+    // Used to stop overflow
+    public bool hasAttacked = false;
+
+    public delegate void SpawnHeadDelegate(Vector3 pos, bool fromNetwork);
+    public event SpawnHeadDelegate OnSpawnHead;
+
+    public delegate void DespawnHeadDelegate(bool fromNetwork);
+    public event DespawnHeadDelegate OnDespawnHead;
+
+    public delegate void AttackDelegate(bool fromNetwork);
+    public event AttackDelegate OnAttack;
 
     private void Awake()
     {
@@ -26,12 +37,11 @@ public class ScreechHeadController : MonoBehaviour
     public void Initialize(pa_Screech parent, PlayerController player)
     {
         this.parent = parent;
-        playerController = player;
-        playerCamTrans = playerController.camCont.transform;
+        targetPlayer = player;
+        playerCamTrans = targetPlayer.camCont.transform;
         trans = transform;
 
-        currentChance = parent.baseChance;
-        cooldownTimer = 0;
+        attackTimer = parent.attackTime;
 
         DespawnHead();
     }
@@ -41,35 +51,43 @@ public class ScreechHeadController : MonoBehaviour
     {
         if (isSpawned)
         {
-            trans.position = playerController.transform.position + offset + Vector3.up;
+            trans.position = targetPlayer.transform.position + offset + Vector3.up;
 
             // Is the player looking at this object
             if(Vector3.Dot(trans.forward, playerCamTrans.forward) < sightTolerance)
             {
                 DespawnHead();
             }
-        }
-        else
-        {
-            
+
+            if (attackTimer <= 0)
+            {
+                if (!hasAttacked)
+                {
+                    Attack();
+                }
+                attackTimer = parent.attackTime;  
+            }
+            else
+                attackTimer -= Time.deltaTime;
         }
     }
 
-    private void CheckSpawn()
+    public void Attack(bool fromNetwork = false)
     {
-        
+        parent.AttackPlayer(targetPlayer);
+        hasAttacked = true;
     }
 
-    public void SpawnHead(Vector3 offset)
+    public void SpawnHead(Vector3 offset, bool fromNetwork = false)
     {
         this.offset = offset;
         isSpawned = true;
-        transform.position = playerController.transform.position + offset + Vector3.up;
-        transform.LookAt(playerController.transform.position + Vector3.up);
+        transform.position = targetPlayer.transform.position + offset + Vector3.up;
+        transform.LookAt(targetPlayer.transform.position + Vector3.up);
 
         EnableMesh(true);
     }
-    public void DespawnHead()
+    public void DespawnHead(bool fromNetwork = false)
     {
         isSpawned = false;
         EnableMesh(false);

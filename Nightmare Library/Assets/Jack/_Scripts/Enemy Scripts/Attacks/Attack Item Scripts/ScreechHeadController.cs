@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 
 public class ScreechHeadController : MonoBehaviour
@@ -14,6 +15,9 @@ public class ScreechHeadController : MonoBehaviour
     public bool isSpawned = false;
     private float sightTolerance = -0.94f;
 
+    // Stops this item from attacking if it doesn't need to
+    private bool doAttacks = false;
+
     private MeshRenderer[] meshRenderers;
 
     private float attackTimer = 0;
@@ -21,14 +25,17 @@ public class ScreechHeadController : MonoBehaviour
     // Used to stop overflow
     public bool hasAttacked = false;
 
-    public delegate void SpawnHeadDelegate(Vector3 pos, bool fromNetwork);
+    public delegate void SpawnHeadDelegate(Vector3 pos);
     public event SpawnHeadDelegate OnSpawnHead;
 
-    public delegate void DespawnHeadDelegate(bool fromNetwork);
+    public delegate void DespawnHeadDelegate();
     public event DespawnHeadDelegate OnDespawnHead;
 
-    public delegate void AttackDelegate(bool fromNetwork);
+    public delegate void AttackDelegate();
     public event AttackDelegate OnAttack;
+
+    public delegate void InitializeDelegate(int index);
+    public event InitializeDelegate OnInitialize;
 
     private void Awake()
     {
@@ -42,6 +49,18 @@ public class ScreechHeadController : MonoBehaviour
         trans = transform;
 
         attackTimer = parent.attackTime;
+
+        DespawnHead();
+
+        OnInitialize?.Invoke(PlayerController.playerInstances.IndexOf(targetPlayer));
+    }
+    public void Initialize(int playerIndex)
+    {
+        targetPlayer = PlayerController.playerInstances[playerIndex];
+        playerCamTrans = targetPlayer.camCont.transform;
+        trans = transform;
+
+        doAttacks = false;
 
         DespawnHead();
     }
@@ -59,26 +78,32 @@ public class ScreechHeadController : MonoBehaviour
                 DespawnHead();
             }
 
-            if (attackTimer <= 0)
+            if (doAttacks)
             {
-                if (!hasAttacked)
+                if (attackTimer <= 0)
                 {
-                    Attack();
+                    if (!hasAttacked)
+                    {
+                        Attack();
+                    }
+                    attackTimer = parent.attackTime;
                 }
-                attackTimer = parent.attackTime;  
+                else
+                    attackTimer -= Time.deltaTime;
             }
-            else
-                attackTimer -= Time.deltaTime;
         }
     }
 
-    public void Attack(bool fromNetwork = false)
+    public void Attack()
     {
-        parent.AttackPlayer(targetPlayer);
+        if(parent != null)
+            parent.AttackPlayer(targetPlayer);
         hasAttacked = true;
+
+        OnAttack?.Invoke();
     }
 
-    public void SpawnHead(Vector3 offset, bool fromNetwork = false)
+    public void SpawnHead(Vector3 offset)
     {
         this.offset = offset;
         isSpawned = true;
@@ -86,11 +111,15 @@ public class ScreechHeadController : MonoBehaviour
         transform.LookAt(targetPlayer.transform.position + Vector3.up);
 
         EnableMesh(true);
+
+        OnSpawnHead?.Invoke(offset);
     }
-    public void DespawnHead(bool fromNetwork = false)
+    public void DespawnHead()
     {
         isSpawned = false;
         EnableMesh(false);
+
+        OnDespawnHead?.Invoke();
     }
 
     public void EnableMesh(bool b)

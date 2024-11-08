@@ -15,20 +15,53 @@ public class ScreechHeadNetwork : NetworkBehaviour
         parent.OnSpawnHead += OnSpawnHead;
         parent.OnDespawnHead += OnDespawnHead;
         parent.OnAttack += OnAttack;
+        parent.OnInitialize += OnInitialize;
     }
 
-    public void OnAttack(bool fromNetwork = false)
+    public void OnInitialize(int index)
     {
-        
+        if (IsServer)
+            OnInitializeClientRpc(index);
     }
-    
+    [ClientRpc]
+    private void OnInitializeClientRpc(int index)
+    {
+        parent.Initialize(index);
+    }
 
-    public void OnSpawnHead(Vector3 offset, bool fromNetwork = false)
+    public void OnAttack()
     {
-        
+        if (IsServer)
+            OnAttackClientRpc(NetworkManager.LocalClientId);
     }
-    public void OnDespawnHead(bool fromNetwork = false)
+    [ClientRpc]
+    public void OnAttackClientRpc(ulong sender)
     {
-        
+        if(sender != NetworkManager.LocalClientId)
+            parent.Attack();
+    }
+
+    public void OnSpawnHead(Vector3 offset)
+    {
+        if (IsServer)
+            OnSpawnHeadClientRpc(offset, NetworkManager.LocalClientId);
+    }
+    [ClientRpc]
+    public void OnSpawnHeadClientRpc(Vector3 offset, ulong sender)
+    {
+        if (sender != NetworkManager.LocalClientId)
+            parent.SpawnHead(offset);
+    }
+
+    public void OnDespawnHead()
+    {
+        if (IsServer)
+            OnDespawnHeadClientRpc(NetworkManager.LocalClientId);
+    }
+    [ClientRpc]
+    public void OnDespawnHeadClientRpc(ulong sender)
+    {
+        if (sender != NetworkManager.LocalClientId)
+            parent.DespawnHead();
     }
 }

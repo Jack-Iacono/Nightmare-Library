@@ -103,7 +103,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1077108347
+  GlobalObjectIdHash: 3809414350
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -153,4 +153,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   e_WardenSensorOnline: {fileID: 951758975007341465, guid: 5b0607c0566e1bd469da03f6e9efb7bf,
+    type: 3}
+  e_ScreechHeadOnline: {fileID: 8738503106444032622, guid: 80b9c5fc54d4cf64da34840072c96d9a,
     type: 3}

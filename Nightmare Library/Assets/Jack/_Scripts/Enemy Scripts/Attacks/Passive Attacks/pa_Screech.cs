@@ -26,8 +26,13 @@ public class pa_Screech : PassiveAttack
 
     public override void Initialize()
     {
+        for(int i = 0; i < PlayerController.playerInstances.Count; i++)
+        {
+            Debug.Log(PlayerController.playerInstances[i].name);
+        }
         foreach(PlayerController p in PlayerController.playerInstances)
         {
+            Debug.Log(p.name);
             ScreechHeadController cont = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_ScreechHead, Vector3.zero, Quaternion.identity).GetComponent<ScreechHeadController>();
             headControllers.Add(cont, new HeadData(baseChance, coolDownTicks));
             cont.Initialize(this, p);
@@ -42,10 +47,10 @@ public class pa_Screech : PassiveAttack
             intervalTimer -= dt;
         else
         {
-            Debug.Log("Interval Tick");
             foreach(ScreechHeadController s in headControllers.Keys)
             {
-                if (!s.isSpawned && !s.hasAttacked)
+                // Checks for a few things, is the player at the desk, is the head already spawned, has the head already attacked
+                if (DeskController.playersAtDesk.Contains(s.targetPlayer) && !s.isSpawned && !s.hasAttacked)
                 {
                     float chance = headControllers[s].chance;
                     float cooldown = headControllers[s].cooldown;
@@ -55,7 +60,6 @@ public class pa_Screech : PassiveAttack
                         float rand = Random.Range(0, 1f);
                         if (rand < chance)
                         {
-                            Debug.Log("Success");
                             //Spawn
                             headControllers[s].SetChance(baseChance);
                             headControllers[s].SetCooldown(coolDownTicks);
@@ -64,7 +68,6 @@ public class pa_Screech : PassiveAttack
                         }
                         else
                         {
-                            Debug.Log("Failure");
                             headControllers[s].IncreaseChance(chanceIncrease);
                         }
                     }

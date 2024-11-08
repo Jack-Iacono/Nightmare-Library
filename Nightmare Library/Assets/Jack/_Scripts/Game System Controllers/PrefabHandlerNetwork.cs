@@ -15,6 +15,7 @@ public class PrefabHandlerNetwork : NetworkBehaviour
 
     [Header("Enemy Prefabs")]
     public GameObject e_WardenSensorOnline;
+    public GameObject e_ScreechHeadOnline;
 
     private void Awake()
     {
@@ -26,6 +27,7 @@ public class PrefabHandlerNetwork : NetworkBehaviour
 
         // Link the asset from the parent to this script for easy instantiating
         prefabLink.Add(parent.e_WardenSensor, e_WardenSensorOnline);
+        prefabLink.Add(parent.e_ScreechHead, e_ScreechHeadOnline);
     }
     public GameObject InstantiatePrefab(GameObject obj, Vector3 pos, Quaternion rot)
     {

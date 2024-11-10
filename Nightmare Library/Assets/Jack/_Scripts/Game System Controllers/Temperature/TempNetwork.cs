@@ -8,6 +8,15 @@ public class TempNetwork : NetworkBehaviour
 {
     private TempController tempCont;
 
+    private void Awake()
+    {
+        if (!NetworkConnectionController.IsRunning)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+    }
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();

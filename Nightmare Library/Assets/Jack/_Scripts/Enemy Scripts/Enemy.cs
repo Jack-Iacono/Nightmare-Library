@@ -51,15 +51,10 @@ public class Enemy : MonoBehaviour
     public event EventHandler<string> OnPlaySound;
     
     [Space(10)]
-    public GameObject footprintPrefab;
-    public GameObject footprintPrefabOnline;
     private List<GameObject> footprintList = new List<GameObject>();
     public delegate void FootprintDelegate(Vector3 pos);
     public event FootprintDelegate OnSpawnFootprint;
 
-    [Space(10)]
-    public GameObject trapPrefab;
-    public GameObject trapPrefabOnline;
     public delegate void TrapDelegate(Vector3 pos);
     public event TrapDelegate OnSpawnTrap;
 
@@ -135,13 +130,11 @@ public class Enemy : MonoBehaviour
                     break;
                 case EvidenceEnum.FOOTPRINT:
                     evidence.Add(new ev_Footprint(this));
-                    if (!NetworkConnectionController.IsRunning)
-                        objPool.PoolObject(footprintPrefab, 10);
+                    objPool.PoolObject(PrefabHandler.Instance.e_EvidenceFootprint, 10);
                     break;
                 case EvidenceEnum.TRAPPER:
                     evidence.Add(new ev_Trapper(this));
-                    if (!NetworkConnectionController.IsRunning)
-                        objPool.PoolObject(trapPrefab, 10);
+                    objPool.PoolObject(PrefabHandler.Instance.e_EvidenceTrap, 10);
                     break;
                 case EvidenceEnum.HALLUCINATOR:
                     evidence.Add(new ev_Hallucinator(this));
@@ -213,7 +206,7 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            var print = objPool.GetObject(footprintPrefab);
+            var print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
             print.GetComponent<FootprintController>().Activate();
             print.transform.position = hit.point;
@@ -232,7 +225,7 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            var print = objPool.GetObject(trapPrefab);
+            var print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
             print.GetComponent<TrapController>().Activate();
             print.transform.position = hit.point;

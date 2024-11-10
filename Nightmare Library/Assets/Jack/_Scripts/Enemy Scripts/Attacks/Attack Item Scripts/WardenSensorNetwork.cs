@@ -10,6 +10,12 @@ public class WardenSensorNetwork : NetworkBehaviour
 
     private void Awake()
     {
+        if (!NetworkConnectionController.IsRunning)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+
         parent = GetComponent<WardenSensorController>();
     }
 }

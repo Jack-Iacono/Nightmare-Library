@@ -5,7 +5,6 @@ using System.Globalization;
 using Unity.Burst.CompilerServices;
 using Unity.Netcode;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 [RequireComponent(typeof(Enemy))]
 public class EnemyNetwork : NetworkBehaviour
@@ -19,6 +18,12 @@ public class EnemyNetwork : NetworkBehaviour
 
     private void Awake()
     {
+        if (!NetworkConnectionController.IsRunning)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+
         // Can only be written to by server or owner
         var permission = _serverAuth ? NetworkVariableWritePermission.Server : NetworkVariableWritePermission.Owner;
         contState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);
@@ -40,15 +45,9 @@ public class EnemyNetwork : NetworkBehaviour
             enemyController.OnLightFlicker += OnLightFlicker;
 
             if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
-            {
                 enemyController.OnSpawnFootprint += OnSpawnFootprint;
-                CreateFootprintPool();
-            }
             if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.TRAPPER))
-            {
                 enemyController.OnSpawnTrap += OnSpawnTrap;
-                CreateTrapPool();
-            }
                 
         }
     }
@@ -86,34 +85,11 @@ public class EnemyNetwork : NetworkBehaviour
             enemyController.PlaySound(sound);
     }
 
-    public void CreateFootprintPool()
-    {
-        enemyController.objPool.PoolObject(enemyController.footprintPrefabOnline, 10, true);
-
-        List<GameObject> list = enemyController.objPool.GetPool(enemyController.footprintPrefabOnline);
-
-        foreach(GameObject obj in list)
-        {
-            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-        }
-    }
-    public void CreateTrapPool()
-    {
-        enemyController.objPool.PoolObject(enemyController.trapPrefabOnline, 10, true);
-
-        List<GameObject> list = enemyController.objPool.GetPool(enemyController.trapPrefabOnline);
-
-        foreach (GameObject obj in list)
-        {
-            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-        }
-    }
-
     public void OnSpawnFootprint(Vector3 pos)
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = enemyController.objPool.GetObject(enemyController.footprintPrefabOnline);
+            var print = enemyController.objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
             print.transform.position = pos;
             print.GetComponent<FootprintController>().Activate();
@@ -124,7 +100,7 @@ public class EnemyNetwork : NetworkBehaviour
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = enemyController.objPool.GetObject(enemyController.trapPrefabOnline);
+            var print = enemyController.objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
             print.transform.position = pos;
             print.GetComponent<TrapController>().Activate();

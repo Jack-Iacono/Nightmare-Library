@@ -9,6 +9,15 @@ public class TrapControllerNetwork : NetworkBehaviour
 {
     private TrapController tController;
 
+    private void Awake()
+    {
+        if (!NetworkConnectionController.IsRunning)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+    }
+
     public override void OnNetworkSpawn()
     {
         tController = GetComponent<TrapController>();

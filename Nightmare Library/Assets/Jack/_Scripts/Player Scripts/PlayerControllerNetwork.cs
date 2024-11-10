@@ -24,6 +24,13 @@ public class PlayerControllerNetwork : NetworkBehaviour
 
     private void Awake()
     {
+        Debug.Log("Awake");
+        if (!NetworkConnectionController.IsRunning)
+        {
+            //Destroy(this);
+            //Destroy(GetComponent<NetworkObject>());
+        }
+
         // Can only be written to by server or owner
         var permission = _serverAuth ? NetworkVariableWritePermission.Server : NetworkVariableWritePermission.Owner;
         playerContinuousState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);

@@ -22,6 +22,12 @@ public class GameControllerNetwork : NetworkBehaviour
 
     private void Awake()
     {
+        if (!NetworkConnectionController.IsRunning)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+
         if (instance == null)
             instance = this;
         else

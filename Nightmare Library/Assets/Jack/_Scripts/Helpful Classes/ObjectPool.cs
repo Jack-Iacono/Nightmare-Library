@@ -56,7 +56,8 @@ public class ObjectPool
     }
     private GameObject InstantiateObject(GameObject obj, Transform parent, bool setActive = false)
     {
-        GameObject g = GameObject.Instantiate(obj, parent);
+        //GameObject g = GameObject.Instantiate(obj, parent);
+        GameObject g = PrefabHandler.Instance.InstantiatePrefab(obj, parent.position, parent.rotation);
         g.SendMessage("Initialize", SendMessageOptions.DontRequireReceiver);
         g.SetActive(setActive);
         return g;
@@ -64,6 +65,7 @@ public class ObjectPool
 
     public GameObject GetObject(GameObject g)
     {
+        Debug.Log(g.name);
         List<GameObject> list = pooledObjects[g.name];
 
         foreach(GameObject obj in list)

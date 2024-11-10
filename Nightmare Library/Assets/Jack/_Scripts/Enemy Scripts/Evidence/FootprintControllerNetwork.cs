@@ -9,6 +9,15 @@ public class FootprintControllerNetwork : NetworkBehaviour
 {
     private FootprintController fController;
 
+    private void Awake()
+    {
+        if (!NetworkConnectionController.IsRunning)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+    }
+
     public override void OnNetworkSpawn()
     {
         fController = GetComponent<FootprintController>();

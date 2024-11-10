@@ -11,6 +11,15 @@ public class DeskNetwork : NetworkBehaviour
     [SerializeField]
     private GameObject onlineIdolPrefab;
 
+    private void Awake()
+    {
+        if (!NetworkConnectionController.IsRunning)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+    }
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();

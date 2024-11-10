@@ -11,6 +11,12 @@ public class ScreechHeadNetwork : NetworkBehaviour
 
     private void Awake()
     {
+        if (!NetworkConnectionController.IsRunning)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+
         parent = GetComponent<ScreechHeadController>();
         parent.OnSpawnHead += OnSpawnHead;
         parent.OnDespawnHead += OnDespawnHead;

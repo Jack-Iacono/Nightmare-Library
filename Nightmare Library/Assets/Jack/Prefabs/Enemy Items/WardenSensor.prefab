@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 1433164813534636305}
   - component: {fileID: 4262359348852803826}
   - component: {fileID: 1560147531716510000}
+  - component: {fileID: 1624714415527308566}
+  - component: {fileID: 1238097178552148899}
   m_Layer: 0
   m_Name: WardenSensor
   m_TagString: Untagged
@@ -78,6 +80,38 @@ MonoBehaviour:
   allowEnemyHysterics: 0
   allowEnemyFlicker: 0
   attachedLight: {fileID: 0}
+--- !u!114 &1624714415527308566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1362234469720430081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &1238097178552148899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1362234469720430081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a1b3400cf73527459b57e98c9fe6530, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7891484099203178196
 GameObject:
   m_ObjectHideFlags: 0

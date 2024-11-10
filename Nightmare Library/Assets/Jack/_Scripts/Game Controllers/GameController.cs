@@ -40,8 +40,8 @@ public class GameController : MonoBehaviour
 
     private void SpawnPrefabs()
     {
-        PrefabHandler.Instance.InstantiatePrefabOffline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
-        PrefabHandler.Instance.InstantiatePrefabOffline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+        PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
+        PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
     }
 
 

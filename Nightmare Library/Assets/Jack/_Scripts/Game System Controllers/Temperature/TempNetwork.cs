@@ -24,7 +24,6 @@ public class TempNetwork : NetworkBehaviour
 
     private void OnTempChanged(int temp)
     {
-        Debug.Log("Sending Temp Change");
         OnTempChangedClientRpc(temp);
     }
     [ClientRpc]

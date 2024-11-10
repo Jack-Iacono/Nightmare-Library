@@ -123,10 +123,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d9eea7b3fae42f4d847bfd789c0231d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onlinePlayerPrefab: {fileID: 1951103587740149481, guid: d9edf957516b2e142bfa15336a84d0b1,
-    type: 3}
-  onlineEnemyPrefab: {fileID: 6076354374733784215, guid: 56cb585b0c12a6f43bcc76003d82cac7,
-    type: 3}
   spawnedPrefabs: []
 --- !u!114 &-6480586349976279826
 MonoBehaviour:
@@ -152,6 +148,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7eff7930199e23843a4b4db131bb1b55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  p_PlayerOnline: {fileID: 1951103587740149481, guid: d9edf957516b2e142bfa15336a84d0b1,
+    type: 3}
+  e_EnemyOnline: {fileID: 6076354374733784215, guid: 56cb585b0c12a6f43bcc76003d82cac7,
+    type: 3}
   e_WardenSensorOnline: {fileID: 951758975007341465, guid: 5b0607c0566e1bd469da03f6e9efb7bf,
     type: 3}
   e_ScreechHeadOnline: {fileID: 8738503106444032622, guid: 80b9c5fc54d4cf64da34840072c96d9a,

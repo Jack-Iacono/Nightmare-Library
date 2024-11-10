@@ -68,6 +68,9 @@ public class ScreechHeadController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (targetPlayer == null)
+            DespawnHead();
+
         if (isSpawned)
         {
             trans.position = targetPlayer.transform.position + offset + Vector3.up;

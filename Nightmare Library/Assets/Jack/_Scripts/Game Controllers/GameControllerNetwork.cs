@@ -12,14 +12,13 @@ public class GameControllerNetwork : NetworkBehaviour
     public static GameControllerNetwork instance;
     private GameController parent;
 
-    public GameObject onlinePlayerPrefab;
-    public GameObject onlineEnemyPrefab;
-
     // Network Variables
     private NetworkVariable<ContinuousData> contState;
     public static NetworkVariable<bool> gamePaused;
 
     public List<GameObject> spawnedPrefabs = new List<GameObject>();
+
+    private int connectedPlayers = 0;
 
     private void Awake()
     {
@@ -70,10 +69,7 @@ public class GameControllerNetwork : NetworkBehaviour
     private void OnGameEnd(object sender, EventArgs e)
     {
         // Unload Spawned Objects
-        foreach (GameObject g in spawnedPrefabs)
-        {
-            g.GetComponent<NetworkObject>().Despawn();
-        }
+        PrefabHandlerNetwork.Instance.DespawnPrefabs();
 
         GameController.OnGameEnd -= OnGameEnd;
         SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
@@ -81,45 +77,46 @@ public class GameControllerNetwork : NetworkBehaviour
 
     private void OnLobbyEnter(ulong clientId, bool isServer)
     {
-        SpawnNetworkObjects();
-    }
-
-    public void SpawnNetworkObjects()
-    {
         if (NetworkManager.Singleton.IsServer)
-            ServerSpawn();
+            ServerConnected();
         else
-            ClientSpawn();
+            ClientConnected();
     }
-    private void ServerSpawn()
+
+    private void ServerConnected()
     {
-        // TEMPORARY: Remove the spawn coordinates from this line
-        GameObject pPrefab = Instantiate(onlinePlayerPrefab);
-
-        pPrefab.name = "Player " + instance.OwnerClientId;
-        pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
-
-        GameObject ePrefab = Instantiate(onlineEnemyPrefab);
-
-        ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
-        ePrefab.GetComponent<NetworkObject>().SpawnWithOwnership(instance.OwnerClientId);
-
-        spawnedPrefabs.Add(pPrefab);
-        spawnedPrefabs.Add(ePrefab);
+        connectedPlayers++;
+        CheckAllConnected();
     }
-    private void ClientSpawn()
+    private void ClientConnected()
     {
-        ClientEntryActionServerRpc(NetworkManager.LocalClientId);
+        ClientConnectedServerRpc(NetworkManager.LocalClientId);
     }
     [ServerRpc(RequireOwnership = false)]
-    private void ClientEntryActionServerRpc(ulong clientId)
+    private void ClientConnectedServerRpc(ulong clientId)
     {
-        GameObject pPrefab = Instantiate(onlinePlayerPrefab);
+        connectedPlayers++;
+        CheckAllConnected();
+    }
 
-        pPrefab.name = "Player " + clientId;
-        pPrefab.GetComponent<NetworkObject>().SpawnWithOwnership(clientId);
+    private void CheckAllConnected()
+    {
+        // Wait until all players are connected and then load the prefabs
+        if(connectedPlayers == NetworkManager.ConnectedClients.Count)
+        {
+            foreach(ulong id in NetworkManager.ConnectedClients.Keys)
+            {
+                GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, id);
+                pPrefab.name = "Player " + id;
 
-        spawnedPrefabs.Add(pPrefab);
+                spawnedPrefabs.Add(pPrefab);
+            }
+
+            GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+            ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
+
+            spawnedPrefabs.Add(ePrefab);
+        }
     }
 
     private void TransmitContinuousState()

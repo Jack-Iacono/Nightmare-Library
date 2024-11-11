@@ -18,6 +18,9 @@ public class PrefabHandler : MonoBehaviour
     public GameObject e_WardenSensor;
     public GameObject e_ScreechHead;
 
+    [Header("Audio")]
+    public GameObject a_AudioSource;
+
     private void Awake()
     {
         if(Instance != null)

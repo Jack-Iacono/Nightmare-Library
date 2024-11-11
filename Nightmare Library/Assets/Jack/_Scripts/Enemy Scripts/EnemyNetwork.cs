@@ -18,12 +18,6 @@ public class EnemyNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.IsRunning)
-        {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
-
         // Can only be written to by server or owner
         var permission = _serverAuth ? NetworkVariableWritePermission.Server : NetworkVariableWritePermission.Owner;
         contState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);

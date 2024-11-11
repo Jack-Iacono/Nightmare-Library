@@ -5,18 +5,9 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(FootprintController))]
-public class FootprintControllerNetwork : NetworkBehaviour
+public class FootprintNetwork : NetworkBehaviour
 {
     private FootprintController fController;
-
-    private void Awake()
-    {
-        if (!NetworkConnectionController.IsRunning)
-        {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
-    }
 
     public override void OnNetworkSpawn()
     {

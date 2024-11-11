@@ -132,8 +132,11 @@ public abstract class LobbyController : NetworkBehaviour
     }
     protected virtual void UnRegisterCallbacks()
     {
-        NetworkManager.OnClientConnectedCallback -= OnClientConnected;
-        NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        if(NetworkManager.Singleton != null)
+        {
+            NetworkManager.OnClientConnectedCallback -= OnClientConnected;
+            NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
     }
     
     protected virtual void OnClientConnected(ulong obj)

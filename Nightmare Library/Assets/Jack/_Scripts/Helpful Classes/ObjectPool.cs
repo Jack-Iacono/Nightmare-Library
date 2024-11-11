@@ -29,7 +29,7 @@ public class ObjectPool
         // Adds the item to the dictionary
         pooledObjects.Add(gObject.name, list);
     }
-    public void PoolObject(GameObject gObject, int count, bool setActive = false)
+    public void PoolObject(GameObject gObject, int count, bool setActive = false, bool spawnOffline = false)
     {
         GameObject p = new GameObject("Pooled Object: " + gObject.name);
 
@@ -39,7 +39,7 @@ public class ObjectPool
         // Populates the list with the right amount of gameobjects
         for (int i = 0; i < count; i++)
         {
-            var inst = InstantiateObject(gObject, p.transform, setActive);
+            var inst = InstantiateObject(gObject, p.transform, setActive, spawnOffline);
             inst.name += " " + i;
             list.Add(inst);
         }
@@ -54,10 +54,14 @@ public class ObjectPool
         pooledObjects[gObject.name].Add(newObject);
         return newObject;
     }
-    private GameObject InstantiateObject(GameObject obj, Transform parent, bool setActive = false)
+    private GameObject InstantiateObject(GameObject obj, Transform parent, bool setActive = false, bool spawnOffline = false)
     {
-        //GameObject g = GameObject.Instantiate(obj, parent);
-        GameObject g = PrefabHandler.Instance.InstantiatePrefab(obj, parent.position, parent.rotation);
+        GameObject g;
+        if (spawnOffline)
+            g = PrefabHandler.Instance.InstantiatePrefabOffline(obj, parent.position, parent.rotation);
+        else
+            g = PrefabHandler.Instance.InstantiatePrefab(obj, parent.position, parent.rotation);
+
         g.SendMessage("Initialize", SendMessageOptions.DontRequireReceiver);
         g.SetActive(setActive);
         return g;

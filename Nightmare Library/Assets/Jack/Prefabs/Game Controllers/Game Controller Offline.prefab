@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8277916014497907763}
   - component: {fileID: 1626611085352431638}
   - component: {fileID: -7234603397361866382}
+  - component: {fileID: 492232141707764921}
   m_Layer: 0
   m_Name: Game Controller Offline
   m_TagString: Untagged
@@ -46,16 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbafe0d98bd7b894f9a85203486bf6a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  offlinePlayerPrefab: {fileID: 8304355550611021137, guid: cd83bc9e5856e324085ffec44549aa1e,
-    type: 3}
-  offlineEnemyPrefab: {fileID: 1289455882946623128, guid: 3693b8fad534778459dd9dbae0fd1532,
-    type: 3}
-  patrolPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  gameTimer: 120
+  gameTimer: 480
 --- !u!114 &1626611085352431638
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -80,3 +72,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83d1a7cdcbb4b0845873c5a8a3a7d553, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &492232141707764921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3131128105750626201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d949dc9757e1b24bbf953e21a54dbea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  p_Player: {fileID: 8304355550611021137, guid: cd83bc9e5856e324085ffec44549aa1e,
+    type: 3}
+  e_Enemy: {fileID: 1289455882946623128, guid: 3693b8fad534778459dd9dbae0fd1532, type: 3}
+  e_WardenSensor: {fileID: 1362234469720430081, guid: da59f9d391b9838429c78acabb4b40e3,
+    type: 3}
+  e_ScreechHead: {fileID: 668094590302005263, guid: 6f1fdc0bb82b72d4bba623b80a66f8c0,
+    type: 3}

@@ -53,8 +53,6 @@ public class CheckInPlayerSight : Node
                         {
                             passCheck = true;
 
-                            owner.UseStalkAttempt();
-
                             status = Status.SUCCESS;
                             return status;
                         }

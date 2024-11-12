@@ -12,9 +12,13 @@ public class CheckPlayerInSight : Node
     private Transform transform;
 
     private float fovRange;
+    /// <summary>
+    /// The angle at which the node can see a player. From 1 through -1. 1 = straight ahead, -1 = straight behind.
+    /// </summary>
     private float sightAngle;
 
-    private bool seenPlayer;
+    private Vector3 areaCenter = Vector3.zero;
+    private float areaRange;
 
     public CheckPlayerInSight(ActiveAttack owner, NavMeshAgent navAgent, float fovRange, float sightAngle)
     {
@@ -24,6 +28,17 @@ public class CheckPlayerInSight : Node
 
         this.fovRange = fovRange;
         this.sightAngle = sightAngle;
+    }
+    public CheckPlayerInSight(ActiveAttack owner, NavMeshAgent navAgent, float fovRange, float sightAngle, Vector3 areaCenter, float areaRange)
+    {
+        this.owner = owner;
+        this.navAgent = navAgent;
+        transform = navAgent.transform;
+
+        this.fovRange = fovRange;
+        this.sightAngle = sightAngle;
+        this.areaCenter = areaCenter;
+        this.areaRange = areaRange;
     }
 
     public override Status Check(float dt)
@@ -47,49 +62,33 @@ public class CheckPlayerInSight : Node
         {
             Transform player = queue.Extract();
 
-            RaycastHit hit;
-            Ray ray = new Ray(transform.position, (player.position - transform.position).normalized);
-
-            // Check if the player is within the vision arc
-            if (Vector3.Dot(transform.forward, ray.direction) >= sightAngle)
+            if(areaCenter == Vector3.zero || Vector3.Distance(player.position, areaCenter) < areaRange)
             {
-                // Check if the player is behind any walls / obstructions
-                if (Physics.Raycast(ray.origin, ray.direction, out hit, fovRange))
+                RaycastHit hit;
+                Ray ray = new Ray(transform.position, (player.position - transform.position).normalized);
+
+                // Check if the player is within the vision arc
+                if (Vector3.Dot(transform.forward, ray.direction) >= sightAngle)
                 {
-                    if (hit.collider.tag == "Player")
+                    // Check if the player is behind any walls / obstructions
+                    if (Physics.Raycast(ray.origin, ray.direction, out hit, fovRange))
                     {
-                        SetPlayerPosition();
-                        navAgent.speed = 0;
-                        seenPlayer = true;
+                        if (hit.collider.transform == player)
+                        {
+                            SetPlayerPosition(player);
+                        }
                     }
                 }
             }
         }
-
-        // Check if there is still a known position
-        if (seenPlayer)
-        {
-            status = Status.SUCCESS;
-            return status;
-        }
-
-        seenPlayer = false;
 
         // If the enemy can't see the player and there is no known last position, then it is  a failure
         status = Status.FAILURE;
         return status;
     }
 
-    public void SetPlayerPosition()
+    public void SetPlayerPosition(Transform p)
     {
-        Ray ray = new Ray(transform.position, (owner.currentTargetDynamic.position - transform.position).normalized);
-        RaycastHit hit;
-
-        Physics.Raycast(ray, out hit, 1000, aa_RushOutdated.envLayers);
-        Debug.DrawRay(ray.origin, ray.direction * 1000, Color.cyan, 0.1f);
-
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(transform.rotation.x, Mathf.Atan2(ray.direction.x, ray.direction.z) * Mathf.Rad2Deg, transform.rotation.z), 0.05f);
-
-        owner.SetCurrentTarget(hit.point);
+        owner.SetCurrentTarget(p);
     }
 }

@@ -10,10 +10,7 @@ public class GameController : MonoBehaviour
 
     public static bool gamePaused = false;
 
-    public GameObject offlinePlayerPrefab;
-    public GameObject offlineEnemyPrefab;
-
-    public float gameTimer = 120;
+    public float gameTimer = 480;
 
     // Local Events
     public static event EventHandler<bool> OnGamePause;
@@ -43,8 +40,8 @@ public class GameController : MonoBehaviour
 
     private void SpawnPrefabs()
     {
-        Instantiate(offlinePlayerPrefab, new Vector3(-20,1,0), Quaternion.identity);
-        Instantiate(offlineEnemyPrefab, new Vector3(-20, 1, 0), Quaternion.identity);
+        PrefabHandler.Instance.InstantiatePrefabOffline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
+        PrefabHandler.Instance.InstantiatePrefabOffline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
     }
 
 

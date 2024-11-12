@@ -24,8 +24,8 @@ public class Enemy : MonoBehaviour
 
     public ObjectPool objPool = new ObjectPool();
 
-    public enum aAttackEnum { RUSH, STALKER, NULL };
-    public enum pAttackEnum { IDOLS, TEMP, NULL };
+    public enum aAttackEnum { RUSH, STALKER, WARDEN, NULL };
+    public enum pAttackEnum { IDOLS, TEMP, SEARCH, NULL };
 
     [Header("Attack Variables")]
     [SerializeField]
@@ -100,6 +100,9 @@ public class Enemy : MonoBehaviour
             case aAttackEnum.STALKER:
                 activeAttackTree = new aa_Stalk(this);
                 break;
+            case aAttackEnum.WARDEN:
+                activeAttackTree = new aa_Warden(this);
+                break;
         }
 
         switch (pAttack)
@@ -109,6 +112,9 @@ public class Enemy : MonoBehaviour
                 break;
             case pAttackEnum.TEMP:
                 passiveAttackTree = new pa_Temps(this);
+                break;
+            case pAttackEnum.SEARCH:
+                passiveAttackTree = new pa_Screech(this);
                 break;
         }
 
@@ -283,9 +289,6 @@ public class Enemy : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, fovRange);
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, 10);
+        
     }
 }

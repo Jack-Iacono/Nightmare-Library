@@ -892,6 +892,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3597424322705398009, guid: b47e740cb3261a1409bb6af0d6120aec,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 2943201110
+      objectReference: {fileID: 0}
     - target: {fileID: 4446642954101724256, guid: b47e740cb3261a1409bb6af0d6120aec,
         type: 3}
       propertyPath: m_Name
@@ -990,6 +995,32 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -8066314571685369196, guid: 54117c7e2179bbc4e8cc3427745d15ec,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8066314571685369196, guid: 54117c7e2179bbc4e8cc3427745d15ec,
+        type: 3}
+      propertyPath: sounds.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8066314571685369196, guid: 54117c7e2179bbc4e8cc3427745d15ec,
+        type: 3}
+      propertyPath: sounds.Array.data[0].name
+      value: e_MUSIC_LOVER
+      objectReference: {fileID: 0}
+    - target: {fileID: -8066314571685369196, guid: 54117c7e2179bbc4e8cc3427745d15ec,
+        type: 3}
+      propertyPath: sounds.Array.data[0].sounds.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8066314571685369196, guid: 54117c7e2179bbc4e8cc3427745d15ec,
+        type: 3}
+      propertyPath: sounds.Array.data[0].sounds.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: 86f0b39cc13aa03409beedb5d9e4dce0,
+        type: 2}
     - target: {fileID: 2796021658733578478, guid: 54117c7e2179bbc4e8cc3427745d15ec,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1044,6 +1075,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Game Controller Offline
+      objectReference: {fileID: 0}
+    - target: {fileID: 6770962120794520299, guid: 54117c7e2179bbc4e8cc3427745d15ec,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 895969358
       objectReference: {fileID: 0}
     - target: {fileID: 8277916014497907763, guid: 54117c7e2179bbc4e8cc3427745d15ec,
         type: 3}

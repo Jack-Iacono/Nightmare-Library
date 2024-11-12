@@ -1,18 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class AudioSourceNetwork : MonoBehaviour
+[RequireComponent(typeof(AudioSourceController))]
+public class AudioSourceNetwork : NetworkBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    AudioSourceController parent;
+    private void Awake()
     {
-        
+        parent = GetComponent<AudioSourceController>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

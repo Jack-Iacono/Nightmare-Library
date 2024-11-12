@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68ad0aec4f73f674a95390616d9a3ca2, type: 3}
   m_Name: e_MusicLover1
   m_EditorClassIdentifier: 
-  audioClip: {fileID: 0}
+  audioClip: {fileID: 8300000, guid: 8b1299309f3d3f445bb65d62b5352337, type: 3}
   playOnAwake: 0
   loop: 0
   priority: 128
@@ -23,7 +23,7 @@ MonoBehaviour:
   reverbZoneMix: 1
   dopplerLevel: 1
   spread: 0
-  rolloffMode: 1
+  rolloffMode: 2
   minDistance: 0
   maxDistance: 20
   rollOffCurve:
@@ -31,19 +31,19 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
+      value: 0.99905396
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
+      time: 1.0000137
+      value: 0.002827215
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0

@@ -100,6 +100,8 @@ MonoBehaviour:
     type: 3}
   e_ScreechHead: {fileID: 668094590302005263, guid: 6f1fdc0bb82b72d4bba623b80a66f8c0,
     type: 3}
+  a_AudioSource: {fileID: 4782423263898580498, guid: fde7960ebc8ffaf44bf1509ea2bd8578,
+    type: 3}
 --- !u!114 &6770962120794520299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,7 +114,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1957153884
+  GlobalObjectIdHash: 810394806
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -169,5 +171,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21e95a2f723b581488a8b36be538d4c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  e_Music:
-  - {fileID: 0}
+  sounds:
+  - name: e_MUSIC_LOVER
+    sounds:
+    - {fileID: 11400000, guid: 86f0b39cc13aa03409beedb5d9e4dce0, type: 2}
+  - name: e_STALK_CLOSE_IN
+    sounds:
+    - {fileID: 11400000, guid: 86f0b39cc13aa03409beedb5d9e4dce0, type: 2}

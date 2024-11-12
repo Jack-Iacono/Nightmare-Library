@@ -123,6 +123,11 @@ public class PlayerController : MonoBehaviour
                 Input.GetAxis("Vertical")
             );
         isSprinting = Input.GetKey(keySprint);
+
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.e_MUSIC_LOVER), transform.position);
+        }
     }
     private void CalculateNormalMove()
     {

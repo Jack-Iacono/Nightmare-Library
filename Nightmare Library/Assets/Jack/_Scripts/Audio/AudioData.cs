@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static AudioManager;
 
 [Serializable]
 [CreateAssetMenu(fileName = "AudioData", menuName = "ScriptableObjects/AudioData", order = 1)]
@@ -13,7 +14,7 @@ public class AudioData : ScriptableObject
     public bool loop = false;
 
     [Range(0, 256)]
-    public float priority = 128;
+    public int priority = 128;
     [Range(0, 1)]
     public float volume = 1;
     [Range(-3, 3)]
@@ -35,5 +36,12 @@ public class AudioData : ScriptableObject
     public AudioRolloffMode rolloffMode = AudioRolloffMode.Linear;
     public float minDistance = 0;
     public float maxDistance = 20;
-    public AnimationCurve rollOffCurve;
+    public AnimationCurve rollOffCurve = new AnimationCurve();
+
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        
+    }
+#endif
 }

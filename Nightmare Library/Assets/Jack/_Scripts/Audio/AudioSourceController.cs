@@ -24,15 +24,18 @@ public class AudioSourceController : MonoBehaviour
 
     public void PlaySound()
     {
+        gameObject.SetActive(true);
         audioSource.Play();
     }
     public void PlaySound(AudioData sound)
     {
+        gameObject.SetActive(true);
         SetAudioSourceData(sound);
         audioSource.Play();
     }
     public void PlaySound(AudioData sound, Vector3 pos)
     {
+        gameObject.SetActive(true);
         trans.position = pos;
         SetAudioSourceData(sound);
         audioSource.Play();

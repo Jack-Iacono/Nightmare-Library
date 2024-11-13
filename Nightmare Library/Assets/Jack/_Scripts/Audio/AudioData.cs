@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using static AudioManager;
 
@@ -8,7 +9,9 @@ using static AudioManager;
 [CreateAssetMenu(fileName = "AudioData", menuName = "ScriptableObjects/AudioData", order = 1)]
 public class AudioData : ScriptableObject
 {
+    [SerializeField]
     public AudioClip audioClip;
+    private float clipLength;
 
     public bool playOnAwake = false;
     public bool loop = false;
@@ -41,7 +44,7 @@ public class AudioData : ScriptableObject
 #if UNITY_EDITOR
     private void OnValidate()
     {
-        
+        clipLength = audioClip.length;
     }
 #endif
 }

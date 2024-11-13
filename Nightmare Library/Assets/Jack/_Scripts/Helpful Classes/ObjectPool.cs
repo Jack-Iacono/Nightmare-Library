@@ -50,7 +50,7 @@ public class ObjectPool
 
     public GameObject AddObject(GameObject gObject)
     {
-        GameObject newObject = InstantiateObject(gObject, pooledObjects[gObject.name][0].transform.parent);
+        GameObject newObject = InstantiateObject(gObject, pooledObjects[gObject.name][0].transform);
         pooledObjects[gObject.name].Add(newObject);
         return newObject;
     }
@@ -69,7 +69,6 @@ public class ObjectPool
 
     public GameObject GetObject(GameObject g)
     {
-        Debug.Log(g.name);
         List<GameObject> list = pooledObjects[g.name];
 
         foreach(GameObject obj in list)

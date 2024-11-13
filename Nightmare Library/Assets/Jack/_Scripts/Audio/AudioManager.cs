@@ -19,8 +19,6 @@ public class AudioManager : MonoBehaviour
 
     // Sounds that will be used
     public SoundList[] sounds = new SoundList[0];
-    // Use this for telling networked objects which sounds to use over the network
-    public Dictionary<string, AudioData> audioReference = new Dictionary<string, AudioData>();
 
     private static ObjectPool soundSourcePool = new ObjectPool();
 
@@ -29,16 +27,9 @@ public class AudioManager : MonoBehaviour
         if(Instance != null)
             Destroy(Instance);
         Instance = this;
-
-        // Sets up the audio dictionary
-        for(int i = 0; i < sounds.Length; i++)
-        {
-            for(int j = 0; j < sounds[i].sounds.Length; j++)
-            {
-                audioReference.Add(sounds[i].sounds[j].audioClip.name, sounds[i].sounds[j]);
-            }
-        }
-
+    }
+    private void Start()
+    {
         audioSourceObject = PrefabHandler.Instance.a_AudioSource;
         soundSourcePool.PoolObject(audioSourceObject, 20, false);
     }

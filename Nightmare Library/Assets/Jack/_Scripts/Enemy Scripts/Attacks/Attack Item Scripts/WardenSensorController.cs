@@ -7,6 +7,14 @@ public class WardenSensorController : Interactable
     public delegate void OnSensorAlert(WardenSensorController controller);
     public event OnSensorAlert onSensorAlert;
 
+    private AudioSourceController audioController;
+
+    protected override void Awake()
+    {
+        audioController = GetComponent<AudioSourceController>();
+        base.Awake();
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         // Check if a player is the one triggering the sensor
@@ -15,6 +23,7 @@ public class WardenSensorController : Interactable
             if(p.gameObject == other.gameObject)
             {
                 NotifySensorTriggered();
+                audioController.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.TEST_SOUNDS), trans.position);
                 break;
             }
         }

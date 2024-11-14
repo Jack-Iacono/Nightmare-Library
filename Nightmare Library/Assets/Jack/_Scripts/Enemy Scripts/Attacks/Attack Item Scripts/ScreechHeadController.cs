@@ -6,6 +6,7 @@ using UnityEngine;
 public class ScreechHeadController : MonoBehaviour
 {
     private pa_Screech parent;
+    private AudioSourceController audioController;
 
     private Vector3 offset = Vector3.zero;
     public PlayerController targetPlayer;
@@ -40,6 +41,7 @@ public class ScreechHeadController : MonoBehaviour
     private void Awake()
     {
         meshRenderers = GetComponentsInChildren<MeshRenderer>();
+        audioController = GetComponent<AudioSourceController>();
     }
     public void Initialize(pa_Screech parent, PlayerController player)
     {
@@ -112,6 +114,8 @@ public class ScreechHeadController : MonoBehaviour
         isSpawned = true;
         transform.position = targetPlayer.transform.position + offset + Vector3.up;
         transform.LookAt(targetPlayer.transform.position + Vector3.up);
+
+        audioController.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.TEST_SOUNDS), trans.position);
 
         EnableMesh(true);
 

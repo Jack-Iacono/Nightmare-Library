@@ -11,7 +11,8 @@ public class AudioData : ScriptableObject
 {
     [SerializeField]
     public AudioClip audioClip;
-    private float clipLength;
+    [NonSerialized]
+    public float clipLength;
 
     public bool playOnAwake = false;
     public bool loop = false;

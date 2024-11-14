@@ -51,8 +51,7 @@ public class TaskStalkWarpBehind : Node
 
                 hasWarped = true;
 
-                // TEMPORARY
-                enemy.PlaySound("musicLover");
+                AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.TEST_SOUNDS), transform.position);
             }
 
             status = Status.SUCCESS;

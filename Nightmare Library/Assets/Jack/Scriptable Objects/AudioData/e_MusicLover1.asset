@@ -25,7 +25,7 @@ MonoBehaviour:
   spread: 0
   rolloffMode: 2
   minDistance: 0
-  maxDistance: 20
+  maxDistance: 10
   rollOffCurve:
     serializedVersion: 2
     m_Curve:

@@ -1,18 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class AudioManagerNetwork : MonoBehaviour
+[RequireComponent(typeof(AudioManager))]
+public class AudioManagerNetwork : NetworkBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private AudioManager parent;
+
+    private void Awake()
     {
-        
+        parent = GetComponent<AudioManager>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
 }

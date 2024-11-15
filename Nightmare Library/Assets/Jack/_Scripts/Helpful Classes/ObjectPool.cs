@@ -29,7 +29,7 @@ public class ObjectPool
         // Adds the item to the dictionary
         pooledObjects.Add(gObject.name, list);
     }
-    public void PoolObject(GameObject gObject, int count, bool setActive = false, bool spawnOffline = false)
+    public void PoolObject(GameObject gObject, int count, bool setActive = false)
     {
         GameObject p = new GameObject("Pooled Object: " + gObject.name);
 
@@ -39,7 +39,7 @@ public class ObjectPool
         // Populates the list with the right amount of gameobjects
         for (int i = 0; i < count; i++)
         {
-            var inst = InstantiateObject(gObject, p.transform, setActive, spawnOffline);
+            var inst = InstantiateObject(gObject, p.transform, setActive);
             inst.name += " " + i;
             list.Add(inst);
         }
@@ -54,18 +54,26 @@ public class ObjectPool
         pooledObjects[gObject.name].Add(newObject);
         return newObject;
     }
-    private GameObject InstantiateObject(GameObject obj, Transform parent, bool setActive = false, bool spawnOffline = false)
+    private GameObject InstantiateObject(GameObject obj, Transform parent, bool setActive = false)
     {
-        GameObject g;
-        if (spawnOffline)
-            g = PrefabHandler.Instance.InstantiatePrefabOffline(obj, parent.position, parent.rotation);
-        else
-            g = PrefabHandler.Instance.InstantiatePrefab(obj, parent.position, parent.rotation);
+        GameObject g = PrefabHandler.Instance.InstantiatePrefab(obj, parent.position, parent.rotation);
 
         g.SendMessage("Initialize", SendMessageOptions.DontRequireReceiver);
+        if (NetworkConnectionController.IsRunning)
+            g.SendMessage("OnPoolSpawn", SendMessageOptions.DontRequireReceiver);
         g.SetActive(setActive);
         return g;
     }
+
+    public void AddObjectToPool(GameObject pool, GameObject addedObject)
+    {
+        if(pooledObjects.ContainsKey(pool.name))
+            pooledObjects[pool.name].Add(addedObject);
+        else
+        {
+            pooledObjects.Add(pool.name, new List<GameObject> { addedObject });
+        }
+    } 
 
     public GameObject GetObject(GameObject g)
     {

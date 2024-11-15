@@ -12,7 +12,7 @@ public class AudioSourceController : MonoBehaviour
     private bool isPlaying = false;
     private float playTimer = 0;
 
-    private bool isPooled = false;
+    public bool isPooled = false;
 
     private AudioData audioData;
 
@@ -49,6 +49,13 @@ public class AudioSourceController : MonoBehaviour
         }
     }
 
+    public void Pool()
+    {
+        isPooled = true;
+        AudioManager.soundSourcePool.AddObjectToPool(PrefabHandler.Instance.a_AudioSource, gameObject);
+        gameObject.SetActive(false);
+    }
+
     public void PlaySound(bool fromNetwork = false)
     {
         gameObject.SetActive(true);
@@ -78,6 +85,28 @@ public class AudioSourceController : MonoBehaviour
 
         if (!fromNetwork)
             OnPlay?.Invoke(sound, true);
+    }
+
+    public void PlaySoundOffline()
+    {
+        gameObject.SetActive(true);
+        audioSource.Play();
+        BeginPlayTimer();
+    }
+    public void PlaySoundOffline(AudioData sound)
+    {
+        gameObject.SetActive(true);
+        SetAudioSourceData(sound);
+        audioSource.Play();
+        BeginPlayTimer();
+    }
+    public void PlaySoundOffline(AudioData sound, Vector3 pos)
+    {
+        gameObject.SetActive(true);
+        trans.position = pos;
+        SetAudioSourceData(sound);
+        audioSource.Play();
+        BeginPlayTimer();
     }
 
     private void BeginPlayTimer()

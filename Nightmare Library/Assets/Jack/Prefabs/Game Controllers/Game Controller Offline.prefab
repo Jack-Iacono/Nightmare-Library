@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 1626611085352431638}
   - component: {fileID: -7234603397361866382}
   - component: {fileID: 492232141707764921}
-  - component: {fileID: -8066314571685369196}
   - component: {fileID: 6770962120794520299}
+  - component: {fileID: -8066314571685369196}
   - component: {fileID: 1901534162726538019}
   - component: {fileID: 4291174718742158573}
   - component: {fileID: 5814717916311322616}
@@ -102,6 +102,26 @@ MonoBehaviour:
     type: 3}
   a_AudioSource: {fileID: 4782423263898580498, guid: fde7960ebc8ffaf44bf1509ea2bd8578,
     type: 3}
+--- !u!114 &6770962120794520299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3131128105750626201}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 1957153884
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!114 &-8066314571685369196
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125,26 +145,6 @@ MonoBehaviour:
     sounds:
     - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
     - {fileID: 11400000, guid: e864b2317c21861478438f942dec6452, type: 2}
---- !u!114 &6770962120794520299
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3131128105750626201}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1957153884
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
 --- !u!114 &1901534162726538019
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -7,6 +7,8 @@ using UnityEngine;
 public class AudioSourceNetwork : NetworkBehaviour
 {
     AudioSourceController parent;
+    private bool pool = false;
+
     private void Awake()
     {
         if (!NetworkConnectionController.IsRunning)
@@ -14,9 +16,34 @@ public class AudioSourceNetwork : NetworkBehaviour
             Destroy(this);
             Destroy(GetComponent<NetworkObject>());
         }
+        else
+        {
+            parent = GetComponent<AudioSourceController>();
+            parent.OnPlay += OnPlay;
 
-        parent = GetComponent<AudioSourceController>();
-        parent.OnPlay += OnPlay;
+            AudioManager.OnPoolObjects += OnPoolObject;
+        }
+    }
+
+    // receives this call when spawned on the network
+    public void OnPoolSpawn()
+    {
+        if (IsServer)
+            OnObjectSpawnClientRpc(NetworkManager.LocalClientId);
+    }
+    [ClientRpc]
+    protected void OnObjectSpawnClientRpc(ulong sender)
+    {
+        if(sender != NetworkManager.LocalClientId)
+        {
+            pool = true;
+        }
+    }
+
+    private void OnPoolObject()
+    {
+        if (pool)
+            parent.Pool();
     }
 
     protected void OnPlay(AudioData sound = null, bool move = false)

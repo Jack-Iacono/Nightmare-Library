@@ -42,4 +42,9 @@ public class DeskNetwork : NetworkBehaviour
         if (NetworkManager.LocalClientId != sender)
             Debug.Log("Click on client " + sender);
     }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+    }
 }

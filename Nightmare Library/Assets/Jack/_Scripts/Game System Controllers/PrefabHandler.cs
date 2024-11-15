@@ -26,6 +26,8 @@ public class PrefabHandler : MonoBehaviour
         if(Instance != null)
             Destroy(Instance);
         Instance = this;
+
+        Debug.Log("Awake");
     }
 
     public GameObject InstantiatePrefab(GameObject obj, Vector3 pos, Quaternion rot)

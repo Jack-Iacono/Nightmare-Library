@@ -25,7 +25,10 @@ public class AudioManager : NetworkBehaviour
     // Used for referencing audio clips over the network
     public static Dictionary<AudioData, Vector2> audioReference = new Dictionary<AudioData, Vector2>();
 
-    private static ObjectPool soundSourcePool = new ObjectPool();
+    public static ObjectPool soundSourcePool = new ObjectPool();
+
+    public delegate void OnPoolObjectsDelegate();
+    public static event OnPoolObjectsDelegate OnPoolObjects;
 
     private void Awake()
     {
@@ -45,11 +48,13 @@ public class AudioManager : NetworkBehaviour
     }
     private void Start()
     {
-        if(!NetworkConnectionController.IsRunning || IsServer)
+        if (!NetworkConnectionController.IsRunning || IsServer)
         {
             audioSourceObject = PrefabHandler.Instance.a_AudioSource;
             soundSourcePool.PoolObject(audioSourceObject, 20, false);
         }
+        else
+            OnPoolObjects?.Invoke();
     }
 
     /// <summary>

@@ -9,7 +9,7 @@ public class PrefabHandlerNetwork : NetworkBehaviour
     public static PrefabHandlerNetwork Instance;
     private PrefabHandler parent;
 
-    private List<NetworkObject> spawnedObjects = new List<NetworkObject>();
+    private static List<NetworkObject> spawnedObjects = new List<NetworkObject>();
 
     private void Awake()
     {
@@ -22,6 +22,7 @@ public class PrefabHandlerNetwork : NetworkBehaviour
         if (Instance != null)
             Destroy(Instance);
         Instance = this;
+        Debug.Log("Prefab Network Awake");
 
         parent = GetComponent<PrefabHandler>();
     }
@@ -32,7 +33,15 @@ public class PrefabHandlerNetwork : NetworkBehaviour
         else
             obj.GetComponent<NetworkObject>().SpawnWithOwnership(owner);
 
+        // Send a message to the object saying that it is spawned
+        obj.SendMessage("OnObjectSpawn", SendMessageOptions.DontRequireReceiver);
+
         spawnedObjects.Add(obj.GetComponent<NetworkObject>());
+    }
+
+    public static void AddSpawnedPrefab(NetworkObject obj)
+    {
+        spawnedObjects.Add(obj);
     }
     public void DespawnPrefabs()
     {

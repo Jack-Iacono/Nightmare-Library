@@ -18,12 +18,12 @@ public class WardenSensorController : Interactable
     private void OnTriggerEnter(Collider other)
     {
         // Check if a player is the one triggering the sensor
-        foreach(PlayerController p in PlayerController.playerInstances)
+        foreach (PlayerController p in PlayerController.playerInstances)
         {
-            if(p.gameObject == other.gameObject)
+            if (p.gameObject == other.gameObject)
             {
                 NotifySensorTriggered();
-                audioController.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.TEST_SOUNDS), trans.position);
+                audioController.PlaySoundOffline(AudioManager.GetAudioData(AudioManager.SoundType.TEST_SOUNDS), trans.position);
                 break;
             }
         }

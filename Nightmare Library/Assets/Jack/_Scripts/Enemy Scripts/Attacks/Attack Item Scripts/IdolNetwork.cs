@@ -11,11 +11,23 @@ public class IdolNetwork : InteractableNetwork
 
     public override void OnNetworkSpawn()
     {
-        base.OnNetworkSpawn();
-        idolCont = GetComponent<IdolController>();
         
-        if (IsOwner)
-            idolCont.OnIdolActivated += OnIdolActivated;
+        if (!NetworkConnectionController.IsRunning)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+        else
+        {
+            idolCont = GetComponent<IdolController>();
+
+            if (IsOwner)
+                idolCont.OnIdolActivated += OnIdolActivated;
+
+            PrefabHandlerNetwork.AddSpawnedPrefab(GetComponent<NetworkObject>());
+        }
+
+        base.OnNetworkSpawn();
     }
 
     protected override void OnClick(bool fromNetwork = false)

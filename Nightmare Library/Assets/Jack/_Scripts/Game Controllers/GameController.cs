@@ -55,6 +55,11 @@ public class GameController : MonoBehaviour
             else
                 EndGame();
         }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            EndGame();
+        }
     }
 
     private void OnPlayerKilled(object sender, EventArgs e)

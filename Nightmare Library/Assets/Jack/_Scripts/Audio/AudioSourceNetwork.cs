@@ -24,6 +24,11 @@ public class AudioSourceNetwork : NetworkBehaviour
             AudioManager.OnPoolObjects += OnPoolObject;
         }
     }
+    public override void OnDestroy()
+    {
+        AudioManager.OnPoolObjects -= OnPoolObject;
+        base.OnDestroy();
+    }
 
     // receives this call when spawned on the network
     public void OnPoolSpawn()

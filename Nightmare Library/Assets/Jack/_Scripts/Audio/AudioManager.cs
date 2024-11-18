@@ -36,7 +36,9 @@ public class AudioManager : NetworkBehaviour
             Destroy(Instance);
         Instance = this;
 
-        for(int i = 0; i < sounds.Length; i++)
+        soundSourcePool = new ObjectPool();
+
+        for (int i = 0; i < sounds.Length; i++)
         {
             for(int j = 0; j < sounds[i].sounds.Length; j++)
             {
@@ -76,6 +78,12 @@ public class AudioManager : NetworkBehaviour
     public static AudioData GetAudioData(int i, int j)
     {
         return Instance.sounds[i].sounds[j];
+    }
+
+    public override void OnDestroy()
+    {
+        soundSourcePool.ClearPool();
+        base.OnDestroy();
     }
 
 #if UNITY_EDITOR

@@ -91,4 +91,9 @@ public class ObjectPool
     {
         return pooledObjects[g.name];
     }
+
+    public void ClearPool()
+    {   
+        pooledObjects.Clear(); 
+    }
 }

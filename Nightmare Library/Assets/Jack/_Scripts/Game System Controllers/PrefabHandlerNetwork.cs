@@ -22,7 +22,6 @@ public class PrefabHandlerNetwork : NetworkBehaviour
         if (Instance != null)
             Destroy(Instance);
         Instance = this;
-        Debug.Log("Prefab Network Awake");
 
         parent = GetComponent<PrefabHandler>();
     }
@@ -49,6 +48,8 @@ public class PrefabHandlerNetwork : NetworkBehaviour
         {
             obj.Despawn();
         }
+
+        spawnedObjects.Clear();
     }
 
     public override void OnNetworkSpawn()

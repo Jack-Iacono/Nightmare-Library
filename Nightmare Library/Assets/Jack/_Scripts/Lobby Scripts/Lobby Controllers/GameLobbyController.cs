@@ -14,10 +14,6 @@ public class GameLobbyController : LobbyController
             ServerEntryAction();
         else
             ClientEntryAction();
-
-        Debug.Log("Registering Callbacks");
-        NetworkManager.OnClientConnectedCallback += OnClientConnected;
-        NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
     }
 
     public override void OnNetworkSpawn()

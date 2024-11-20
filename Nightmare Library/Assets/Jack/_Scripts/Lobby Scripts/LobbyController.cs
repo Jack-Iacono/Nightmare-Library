@@ -29,6 +29,10 @@ public abstract class LobbyController : NetworkBehaviour
             Destroy(instance);
         instance = this;
     }
+    private void Start()
+    {
+        RegisterCallbacks();
+    }
 
     private void Update()
     {
@@ -55,9 +59,6 @@ public abstract class LobbyController : NetworkBehaviour
                 return false;
             }
         }
-
-        // Both the server-host and client(s) register the custom named message.
-        RegisterCallbacks();
 
         if (NetworkManager.Singleton.IsServer)
         {
@@ -126,7 +127,6 @@ public abstract class LobbyController : NetworkBehaviour
 
     protected virtual void RegisterCallbacks()
     {
-        Debug.Log("Registering Callbacks");
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
     }
@@ -153,7 +153,7 @@ public abstract class LobbyController : NetworkBehaviour
         if (NetworkConnectionController.HasAuthority && !NetworkManager.ShutdownInProgress)
         {
             playerList.Remove(obj);
-            //UpdatePlayerInfoClientRpc(playerList);
+            UpdatePlayerInfoClientRpc(playerList);
         }
         else if(NetworkManager.Singleton != null && !NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
         {
@@ -182,6 +182,8 @@ public abstract class LobbyController : NetworkBehaviour
 
     public override void OnDestroy()
     {
+        Debug.Log("Check");
+
         // Should never not be this, but just better to check
         if (instance == this)
             instance = null;

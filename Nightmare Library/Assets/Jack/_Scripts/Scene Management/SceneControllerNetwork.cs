@@ -25,8 +25,6 @@ public class SceneControllerNetwork : NetworkBehaviour
         parent = GetComponent<SceneController>();
 
         SceneController.OnChangeScene += OnChangeScene;
-
-        Debug.Log(name + ": " + GetHashCode().ToString());
     }
 
     public override void OnNetworkSpawn()

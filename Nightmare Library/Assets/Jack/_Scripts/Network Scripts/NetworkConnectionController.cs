@@ -146,7 +146,6 @@ public class NetworkConnectionController : NetworkBehaviour
         StopNetworkManager();
 
         allocation = null;
-
         connectedToLobby = false;
     }
     public static void StopNetworkManager()
@@ -247,6 +246,13 @@ public class NetworkConnectionController : NetworkBehaviour
         transport = FindObjectOfType<UnityTransport>();
 
         DontDestroyOnLoad(this);
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            transport.SetHostRelayData(allocation.RelayServer.IpV4, (ushort)allocation.RelayServer.Port, allocation.AllocationIdBytes, new byte[64], allocation.ConnectionData);
+        }
     }
     private async void OnApplicationQuit()
     {

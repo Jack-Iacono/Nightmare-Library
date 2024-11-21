@@ -19,10 +19,11 @@ public class GameControllerNetwork : NetworkBehaviour
     public List<GameObject> spawnedPrefabs = new List<GameObject>();
 
     private int connectedPlayers = 0;
+    private bool hasSpawned = false;
 
     private void Awake()
     {
-        if (!NetworkConnectionController.IsRunning)
+        if (!NetworkConnectionController.connectedToLobby)
         {
             Destroy(this);
             Destroy(GetComponent<NetworkObject>());
@@ -102,7 +103,10 @@ public class GameControllerNetwork : NetworkBehaviour
     private void ClientConnectedServerRpc(ulong clientId)
     {
         connectedPlayers++;
-        CheckAllConnected();
+        if (!hasSpawned)
+            CheckAllConnected();
+        else
+            SpawnPlayer(clientId);
     }
 
     private void CheckAllConnected()
@@ -122,7 +126,17 @@ public class GameControllerNetwork : NetworkBehaviour
             ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
 
             spawnedPrefabs.Add(ePrefab);
+
+            hasSpawned = true;
         }
+    }
+    // Used for delayed player entry
+    private void SpawnPlayer(ulong clientId)
+    {
+        GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, clientId);
+        pPrefab.name = "Player " + clientId;
+
+        spawnedPrefabs.Add(pPrefab);
     }
 
     private void TransmitContinuousState()

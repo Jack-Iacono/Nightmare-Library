@@ -12,10 +12,8 @@ public class WardenSensorNetwork : NetworkBehaviour
     {
         parent = GetComponent<WardenSensorController>();
 
-        Debug.Log(NetworkManager.Singleton.IsConnectedClient);
-        if (!NetworkConnectionController.IsRunning)
+        if (!NetworkConnectionController.connectedToLobby)
         {
-            Debug.Log("Test");
             Destroy(this);
             Destroy(GetComponent<NetworkObject>());
         }

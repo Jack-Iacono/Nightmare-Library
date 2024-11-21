@@ -12,7 +12,7 @@ public class IdolNetwork : InteractableNetwork
     public override void OnNetworkSpawn()
     {
         
-        if (!NetworkConnectionController.IsRunning)
+        if (!NetworkConnectionController.connectedToLobby)
         {
             Destroy(this);
             Destroy(GetComponent<NetworkObject>());

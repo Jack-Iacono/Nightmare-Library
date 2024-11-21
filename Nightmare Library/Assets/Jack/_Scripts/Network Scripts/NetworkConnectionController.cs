@@ -56,11 +56,6 @@ public class NetworkConnectionController : NetworkBehaviour
         get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
     }
 
-    public static bool IsOnline
-    {
-        get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
-    }
-
     public static async Task<bool> ConnectToLobby()
     {
         bool connected = false;
@@ -115,6 +110,7 @@ public class NetworkConnectionController : NetworkBehaviour
 
             currentConnectionTimer = 0;
             Debug.Log("Connection Successful");
+
             return;
         }
         else

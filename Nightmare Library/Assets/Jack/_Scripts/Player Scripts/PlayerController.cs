@@ -82,7 +82,7 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(-20, 1, 0);
         charCont.enabled = true;
 
-        if (!NetworkConnectionController.IsOnline)
+        if (!NetworkConnectionController.connectedToLobby)
             ownerInstance = this;
 
         playerLayerMask = gameObject.layer;
@@ -191,7 +191,7 @@ public class PlayerController : MonoBehaviour
 
     public void ReceiveAttack()
     {
-        if (!NetworkConnectionController.IsOnline)
+        if (!NetworkConnectionController.IsRunning)
         {
             Kill();
         }

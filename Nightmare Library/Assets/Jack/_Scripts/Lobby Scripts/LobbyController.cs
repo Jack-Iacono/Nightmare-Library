@@ -46,7 +46,7 @@ public abstract class LobbyController : NetworkBehaviour
 
     #region Connection Methods
 
-    public async virtual Task<bool> StartConnection()
+    public async static Task<bool> StartConnection()
     {
         // Attempts to join a lobby, if that doesn't work, leave
         if (!NetworkConnectionController.connectedToLobby)
@@ -55,17 +55,17 @@ public abstract class LobbyController : NetworkBehaviour
                 await NetworkConnectionController.StartConnection();
             else
             {
-                LeaveLobby();
+                instance.LeaveLobby();
                 return false;
             }
         }
 
         if (NetworkManager.Singleton.IsServer)
         {
-            playerList.Add(new PlayerListItem(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo)));
+            playerList.Add(new PlayerListItem(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo)));
         }
         else
-            AddPlayerInfoServerRpc(NetworkManager.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo));
+            instance.AddPlayerInfoServerRpc(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo));
 
         OnPlayerListChange?.Invoke();
 
@@ -182,8 +182,6 @@ public abstract class LobbyController : NetworkBehaviour
 
     public override void OnDestroy()
     {
-        Debug.Log("Check");
-
         // Should never not be this, but just better to check
         if (instance == this)
             instance = null;

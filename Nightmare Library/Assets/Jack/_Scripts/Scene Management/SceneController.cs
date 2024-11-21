@@ -52,7 +52,7 @@ public class SceneController : MonoBehaviour
     {
         Debug.Log($"Scene {s.name} loaded");
 
-        if (!NetworkConnectionController.IsOnline)
+        if (!NetworkConnectionController.IsRunning)
         {
             if (loadMode == LoadSceneMode.Additive)
             {

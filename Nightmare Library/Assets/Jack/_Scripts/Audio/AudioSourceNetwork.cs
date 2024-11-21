@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -9,9 +10,14 @@ public class AudioSourceNetwork : NetworkBehaviour
     AudioSourceController parent;
     private bool pool = false;
 
+    private NetworkVariable<bool> isPooledObject;
+
     private void Awake()
     {
-        if (!NetworkConnectionController.IsRunning)
+        var permission = NetworkVariableWritePermission.Server;
+        isPooledObject = new NetworkVariable<bool>(writePerm: permission);
+
+        if (!NetworkConnectionController.connectedToLobby)
         {
             Destroy(this);
             Destroy(GetComponent<NetworkObject>());
@@ -24,6 +30,7 @@ public class AudioSourceNetwork : NetworkBehaviour
             AudioManager.OnPoolObjects += OnPoolObject;
         }
     }
+
     public override void OnDestroy()
     {
         AudioManager.OnPoolObjects -= OnPoolObject;
@@ -33,21 +40,13 @@ public class AudioSourceNetwork : NetworkBehaviour
     // receives this call when spawned on the network
     public void OnPoolSpawn()
     {
-        if (IsServer)
-            OnObjectSpawnClientRpc(NetworkManager.LocalClientId);
-    }
-    [ClientRpc]
-    protected void OnObjectSpawnClientRpc(ulong sender)
-    {
-        if(sender != NetworkManager.LocalClientId)
-        {
-            pool = true;
-        }
+        isPooledObject.Value = true;
     }
 
     private void OnPoolObject()
     {
-        if (pool)
+        Debug.Log(isPooledObject.Value);
+        if (isPooledObject.Value)
             parent.Pool();
     }
 

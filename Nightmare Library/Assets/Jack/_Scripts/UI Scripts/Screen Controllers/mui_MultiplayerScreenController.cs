@@ -79,7 +79,7 @@ public class mui_MultiplayerScreen : ScreenController
 
     private void OnNetworkConnected()
     {
-        if (NetworkConnectionController.IsOnline)
+        if (NetworkConnectionController.IsRunning)
         {
             if (NetworkConnectionController.instance.IsHost)
                 startGameButton.SetActive(true);

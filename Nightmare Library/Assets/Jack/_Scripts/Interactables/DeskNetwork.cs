@@ -13,7 +13,7 @@ public class DeskNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.IsRunning)
+        if (!NetworkConnectionController.connectedToLobby)
         {
             Destroy(this);
             Destroy(GetComponent<NetworkObject>());

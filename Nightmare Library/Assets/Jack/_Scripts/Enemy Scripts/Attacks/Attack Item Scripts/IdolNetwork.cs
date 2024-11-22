@@ -43,7 +43,6 @@ public class IdolNetwork : InteractableNetwork
 
     private void OnIdolActivated(object sender, bool b)
     {
-        Debug.Log("Check");
         if (IsOwner)
         {
             ConsumeIdolCountChangeClientRpc(b);
@@ -52,7 +51,6 @@ public class IdolNetwork : InteractableNetwork
     [ClientRpc]
     private void ConsumeIdolCountChangeClientRpc(bool activeState)
     {
-        Debug.Log("Client Change");
         gameObject.SetActive(activeState);
     }
 

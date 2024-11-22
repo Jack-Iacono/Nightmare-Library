@@ -94,6 +94,8 @@ GameObject:
   - component: {fileID: 5190595082256867613}
   - component: {fileID: 1409823471656591316}
   - component: {fileID: 8496951882186121}
+  - component: {fileID: 440438311803379737}
+  - component: {fileID: -3205594276566838839}
   m_Layer: 10
   m_Name: BookMonitorCamera
   m_TagString: Untagged
@@ -137,6 +139,7 @@ MonoBehaviour:
   allowPlayerPickup: 1
   allowEnemyHysterics: 0
   allowEnemyFlicker: 0
+  attachedLight: {fileID: 0}
   cam: {fileID: 6077936201343342321}
 --- !u!65 &8496951882186121
 BoxCollider:
@@ -159,6 +162,38 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &440438311803379737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144792509897681785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2180368664
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &-3205594276566838839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144792509897681785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc2767c3906ce3241bf508c095164a25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2220237486304452311
 GameObject:
   m_ObjectHideFlags: 0

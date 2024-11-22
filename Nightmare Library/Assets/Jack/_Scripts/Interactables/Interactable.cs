@@ -57,6 +57,9 @@ public class Interactable : MonoBehaviour
     public delegate void OnThrowDelegate(Vector3 force, bool fromNetwork = false);
     public event OnThrowDelegate OnThrow;
 
+    public delegate void OnAllEnabledDelegate(bool enabled);
+    public event OnAllEnabledDelegate OnAllEnabled;
+
     public delegate void OnEnemyInteractHystericsDelegate(bool fromNetwork = false);
     public event OnEnemyInteractHystericsDelegate OnEnemyInteractHysterics;
     public delegate void OnEnemyInteractFlickerDelegate(bool fromNetwork = false);
@@ -188,6 +191,8 @@ public class Interactable : MonoBehaviour
         EnableMesh(b);
         if (b)
             ResetMeshMaterial();
+
+        OnAllEnabled(b);
     }
 
     public void EnableColliders(bool b)

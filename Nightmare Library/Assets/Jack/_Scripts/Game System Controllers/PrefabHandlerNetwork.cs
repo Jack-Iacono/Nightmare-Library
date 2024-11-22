@@ -40,7 +40,8 @@ public class PrefabHandlerNetwork : NetworkBehaviour
 
     public static void AddSpawnedPrefab(NetworkObject obj)
     {
-        spawnedObjects.Add(obj);
+        if(!spawnedObjects.Contains(obj))
+            spawnedObjects.Add(obj);
     }
     public void DespawnPrefabs()
     {

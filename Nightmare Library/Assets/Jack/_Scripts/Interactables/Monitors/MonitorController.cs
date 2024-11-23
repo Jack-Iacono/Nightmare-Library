@@ -24,7 +24,7 @@ public class MonitorController : MonoBehaviour
     {
         for(int i = 0; i < pairedBooks.Count; i++)
         {
-            pairedBooks[i].SetBroadcasting(false);
+            pairedBooks[i].SetViewing(false);
             pairedBooks[i].OnBroadcastChange += OnCameraBroadcastChange;
         }
 
@@ -46,7 +46,7 @@ public class MonitorController : MonoBehaviour
 
     private void OnCameraBroadcastChange(object sender, EventArgs e)
     {
-        monitorViewBlocker.SetActive(!pairedBooks[pairedIndex].isBroadcasting);
+        CheckPlayerInRange();
     }
 
     private void CheckPlayerInRange()
@@ -54,16 +54,18 @@ public class MonitorController : MonoBehaviour
         if (pairedBooks[pairedIndex].isBroadcasting)
         {
             bool inRange = Physics.OverlapSphere(transform.position, useRadius, playerMask).Length > 0;
-            monitorViewBlocker.SetActive(!inRange);
+            monitorViewBlocker.SetActive(!inRange || !pairedBooks[pairedIndex].isBroadcasting);
         }
     }
     public void ChangeCamera(int i)
     {
-        pairedBooks[pairedIndex].SetBroadcasting(false);
+        pairedBooks[pairedIndex].SetViewing(false);
         pairedIndex = i;
-        pairedBooks[pairedIndex].SetBroadcasting(true);
+        pairedBooks[pairedIndex].SetViewing(true);
 
         display = pairedBooks[pairedIndex].renderTexture;
         monitorPicture.texture = display;
+
+        CheckPlayerInRange();
     }
 }

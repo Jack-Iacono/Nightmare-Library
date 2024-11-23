@@ -19,22 +19,16 @@ public class MonitorCameraNetwork : InteractableNetwork
         var permission = NetworkVariableWritePermission.Server;
         isBroadcasting = new NetworkVariable<bool>(writePerm: permission);
 
-        Debug.Log(isBroadcasting.ToString());
-
         if (NetworkManager.IsServer)
         {
+            isBroadcasting.Value = true;
             monitor.OnBroadcastChange += OnBroadcastChange;
-        }
-        else
-        {
-            monitor.SetBroadcasting(isBroadcasting.Value);
         }
     }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-
         monitor.SetBroadcasting(isBroadcasting.Value);
     }
 

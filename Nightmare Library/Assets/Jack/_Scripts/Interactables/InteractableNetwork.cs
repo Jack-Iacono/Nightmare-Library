@@ -26,7 +26,7 @@ public class InteractableNetwork : NetworkBehaviour
     private Vector3 targetVelocity = Vector3.zero;
 
     private NetworkVariable<RbData> transformData;
-    private NetworkVariable<bool> isActive;
+    private NetworkVariable<bool> allEnabled;
 
     protected virtual void Awake()
     {
@@ -44,7 +44,10 @@ public class InteractableNetwork : NetworkBehaviour
 
         var permission = NetworkVariableWritePermission.Server;
         transformData = new NetworkVariable<RbData>(writePerm: permission);
-        isActive = new NetworkVariable<bool>(writePerm: permission);
+        allEnabled = new NetworkVariable<bool>(writePerm: permission);
+
+        if (IsServer)
+            allEnabled.Value = true;
     }
 
     public override void OnNetworkSpawn()
@@ -72,17 +75,7 @@ public class InteractableNetwork : NetworkBehaviour
         canUpdateRigidbody = parent.hasRigidBody;
 
         if (!IsOwner)
-        {
             transformData.OnValueChanged += ConsumeTransformData;
-
-            // Moves the object to it's current position, mostly for players that join late
-            transform.rotation = transformData.Value.Rotation;
-            transform.position = transformData.Value.Position;
-            if (parent.hasRigidBody)
-                parent.rb.velocity = transformData.Value.Velocity;
-
-            parent.EnableAll(isActive.Value);
-        }
     }
 
     private void FixedUpdate()
@@ -185,7 +178,7 @@ public class InteractableNetwork : NetworkBehaviour
                 if (parent.hasRigidBody)
                     parent.rb.velocity = transformData.Value.Velocity;
 
-                parent.EnableAll(isActive.Value);
+                parent.EnableAll(allEnabled.Value);
             }
 
             // Tell the object to begin updating it's transform and velocity
@@ -350,7 +343,7 @@ public class InteractableNetwork : NetworkBehaviour
     private void OnAllEnabled(bool enabled)
     {
         if (IsServer)
-            isActive.Value = enabled;
+            allEnabled.Value = enabled;
     }
 
     protected struct TransformData : INetworkSerializable

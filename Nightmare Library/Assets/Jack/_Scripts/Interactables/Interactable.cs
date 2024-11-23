@@ -192,7 +192,7 @@ public class Interactable : MonoBehaviour
         if (b)
             ResetMeshMaterial();
 
-        OnAllEnabled(b);
+        OnAllEnabled?.Invoke(b);
     }
 
     public void EnableColliders(bool b)

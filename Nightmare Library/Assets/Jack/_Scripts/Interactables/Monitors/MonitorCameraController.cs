@@ -13,6 +13,8 @@ public class MonitorCameraController : Interactable
     public bool isBroadcasting { get; private set; } = true;
     public event EventHandler OnBroadcastChange;
 
+    private bool broadcastBuffer = true;
+
     protected override void Awake()
     {
         base.Awake();
@@ -24,21 +26,25 @@ public class MonitorCameraController : Interactable
     public override void Pickup(bool fromNetwork = false)
     {
         SetBroadcasting(false);
-
         base.Pickup(fromNetwork);
     }
     public override void Place(bool fromNetwork = false)
     {
         SetBroadcasting(true);
-
         base.Place(fromNetwork);
     }
 
     public void SetBroadcasting(bool b)
     {
+        Debug.Log(b);
         isBroadcasting = b;
-        cam.enabled = b;
-
         OnBroadcastChange?.Invoke(this, EventArgs.Empty);
+    }
+    public void SetViewing(bool b)
+    {
+        if (!b)
+            cam.enabled = false;
+        else if(isBroadcasting)
+            cam.enabled = true;
     }
 }

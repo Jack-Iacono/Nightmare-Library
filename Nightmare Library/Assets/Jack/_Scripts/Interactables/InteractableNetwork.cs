@@ -75,7 +75,10 @@ public class InteractableNetwork : NetworkBehaviour
         canUpdateRigidbody = parent.hasRigidBody;
 
         if (!IsOwner)
+        {
             transformData.OnValueChanged += ConsumeTransformData;
+            allEnabled.OnValueChanged += ConsumeEnabledData;
+        }
     }
 
     private void FixedUpdate()
@@ -137,6 +140,11 @@ public class InteractableNetwork : NetworkBehaviour
 
             
         }
+    }
+
+    private void ConsumeEnabledData(bool previousValue, bool newValue)
+    {
+        parent.EnableAll(newValue);
     }
 
     #region Transform

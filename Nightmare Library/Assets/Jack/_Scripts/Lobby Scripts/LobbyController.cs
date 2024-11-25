@@ -22,16 +22,20 @@ public abstract class LobbyController : NetworkBehaviour
     public static event UsernameListDelegate OnPlayerListChange;
 
     public static PlayerList playerList = new PlayerList();
+    public static NetworkVariable<PlayerList> nPlayerList;
 
     protected virtual void Awake()
     {
+        Debug.Log("Awake");
+
         if (instance != null)
             Destroy(instance);
-        instance = this;
-    }
-    private void Start()
-    {
-        RegisterCallbacks();
+        else
+        {
+            instance = this;
+            nPlayerList = new NetworkVariable<PlayerList>();
+            RegisterCallbacks();
+        }
     }
 
     private void Update()
@@ -41,6 +45,10 @@ public abstract class LobbyController : NetworkBehaviour
         if (NetworkConnectionController.HasAuthority)
         {
             UpdatePlayerInfoClientRpc(playerList);
+        }
+        if(nPlayerList.Value != null)
+        {
+            Debug.Log(nPlayerList.Value.Count);
         }
     }
 
@@ -59,13 +67,20 @@ public abstract class LobbyController : NetworkBehaviour
                 return false;
             }
         }
+        
+        if(NetworkManager.Singleton.IsServer)
+            nPlayerList.Value = new PlayerList();
 
         if (NetworkManager.Singleton.IsServer)
         {
             playerList.Add(new PlayerListItem(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo)));
+            nPlayerList.Value.Add(new PlayerListItem(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo)));
         }
         else
+        {
+            instance.NAddPlayerInfoServerRpc(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo));
             instance.AddPlayerInfoServerRpc(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo));
+        }
 
         OnPlayerListChange?.Invoke();
 
@@ -78,6 +93,23 @@ public abstract class LobbyController : NetworkBehaviour
         playerList.Add(new PlayerListItem(sender, playerInfo));
         UpdatePlayerInfoClientRpc(playerList);
     }
+
+    [ServerRpc(RequireOwnership = false)]
+    protected void NAddPlayerInfoServerRpc(ulong sender, PlayerInfo playerInfo)
+    {
+        nPlayerList.Value.Add(new PlayerListItem(sender, playerInfo));
+        NClientRpc(sender, nPlayerList.Value.Count);
+    }
+    [ClientRpc]
+    protected void NClientRpc(ulong sender, int i)
+    {
+        Debug.Log(nPlayerList.Value.Count + " || " + i);
+    }
+    protected void OnPlayerInfoChanged(PlayerList previous, PlayerList current)
+    {
+        Debug.Log(current.Count);
+    }
+
     [ClientRpc]
     protected void UpdatePlayerInfoClientRpc(PlayerList pList)
     {
@@ -129,6 +161,8 @@ public abstract class LobbyController : NetworkBehaviour
     {
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
+
+        nPlayerList.OnValueChanged += OnPlayerInfoChanged;
     }
     protected virtual void UnRegisterCallbacks()
     {
@@ -136,13 +170,14 @@ public abstract class LobbyController : NetworkBehaviour
         {
             NetworkManager.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+
+            nPlayerList.OnValueChanged -= OnPlayerInfoChanged;
         }
     }
     
     protected virtual void OnClientConnected(ulong obj)
     {
         Debug.Log("Client " + obj + " Connected");
-
         OnPlayerListChange?.Invoke();
     }
     protected virtual void OnClientDisconnected(ulong obj)

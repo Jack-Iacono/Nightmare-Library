@@ -36,7 +36,6 @@ public class MonitorCameraController : Interactable
 
     public void SetBroadcasting(bool b)
     {
-        Debug.Log(b);
         isBroadcasting = b;
         OnBroadcastChange?.Invoke(this, EventArgs.Empty);
     }

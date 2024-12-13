@@ -21,7 +21,6 @@ public class MonitorCameraNetwork : InteractableNetwork
 
         if (NetworkManager.IsServer)
         {
-            isBroadcasting.Value = true;
             monitor.OnBroadcastChange += OnBroadcastChange;
         }
     }
@@ -29,6 +28,10 @@ public class MonitorCameraNetwork : InteractableNetwork
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        if (NetworkManager.IsServer)
+        {
+            isBroadcasting.Value = true;
+        }
         monitor.SetBroadcasting(isBroadcasting.Value);
     }
 

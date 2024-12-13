@@ -67,6 +67,11 @@ public class GameControllerNetwork : NetworkBehaviour
             TransmitContinuousState();
         else
             ConsumeContinuousState();
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            LobbyController.instance.LeaveLobby();
+        }
     }
 
     private void OnParentPause(object sender, bool e)

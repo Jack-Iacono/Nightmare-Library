@@ -60,13 +60,10 @@ public class SceneControllerNetwork : NetworkBehaviour
                 if (clientOrServer == 1)
                 {
                     sceneBuffer = SceneController.loadedScene;
-                    SceneController.loadedScene = sceneEvent.Scene;
                     //Debug.Log($"Loaded Scene: {SceneController.loadedScene.name}  || Unload Buffer: {sceneBuffer.name}");
                 }
-                else if (!NetworkManager.IsServer)
-                {
-                    SceneController.loadedScene = sceneEvent.Scene;
-                }
+                SceneController.loadedScene = sceneEvent.Scene;
+                Debug.Log(SceneController.loadedScene.name);
                 //Debug.Log($"Loaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
                 break;
             case SceneEventType.UnloadComplete:

@@ -56,6 +56,7 @@ public class SceneController : MonoBehaviour
         {
             if (loadMode == LoadSceneMode.Additive)
             {
+                loadedScene = SceneManager.GetActiveScene();
                 SceneManager.UnloadSceneAsync(loadedScene);
                 loadedScene = s;
             }

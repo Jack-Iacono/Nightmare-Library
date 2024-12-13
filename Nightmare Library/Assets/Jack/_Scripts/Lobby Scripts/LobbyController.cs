@@ -21,35 +21,20 @@ public abstract class LobbyController : NetworkBehaviour
     public delegate void UsernameListDelegate();
     public static event UsernameListDelegate OnPlayerListChange;
 
-    public static PlayerList playerList = new PlayerList();
-    public static NetworkVariable<PlayerList> nPlayerList;
+    public static NetworkVariable<PlayerList> playerList = new NetworkVariable<PlayerList>();
 
     protected virtual void Awake()
     {
-        Debug.Log("Awake");
-
         if (instance != null)
             Destroy(instance);
-        else
-        {
-            instance = this;
-            nPlayerList = new NetworkVariable<PlayerList>();
-            RegisterCallbacks();
-        }
+        
+        instance = this;
     }
 
-    private void Update()
+    protected virtual void Start()
     {
-        // Temporary!!!
-        // this prevents an error that exists if this line of code is run within the OnClientDisconnected Callback
-        if (NetworkConnectionController.HasAuthority)
-        {
-            UpdatePlayerInfoClientRpc(playerList);
-        }
-        if(nPlayerList.Value != null)
-        {
-            Debug.Log(nPlayerList.Value.Count);
-        }
+        if(NetworkConnectionController.connectedToLobby)
+            RegisterCallbacks();
     }
 
     #region Connection Methods
@@ -59,6 +44,8 @@ public abstract class LobbyController : NetworkBehaviour
         // Attempts to join a lobby, if that doesn't work, leave
         if (!NetworkConnectionController.connectedToLobby)
         {
+            instance.RegisterCallbacks();
+
             if (await NetworkConnectionController.ConnectToLobby())
                 await NetworkConnectionController.StartConnection();
             else
@@ -69,20 +56,16 @@ public abstract class LobbyController : NetworkBehaviour
         }
         
         if(NetworkManager.Singleton.IsServer)
-            nPlayerList.Value = new PlayerList();
+            playerList.Value = new PlayerList();
 
         if (NetworkManager.Singleton.IsServer)
         {
-            playerList.Add(new PlayerListItem(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo)));
-            nPlayerList.Value.Add(new PlayerListItem(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo)));
+            playerList.Value = new PlayerList(new PlayerListItem(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo)));
         }
         else
         {
-            instance.NAddPlayerInfoServerRpc(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo));
             instance.AddPlayerInfoServerRpc(NetworkManager.Singleton.LocalClientId, new PlayerInfo(AuthenticationController.playerInfo));
         }
-
-        OnPlayerListChange?.Invoke();
 
         return true;
     }
@@ -90,31 +73,12 @@ public abstract class LobbyController : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     protected void AddPlayerInfoServerRpc(ulong sender, PlayerInfo playerInfo)
     {
-        playerList.Add(new PlayerListItem(sender, playerInfo));
-        UpdatePlayerInfoClientRpc(playerList);
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    protected void NAddPlayerInfoServerRpc(ulong sender, PlayerInfo playerInfo)
-    {
-        nPlayerList.Value.Add(new PlayerListItem(sender, playerInfo));
-        NClientRpc(sender, nPlayerList.Value.Count);
-    }
-    [ClientRpc]
-    protected void NClientRpc(ulong sender, int i)
-    {
-        Debug.Log(nPlayerList.Value.Count + " || " + i);
+        playerList.Value = new PlayerList(playerList.Value, new PlayerListItem(sender, playerInfo));
     }
     protected void OnPlayerInfoChanged(PlayerList previous, PlayerList current)
     {
-        Debug.Log(current.Count);
-    }
-
-    [ClientRpc]
-    protected void UpdatePlayerInfoClientRpc(PlayerList pList)
-    {
-        playerList = pList;
         OnPlayerListChange?.Invoke();
+        Debug.Log(playerList.Value.ToString());
     }
 
     protected virtual void ServerEntryAction()
@@ -143,12 +107,10 @@ public abstract class LobbyController : NetworkBehaviour
         {
             UnRegisterCallbacks();
         }
-        catch
+        catch(Exception ex)
         {
-            Debug.Log("Failed to Unregister Callbacks");
+            Debug.Log("Failed to Unregister Callbacks with Exception: " + ex);
         }
-
-        playerList = new PlayerList();
 
         await NetworkConnectionController.StopConnection();
     }
@@ -162,7 +124,7 @@ public abstract class LobbyController : NetworkBehaviour
         NetworkManager.OnClientConnectedCallback += OnClientConnected;
         NetworkManager.OnClientDisconnectCallback += OnClientDisconnected;
 
-        nPlayerList.OnValueChanged += OnPlayerInfoChanged;
+        playerList.OnValueChanged += OnPlayerInfoChanged;
     }
     protected virtual void UnRegisterCallbacks()
     {
@@ -171,14 +133,13 @@ public abstract class LobbyController : NetworkBehaviour
             NetworkManager.OnClientConnectedCallback -= OnClientConnected;
             NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
 
-            nPlayerList.OnValueChanged -= OnPlayerInfoChanged;
+            playerList.OnValueChanged -= OnPlayerInfoChanged;
         }
     }
     
     protected virtual void OnClientConnected(ulong obj)
     {
         Debug.Log("Client " + obj + " Connected");
-        OnPlayerListChange?.Invoke();
     }
     protected virtual void OnClientDisconnected(ulong obj)
     {
@@ -187,12 +148,12 @@ public abstract class LobbyController : NetworkBehaviour
         // Host Disconnect
         if (NetworkConnectionController.HasAuthority && !NetworkManager.ShutdownInProgress)
         {
-            playerList.Remove(obj);
-            UpdatePlayerInfoClientRpc(playerList);
+            playerList.Value = new PlayerList(playerList.Value, obj);
+            OnPlayerListChange?.Invoke();
+            Debug.Log(playerList.Value.ToString());
         }
         else if(NetworkManager.Singleton != null && !NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
         {
-            Debug.Log(name);
             LeaveLobby();
         }
     }
@@ -340,9 +301,42 @@ public abstract class LobbyController : NetworkBehaviour
             }
         }
 
+        // All of these function as add, remove, etc since network variables don't update normally otherwise
         public PlayerList()
         {
             items = new PlayerListItem[0];
+        }
+        public PlayerList(PlayerListItem n)
+        {
+            items = new PlayerListItem[] { n };
+        }
+        // Used for adding user to PlayerList
+        public PlayerList(PlayerList previous, PlayerListItem n)
+        {
+            items = new PlayerListItem[previous.Count + 1];
+            for(int i = 0; i < previous.Count; i++)
+            {
+                items[i] = previous.items[i];
+            }
+            items[items.Length - 1] = n;
+        }
+        // Used for removing user from PlayerList
+        public PlayerList(PlayerList previous, ulong id)
+        {
+            if(previous.ContainsKey(id))
+                items = new PlayerListItem[previous.Count - 1];
+            else
+                items = new PlayerListItem[previous.Count];
+
+            int index = 0;
+            for(int i = 0; i < items.Length; i++)
+            {
+                if (previous.items[i].key != id)
+                {
+                    items[index] = previous.items[i];
+                    index++;
+                }
+            }
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -350,35 +344,6 @@ public abstract class LobbyController : NetworkBehaviour
             serializer.SerializeValue(ref items);
         }
 
-        public void Add(ulong clientId, PlayerInfo playerInfo)
-        {
-            Add(new PlayerListItem(clientId, playerInfo));
-        }
-        public void Add(PlayerListItem newItem)
-        {
-            List<PlayerListItem> temp = new List<PlayerListItem>();
-
-            for (int i = 0; i < items.Length; i++)
-            {
-                temp.Add(items[i]);
-            }
-
-            temp.Add(newItem);
-
-            items = temp.ToArray();
-        }
-        public void Remove(ulong clientId)
-        {
-            List<PlayerListItem> temp = new List<PlayerListItem>();
-
-            for (int i = 0; i < items.Length; i++)
-            {
-                if (items[i].key != clientId)
-                    temp.Add(items[i]);
-            }
-
-            items = temp.ToArray();
-        }
         public bool ContainsKey(ulong clientId)
         {
             for(int i = 0; i < items.Length; i++)
@@ -396,12 +361,6 @@ public abstract class LobbyController : NetworkBehaviour
                     return true;
             }
             return false;
-        }
-
-        public static PlayerList operator +(PlayerList left, PlayerListItem right)
-        {
-            left.Add(right);
-            return left;
         }
 
         public Dictionary<ulong, PlayerInfo> GetDictionary()
@@ -429,7 +388,7 @@ public abstract class LobbyController : NetworkBehaviour
 
             for(int i = 0; i < items.Length; i++)
             {
-                s += items[i].ToString();
+                s += items[i].ToString() + "\n";
             }
 
             return s;

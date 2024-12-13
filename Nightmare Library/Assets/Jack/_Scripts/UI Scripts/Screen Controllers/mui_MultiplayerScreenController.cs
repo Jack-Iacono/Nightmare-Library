@@ -30,7 +30,7 @@ public class mui_MultiplayerScreen : ScreenController
     {
         base.ShowScreen();
 
-        OnPlayerListChange();
+        //OnPlayerListChange();
 
         if(NetworkConnectionController.IsRunning)
         {
@@ -108,7 +108,7 @@ public class mui_MultiplayerScreen : ScreenController
     {
         playerJoinText.text = string.Empty;
 
-        Dictionary<ulong, LobbyController.PlayerInfo> dict = LobbyController.playerList.GetDictionary();
+        Dictionary<ulong, LobbyController.PlayerInfo> dict = LobbyController.playerList.Value.GetDictionary();
 
         foreach(ulong clientId in dict.Keys)
         {

@@ -8,8 +8,10 @@ public class GameLobbyController : LobbyController
     public GameObject playerPrefab;
 
     // Start is called before the first frame update
-    void Start()
+    protected override void Start()
     {
+        base.Start();  
+
         if (NetworkManager.Singleton.IsServer)
             ServerEntryAction();
         else

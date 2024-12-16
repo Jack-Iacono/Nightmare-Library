@@ -7,7 +7,8 @@ public class CameraController : MonoBehaviour
 {
     [Header("GameObjects")]
     public PlayerController playerCont;
-    public Camera cam;
+    public Camera normalCam;
+    public Camera ghostCam;
     public AudioListener audioListener;
 
     //Static instance of this camera
@@ -68,16 +69,34 @@ public class CameraController : MonoBehaviour
         //Rotates the player to always be facing the direction of the camera
         playerCont.transform.localRotation = Quaternion.Euler(0f, yRotation, 0f);
     }
+    public void SetGhost(bool b)
+    {
+        normalCam.enabled = b;
+        ghostCam.enabled = !b;
+    }
     public void SetEnabled(bool b)
     {
-        cam.enabled = b;
+        if (!b)
+        {
+            normalCam.enabled = false;
+            ghostCam.enabled = false;
+        }
+        else
+        {
+            if (playerCont.isAlive)
+            {
+                normalCam.enabled = true;
+                ghostCam.enabled = false;
+            }
+            else
+            {
+                normalCam.enabled = false;
+                ghostCam.enabled = true;
+            }
+        }
+
         audioListener.enabled = b;
         enabled = b;
-    }
-    public void Spectate(bool b)
-    {
-        cam.enabled = b;
-        audioListener.enabled = b;
     }
 
     #endregion
@@ -90,7 +109,7 @@ public class CameraController : MonoBehaviour
 
         if (distance <= dist * dist)
         {
-            Ray ray = new Ray(cam.transform.position, cam.transform.forward);
+            Ray ray = new Ray(normalCam.transform.position, normalCam.transform.forward);
             RaycastHit hit;
 
             float range = 50;
@@ -108,7 +127,7 @@ public class CameraController : MonoBehaviour
     }
     public bool GetCameraSight(Collider col)
     {
-        Ray ray = new Ray(cam.transform.position, cam.transform.forward);
+        Ray ray = new Ray(normalCam.transform.position, normalCam.transform.forward);
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, 1000, collideLayers))

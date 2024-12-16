@@ -92,14 +92,14 @@ public class PlayerControllerNetwork : NetworkBehaviour
     #region Player Attacked
     public void OnPlayerAttacked(object sender, EventArgs e)
     {
-        playerCont.Kill();
+        playerCont.Kill(IsOwner);
         OnPlayerAttackedClientRpc();
     }
     [ClientRpc]
     private void OnPlayerAttackedClientRpc()
     {
         if(!IsServer)
-            playerCont.Kill();
+            playerCont.Kill(IsOwner);
     }
     #endregion
 

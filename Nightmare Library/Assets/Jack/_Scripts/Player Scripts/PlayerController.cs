@@ -14,9 +14,6 @@ public class PlayerController : MonoBehaviour
 
     public static List<PlayerController> playerInstances = new List<PlayerController>();
 
-    private static int currentlySpectating;
-    private int myPlayerIndex;
-
     public static LayerMask playerLayerMask;
 
     public CameraController camCont;
@@ -24,7 +21,9 @@ public class PlayerController : MonoBehaviour
 
     private Collider playerCollider;
     [SerializeField]
-    private List<MeshRenderer> playerMeshes;
+    private List<MeshRenderer> normalMeshes;
+    [SerializeField]
+    private List<MeshRenderer> ghostMeshes;
 
     [SerializeField]
     public bool isAlive = true;
@@ -71,7 +70,6 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         playerInstances.Add(this);
-        myPlayerIndex = playerInstances.Count - 1;
 
         charCont = GetComponent<CharacterController>();
         playerCollider = GetComponent<Collider>();
@@ -81,6 +79,11 @@ public class PlayerController : MonoBehaviour
         charCont.enabled = false;
         transform.position = new Vector3(-20, 1, 0);
         charCont.enabled = true;
+
+        foreach (MeshRenderer r in ghostMeshes)
+        {
+            r.enabled = false;
+        }
 
         if (!NetworkConnectionController.connectedToLobby)
             ownerInstance = this;
@@ -124,9 +127,9 @@ public class PlayerController : MonoBehaviour
             );
         isSprinting = Input.GetKey(keySprint);
 
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Input.GetKeyDown(KeyCode.O))
         {
-            AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.e_MUSIC_LOVER), transform.position);
+            ReceiveAttack();
         }
     }
     private void CalculateNormalMove()
@@ -191,32 +194,38 @@ public class PlayerController : MonoBehaviour
 
     public void ReceiveAttack()
     {
-        if (!NetworkConnectionController.IsRunning)
+        if (!NetworkConnectionController.connectedToLobby)
         {
-            Kill();
+            Kill(true);
         }
         OnPlayerAttacked?.Invoke(this, EventArgs.Empty);
     }
-    public void Kill()
+    public void Kill(bool becomeGhost)
     {
-        Activate(false);
         isAlive = false;
 
         playerCollider.enabled = false;
-        charCont.enabled = false;
-        foreach(MeshRenderer r in playerMeshes)
+        foreach(MeshRenderer r in normalMeshes)
         {
             r.enabled = false;
+        }
+        foreach(MeshRenderer r in ghostMeshes)
+        {
+            r.enabled = true;
+        }
+
+        foreach(PlayerController p in playerInstances)
+        {
+            Physics.IgnoreCollision(playerCollider, p.playerCollider, true);
+            charCont.detectCollisions = false;
         }
 
         OnPlayerKilled?.Invoke(this, EventArgs.Empty);
 
-        int aliveIndex = GetAlivePlayer();
+        interactionCont.enabled = false;
 
-        if (aliveIndex != -1)
-            SpectatePlayer(aliveIndex);
-        else
-            camCont.SetEnabled(true);
+        if(becomeGhost)
+            camCont.SetGhost(false);
     }
 
     public void Trap(float duration)
@@ -229,7 +238,6 @@ public class PlayerController : MonoBehaviour
     {
         enabled = b;
         camCont.SetEnabled(b);
-        //charCont.enabled = b;
         interactionCont.enabled = b;
 
         if (b)
@@ -242,25 +250,5 @@ public class PlayerController : MonoBehaviour
     {
         enabled = !b;
         camCont.enabled = !b;
-    }
-
-    public static void SpectatePlayer(int index)
-    {
-        if (playerInstances[index].isAlive)
-        {
-            playerInstances[currentlySpectating].camCont.Spectate(false);
-            playerInstances[index].camCont.Spectate(true);
-            currentlySpectating = index;
-        }
-    }
-    private int GetAlivePlayer()
-    {
-        for(int i = 0; i < playerInstances.Count; i++)
-        {
-            if (playerInstances[i].isAlive)
-                return i;
-        }
-
-        return -1;
     }
 }

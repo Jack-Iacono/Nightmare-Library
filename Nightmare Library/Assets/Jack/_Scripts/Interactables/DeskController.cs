@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -15,6 +16,7 @@ public class DeskController : MonoBehaviour
             Destroy(instance);
 
         instance = this;
+        PlayerController.OnPlayerKilled += OnPlayerKilled;
     }
 
     // Start is called before the first frame update
@@ -27,20 +29,30 @@ public class DeskController : MonoBehaviour
     {
         if(other.tag == "Player")
         {
-            playersAtDesk.Add(other.GetComponent<PlayerController>());
+            if (PlayerController.playerInstances[other.gameObject].isAlive)
+                playersAtDesk.Add(PlayerController.playerInstances[other.gameObject]);
         }
     }
     private void OnTriggerExit(Collider other)
     {
         if (other.tag == "Player")
         {
-            playersAtDesk.Remove(other.GetComponent<PlayerController>());
+            if (PlayerController.playerInstances[other.gameObject].isAlive)
+                playersAtDesk.Remove(PlayerController.playerInstances[other.gameObject]);
         }
+    }
+
+    private void OnPlayerKilled(object sender, EventArgs e)
+    {
+        if(playersAtDesk.Contains((PlayerController)sender))
+            playersAtDesk.Remove(PlayerController.playerInstances[((PlayerController)sender).gameObject]);
     }
 
     private void OnDestroy()
     {
         if(instance == this)
             instance = null;
+
+        PlayerController.OnPlayerKilled -= OnPlayerKilled;
     }
 }

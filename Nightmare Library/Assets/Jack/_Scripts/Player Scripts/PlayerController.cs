@@ -12,20 +12,21 @@ public class PlayerController : MonoBehaviour
 {
     public static PlayerController ownerInstance;
 
-    public static List<PlayerController> playerInstances = new List<PlayerController>();
+    public static Dictionary<GameObject, PlayerController> playerInstances = new Dictionary<GameObject, PlayerController>();
 
     public static LayerMask playerLayerMask;
+
+    private const int playerLayer = 6;
+    private const int ghostLayer = 14;
 
     public CameraController camCont;
     private PlayerInteractionController interactionCont;
 
-    private Collider playerCollider;
+    [Header("Mesh / Material")]
     [SerializeField]
-    private List<MeshRenderer> normalMeshes;
-    [SerializeField]
-    private List<MeshRenderer> ghostMeshes;
+    private List<MeshMaterialLink> meshMaterials;
 
-    [SerializeField]
+    [NonSerialized]
     public bool isAlive = true;
 
     [Header("Movement Variables")]
@@ -69,10 +70,9 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        playerInstances.Add(this);
+        playerInstances.Add(gameObject, this);
 
         charCont = GetComponent<CharacterController>();
-        playerCollider = GetComponent<Collider>();
         interactionCont = GetComponent<PlayerInteractionController>();
 
         // TEMPORARY
@@ -80,9 +80,9 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(-20, 1, 0);
         charCont.enabled = true;
 
-        foreach (MeshRenderer r in ghostMeshes)
+        for (int i = 0; i < meshMaterials.Count; i++)
         {
-            r.enabled = false;
+            meshMaterials[i].renderer.material = meshMaterials[i].normal;
         }
 
         if (!NetworkConnectionController.connectedToLobby)
@@ -127,9 +127,16 @@ public class PlayerController : MonoBehaviour
             );
         isSprinting = Input.GetKey(keySprint);
 
-        if (Input.GetKeyDown(KeyCode.O))
+        if (Input.GetKeyDown(KeyCode.K))
         {
             ReceiveAttack();
+        }
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            foreach(PlayerController p in playerInstances.Values)
+            {
+                p.ReceiveAttack();
+            }
         }
     }
     private void CalculateNormalMove()
@@ -180,7 +187,7 @@ public class PlayerController : MonoBehaviour
     public void OnDestroy()
     {
         //Takes itself out of the player array
-        playerInstances.Remove(this);
+        playerInstances.Remove(gameObject);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -204,21 +211,14 @@ public class PlayerController : MonoBehaviour
     {
         isAlive = false;
 
-        playerCollider.enabled = false;
-        foreach(MeshRenderer r in normalMeshes)
+        for (int i = 0; i < meshMaterials.Count; i++)
         {
-            r.enabled = false;
-        }
-        foreach(MeshRenderer r in ghostMeshes)
-        {
-            r.enabled = true;
+            meshMaterials[i].renderer.material = meshMaterials[i].ghost;
+            meshMaterials[i].renderer.gameObject.layer = ghostLayer;
         }
 
-        foreach(PlayerController p in playerInstances)
-        {
-            Physics.IgnoreCollision(playerCollider, p.playerCollider, true);
-            charCont.detectCollisions = false;
-        }
+        gameObject.layer = ghostLayer;
+        charCont.excludeLayers = playerLayer | 1 << 15;
 
         OnPlayerKilled?.Invoke(this, EventArgs.Empty);
 
@@ -251,4 +251,13 @@ public class PlayerController : MonoBehaviour
         enabled = !b;
         camCont.enabled = !b;
     }
+
+    [Serializable]
+    public class MeshMaterialLink
+    {
+        public MeshRenderer renderer;
+        public Material normal;
+        public Material ghost;
+    }
+    
 }

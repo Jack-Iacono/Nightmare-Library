@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 8230787585620633159}
   - component: {fileID: 4279900071074719339}
   - component: {fileID: -7140806690920257612}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Offline Basic Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ CapsuleCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 16384
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -271,7 +271,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 71532195
+  GlobalObjectIdHash: 3521885176
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -304,7 +304,7 @@ GameObject:
   - component: {fileID: 2173416285369175409}
   - component: {fileID: 7634274423522851882}
   - component: {fileID: 658295794213956057}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Visor
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -13,8 +13,6 @@ public class MonitorCameraController : Interactable
     public bool isBroadcasting { get; private set; } = true;
     public event EventHandler OnBroadcastChange;
 
-    private bool broadcastBuffer = true;
-
     protected override void Awake()
     {
         base.Awake();

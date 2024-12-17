@@ -19,8 +19,8 @@ TagManager:
   - Ignore Physics
   - NavPoint
   - DeskArea
-  - Ghost Only
-  - 
+  - Ghost
+  - Enemy
   - 
   - 
   - 

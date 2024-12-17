@@ -30,7 +30,7 @@ public class mui_MultiplayerScreen : ScreenController
     {
         base.ShowScreen();
 
-        //OnPlayerListChange();
+        OnPlayerListChange();
 
         if(NetworkConnectionController.IsRunning)
         {
@@ -108,11 +108,18 @@ public class mui_MultiplayerScreen : ScreenController
     {
         playerJoinText.text = string.Empty;
 
-        Dictionary<ulong, LobbyController.PlayerInfo> dict = LobbyController.playerList.Value.GetDictionary();
-
-        foreach(ulong clientId in dict.Keys)
+        if (NetworkConnectionController.connectedToLobby)
         {
-            playerJoinText.text += "(" + clientId + ")" + dict[clientId].username + "\n";
+            Dictionary<ulong, LobbyController.PlayerInfo> dict = LobbyController.playerList.Value.GetDictionary();
+
+            foreach (ulong clientId in dict.Keys)
+            {
+                playerJoinText.text += "(" + clientId + ")" + dict[clientId].username + "\n";
+            }
+        }
+        else
+        {
+            playerJoinText.text = "Feteching Players";
         }
     }
 

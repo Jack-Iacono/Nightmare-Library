@@ -52,7 +52,7 @@ CapsuleCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 16384
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
@@ -223,6 +223,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9be3de8c9a66ef64f8a79fab9107280d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isPooled: 0
 --- !u!114 &6473351765471956210
 MonoBehaviour:
   m_ObjectHideFlags: 0

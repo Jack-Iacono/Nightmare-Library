@@ -30,19 +30,6 @@ public class DeskNetwork : NetworkBehaviour
             parent.enabled = false;
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void TransmitClickServerRpc(ulong sender)
-    {
-        Debug.Log("Clicked");
-        //ConsumeClickClientRpc(sender);
-    }
-    [ClientRpc]
-    private void ConsumeClickClientRpc(ulong sender)
-    {
-        if (NetworkManager.LocalClientId != sender)
-            Debug.Log("Click on client " + sender);
-    }
-
     public override void OnDestroy()
     {
         base.OnDestroy();

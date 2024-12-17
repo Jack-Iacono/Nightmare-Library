@@ -53,12 +53,13 @@ public class ScreechHeadController : MonoBehaviour
         attackTimer = parent.attackTime;
 
         DespawnHead();
-
-        OnInitialize?.Invoke(PlayerController.playerInstances.IndexOf(targetPlayer));
+        //FIX
+        OnInitialize?.Invoke(0);
     }
     public void Initialize(int playerIndex)
     {
-        targetPlayer = PlayerController.playerInstances[playerIndex];
+        // FIX
+        targetPlayer = PlayerController.playerInstances[null];
         playerCamTrans = targetPlayer.camCont.transform;
         trans = transform;
 

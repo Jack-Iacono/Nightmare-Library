@@ -7,8 +7,11 @@ public class CameraController : MonoBehaviour
 {
     [Header("GameObjects")]
     public PlayerController playerCont;
+
+    // Using 2 different camera for post processing effects later on, could change to layermasks
     public Camera normalCam;
     public Camera ghostCam;
+
     public AudioListener audioListener;
 
     //Static instance of this camera

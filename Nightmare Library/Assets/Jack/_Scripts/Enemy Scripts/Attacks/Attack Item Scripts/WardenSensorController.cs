@@ -18,7 +18,7 @@ public class WardenSensorController : Interactable
     private void OnTriggerEnter(Collider other)
     {
         // Check if a player is the one triggering the sensor
-        foreach (PlayerController p in PlayerController.playerInstances)
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
         {
             if (p.gameObject == other.gameObject)
             {

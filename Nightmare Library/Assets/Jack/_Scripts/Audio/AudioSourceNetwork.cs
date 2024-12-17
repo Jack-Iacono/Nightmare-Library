@@ -8,7 +8,6 @@ using UnityEngine;
 public class AudioSourceNetwork : NetworkBehaviour
 {
     AudioSourceController parent;
-    private bool pool = false;
 
     private NetworkVariable<bool> isPooledObject;
 

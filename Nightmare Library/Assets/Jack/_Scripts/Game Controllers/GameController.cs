@@ -65,7 +65,7 @@ public class GameController : MonoBehaviour
     private void OnPlayerKilled(object sender, EventArgs e)
     {
         bool allPlayersDead = true;
-        foreach(PlayerController p in PlayerController.playerInstances)
+        foreach(PlayerController p in PlayerController.playerInstances.Values)
         {
             if (p.isAlive)
             {
@@ -76,7 +76,6 @@ public class GameController : MonoBehaviour
 
         if (allPlayersDead && NetworkConnectionController.HasAuthority)
         {
-            PauseGame(true);
             StartCoroutine(EndGameCoroutine());
         }
     }

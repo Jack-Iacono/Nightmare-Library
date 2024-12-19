@@ -63,7 +63,8 @@ public class PlayerController : MonoBehaviour
     private bool isSprinting = false;
 
     public event EventHandler OnPlayerAttacked;
-    public static event EventHandler OnPlayerKilled;
+    public delegate void PlayerKilledDelegate(PlayerController player);
+    public static event PlayerKilledDelegate OnPlayerKilled;
 
     private bool isTrapped = false;
     private float trapTimer = 0;
@@ -187,6 +188,7 @@ public class PlayerController : MonoBehaviour
     public void OnDestroy()
     {
         //Takes itself out of the player array
+        OnPlayerKilled?.Invoke(this);
         playerInstances.Remove(gameObject);
     }
 
@@ -220,7 +222,7 @@ public class PlayerController : MonoBehaviour
         gameObject.layer = ghostLayer;
         charCont.excludeLayers = playerLayer | 1 << 15;
 
-        OnPlayerKilled?.Invoke(this, EventArgs.Empty);
+        OnPlayerKilled?.Invoke(this);
 
         interactionCont.enabled = false;
 

@@ -17,7 +17,7 @@ public class ScreechHeadController : MonoBehaviour
     private float sightTolerance = -0.94f;
 
     // Stops this item from attacking if it doesn't need to
-    private bool doAttacks = false;
+    private bool doAttacks = true;
 
     private MeshRenderer[] meshRenderers;
 
@@ -35,7 +35,7 @@ public class ScreechHeadController : MonoBehaviour
     public delegate void AttackDelegate();
     public event AttackDelegate OnAttack;
 
-    public delegate void InitializeDelegate(int index);
+    public delegate void InitializeDelegate();
     public event InitializeDelegate OnInitialize;
 
     private void Awake()
@@ -53,17 +53,17 @@ public class ScreechHeadController : MonoBehaviour
         attackTimer = parent.attackTime;
 
         DespawnHead();
-        //FIX
-        OnInitialize?.Invoke(0);
+        OnInitialize?.Invoke();
     }
-    public void Initialize(int playerIndex)
+    public void Initialize(PlayerController t)
     {
-        // FIX
-        targetPlayer = PlayerController.playerInstances[null];
+        Debug.Log("Syncing to player: " + t.name);
+        
+        
+
+        targetPlayer = t;
         playerCamTrans = targetPlayer.camCont.transform;
         trans = transform;
-
-        doAttacks = false;
 
         DespawnHead();
     }

@@ -78,7 +78,7 @@ public class pa_Screech : PassiveAttack
     public void AttackPlayer(PlayerController player)
     {
         // Remove to actually attack player
-        //player.ReceiveAttack();
+        player.ReceiveAttack();
     }
 
     public Vector3 GetRandomOffset()

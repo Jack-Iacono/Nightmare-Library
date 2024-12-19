@@ -18,15 +18,22 @@ public class ScreechHeadNetwork : NetworkBehaviour
         parent.OnInitialize += OnInitialize;
     }
 
-    public void OnInitialize(int index)
+    public void OnInitialize()
     {
         if (IsServer)
-            OnInitializeClientRpc(index);
+            OnInitializeClientRpc(parent.targetPlayer.GetComponent<PlayerNetwork>().OwnerClientId);
     }
     [ClientRpc]
-    private void OnInitializeClientRpc(int index)
+    private void OnInitializeClientRpc(ulong owner)
     {
-        parent.Initialize(index);
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
+        {
+            if (p.GetComponent<PlayerNetwork>().OwnerClientId == owner)
+            {
+                parent.Initialize(p);
+                break;
+            }
+        }
     }
 
     public void OnAttack()

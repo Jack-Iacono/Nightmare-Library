@@ -42,10 +42,12 @@ public class DeskController : MonoBehaviour
         }
     }
 
-    private void OnPlayerKilled(object sender, EventArgs e)
+    private void OnPlayerKilled(PlayerController player)
     {
-        if(playersAtDesk.Contains((PlayerController)sender))
-            playersAtDesk.Remove(PlayerController.playerInstances[((PlayerController)sender).gameObject]);
+        if (playersAtDesk.Contains(player))
+        {
+            playersAtDesk.Remove(player);
+        }
     }
 
     private void OnDestroy()

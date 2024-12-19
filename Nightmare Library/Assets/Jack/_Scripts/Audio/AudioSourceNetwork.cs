@@ -63,7 +63,7 @@ public class AudioSourceNetwork : NetworkBehaviour
         else
             OnPlayerServerRpc((int)data.x, (int)data.y, movePos, NetworkManager.LocalClientId);
     }
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void OnPlayerServerRpc(int i, int j, Vector3 pos, ulong sender)
     {
         OnPlayerClientRpc(i, j, pos, sender);

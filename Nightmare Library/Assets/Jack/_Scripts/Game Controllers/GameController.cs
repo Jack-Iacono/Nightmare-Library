@@ -62,7 +62,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void OnPlayerKilled(object sender, EventArgs e)
+    private void OnPlayerKilled(PlayerController player)
     {
         bool allPlayersDead = true;
         foreach(PlayerController p in PlayerController.playerInstances.Values)

@@ -11,37 +11,43 @@ public class EnemyNetwork : NetworkBehaviour
 {
     [SerializeField] private bool _serverAuth;
 
-    private Enemy enemyController;
+    public Enemy owner { get; private set; }
 
     private NetworkVariable<PlayerContinuousNetworkData> contState;
     private NetworkVariable<PlayerIntermittentNetworkData> intState;
 
     private void Awake()
     {
+        if (!NetworkConnectionController.connectedToLobby)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+
         // Can only be written to by server or owner
         var permission = _serverAuth ? NetworkVariableWritePermission.Server : NetworkVariableWritePermission.Owner;
         contState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);
         intState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
 
-        enemyController = GetComponent<Enemy>();
+        owner = GetComponent<Enemy>();
     }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
-        enemyController.Activate(IsOwner);
+        owner.Activate(IsOwner);
 
         if (IsOwner)
         {
-            enemyController.OnPlaySound += OnPlaySound;
-            enemyController.OnHallucination += OnHallucination;
-            enemyController.OnLightFlicker += OnLightFlicker;
+            owner.OnPlaySound += OnPlaySound;
+            owner.OnHallucination += OnHallucination;
+            owner.OnLightFlicker += OnLightFlicker;
 
-            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
-                enemyController.OnSpawnFootprint += OnSpawnFootprint;
-            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.TRAPPER))
-                enemyController.OnSpawnTrap += OnSpawnTrap;
+            if (owner.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
+                owner.OnSpawnFootprint += OnSpawnFootprint;
+            if (owner.evidenceList.Contains(Enemy.EvidenceEnum.TRAPPER))
+                owner.OnSpawnTrap += OnSpawnTrap;
                 
         }
     }
@@ -76,14 +82,14 @@ public class EnemyNetwork : NetworkBehaviour
     private void PlaySoundClientRpc(string sound)
     {
         if (!NetworkManager.IsServer)
-            enemyController.PlaySound(sound);
+            owner.PlaySound(sound);
     }
 
     public void OnSpawnFootprint(Vector3 pos)
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = enemyController.objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
+            var print = owner.objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
             print.transform.position = pos;
             print.GetComponent<FootprintController>().Activate();
@@ -94,7 +100,7 @@ public class EnemyNetwork : NetworkBehaviour
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = enemyController.objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
+            var print = owner.objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
             print.transform.position = pos;
             print.GetComponent<TrapController>().Activate();
@@ -113,7 +119,7 @@ public class EnemyNetwork : NetworkBehaviour
     private void OnHallucinationClientRpc(bool b)
     {
         if (!NetworkManager.IsServer)
-            enemyController.SetHallucinating(b, false);
+            owner.SetHallucinating(b, false);
     }
 
     private void OnLightFlicker(object sender, EventArgs e)
@@ -126,7 +132,7 @@ public class EnemyNetwork : NetworkBehaviour
     [ClientRpc]
     private void OnLightFlickerClientRpc()
     {
-        enemyController.FlickerLights(false);
+        owner.FlickerLights(false);
     }
 
     #endregion

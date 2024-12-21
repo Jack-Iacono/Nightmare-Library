@@ -264,6 +264,15 @@ public class Enemy : MonoBehaviour
             OnLightFlicker?.Invoke(this, EventArgs.Empty);
     }
 
+    public ActiveAttack GetActiveAttack()
+    {
+        return activeAttackTree;
+    }
+    public PassiveAttack GetPassiveAttack()
+    {
+        return passiveAttackTree;
+    }
+
     protected virtual void OnGamePause(object sender, bool e)
     {
         if(navAgent.isOnNavMesh)

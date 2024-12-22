@@ -79,6 +79,15 @@ public class InventoryController : MonoBehaviour
 
         return false;
     }
+
+    public InventoryItem[] GetInventoryItems()
+    {
+        return inventoryItems;
+    }
+    public void ClearInventory()
+    {
+        inventoryItems = new InventoryItem[0];
+    }
     
     public bool HasOpenSlot()
     {

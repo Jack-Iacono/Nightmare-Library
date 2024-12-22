@@ -130,14 +130,7 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.K))
         {
-            ReceiveAttack();
-        }
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            foreach(PlayerController p in playerInstances.Values)
-            {
-                p.ReceiveAttack();
-            }
+            interactionCont.DropItems();
         }
     }
     private void CalculateNormalMove()
@@ -225,6 +218,7 @@ public class PlayerController : MonoBehaviour
         OnPlayerKilled?.Invoke(this);
 
         interactionCont.enabled = false;
+        interactionCont.DropItems();
 
         if(becomeGhost)
             camCont.SetGhost(false);

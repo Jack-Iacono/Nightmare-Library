@@ -214,6 +214,17 @@ public class PlayerInteractionController : MonoBehaviour
         }
     }
 
+    public void DropItems()
+    {
+        InventoryItem[] items = InventoryController.Instance.GetInventoryItems();
+        foreach (InventoryItem i in items)
+        {
+            if (!i.IsEmpty())
+                interactables[i.realObject].Place(transform.position, transform.rotation);
+        }
+        InventoryController.Instance.ClearInventory();
+    }
+
     private void SetObjectTransform(PlacementType type, RaycastHit hit)
     {
         switch (type)

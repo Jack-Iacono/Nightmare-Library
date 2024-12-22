@@ -86,7 +86,13 @@ public class InventoryController : MonoBehaviour
     }
     public void ClearInventory()
     {
-        inventoryItems = new InventoryItem[0];
+        foreach(InventoryItem item in inventoryItems)
+        {
+            item.Clear();
+        }
+
+        currentItemIndex = 0;
+        onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
     }
     
     public bool HasOpenSlot()

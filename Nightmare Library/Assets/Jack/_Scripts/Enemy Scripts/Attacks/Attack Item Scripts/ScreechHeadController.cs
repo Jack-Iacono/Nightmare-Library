@@ -71,7 +71,7 @@ public class ScreechHeadController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!targetPlayer.isAlive || targetPlayer == null)
+        if (targetPlayer == null || !targetPlayer.isAlive)
             DespawnHead();
 
         if (isSpawned)

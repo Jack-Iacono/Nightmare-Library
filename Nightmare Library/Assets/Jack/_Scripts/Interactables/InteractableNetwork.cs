@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Android;
 
 [RequireComponent(typeof(Interactable))]
 public class InteractableNetwork : NetworkBehaviour
@@ -25,8 +26,8 @@ public class InteractableNetwork : NetworkBehaviour
     private Vector3 targetPosition = Vector3.zero;
     private Vector3 targetVelocity = Vector3.zero;
 
-    private NetworkVariable<RbData> transformData;
-    private NetworkVariable<bool> allEnabled;
+    private NetworkVariable<RbData> transformData = new NetworkVariable<RbData>(); 
+    private NetworkVariable<bool> allEnabled = new NetworkVariable<bool>();
 
     protected virtual void Awake()
     {
@@ -42,12 +43,10 @@ public class InteractableNetwork : NetworkBehaviour
 
         parent = GetComponent<Interactable>();
 
-        var permission = NetworkVariableWritePermission.Server;
-        transformData = new NetworkVariable<RbData>(writePerm: permission);
-        allEnabled = new NetworkVariable<bool>(writePerm: permission);
-
         if (IsServer)
             allEnabled.Value = true;
+        else
+            ConsumeEnabledData(true, true);
     }
 
     public override void OnNetworkSpawn()
@@ -175,9 +174,13 @@ public class InteractableNetwork : NetworkBehaviour
     }
     private void ConsumeTransformData(RbData previousValue, RbData newValue)
     {
+        Debug.Log("Rotation Changed " + transformData.Value.Rotation.ToString());
+
         // Ensure that the owner does not waste time updating to it's own values
         if (!IsOwner)
         {
+            Debug.Log("Updating Rotation to :" + newValue.Rotation.ToString());
+
             // Warps to the correct starting position
             if(!isUpdatingTransform)
             {
@@ -185,14 +188,12 @@ public class InteractableNetwork : NetworkBehaviour
                 transform.position = transformData.Value.Position;
                 if (parent.hasRigidBody)
                     parent.rb.velocity = transformData.Value.Velocity;
-
-                parent.EnableAll(allEnabled.Value);
             }
 
             // Tell the object to begin updating it's transform and velocity
             isUpdatingTransform = true;
 
-            // Directly set the rotation to be completly accurate
+            // Directly set the rotation to be completely accurate
             transform.rotation = transformData.Value.Rotation;
             
             targetPosition = transformData.Value.Position;
@@ -261,7 +262,11 @@ public class InteractableNetwork : NetworkBehaviour
         if (!fromNetwork)
         {
             if (IsOwner)
-                ConsumePlaceClientRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation));
+            {
+                transformData.Value = new RbData(parent.trans.position, parent.trans.rotation, parent.hasRigidBody ? parent.rb.velocity : Vector3.zero);
+                allEnabled.Value = true;
+                //ConsumePlaceClientRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation));
+            }
             else
                 TransmitPlaceServerRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation));
         }
@@ -270,7 +275,11 @@ public class InteractableNetwork : NetworkBehaviour
     protected virtual void TransmitPlaceServerRpc(ulong sender, TransformData data)
     {
         parent.Place(data.Position, data.Rotation, true);
-        ConsumePlaceClientRpc(sender, data);
+
+        transformData.Value = new RbData(parent.trans.position, parent.trans.rotation, parent.hasRigidBody ? parent.rb.velocity : Vector3.zero);
+        allEnabled.Value = true;
+
+        //ConsumePlaceClientRpc(sender, data);
     }
     [ClientRpc]
     protected virtual void ConsumePlaceClientRpc(ulong sender, TransformData data)

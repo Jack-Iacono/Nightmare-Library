@@ -127,7 +127,7 @@ public class pa_Screech : PassiveAttack
         public void TickCooldown()
         {
             cooldown--;
-            Debug.Log(cooldown);
+            //Debug.Log(cooldown);
         }
     }
 }

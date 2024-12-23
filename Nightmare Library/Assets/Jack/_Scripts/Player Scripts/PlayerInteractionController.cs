@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Burst.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
 using static Interactable;
 
 [RequireComponent(typeof(PlayerController))]
@@ -217,10 +218,16 @@ public class PlayerInteractionController : MonoBehaviour
     public void DropItems()
     {
         InventoryItem[] items = InventoryController.Instance.GetInventoryItems();
-        foreach (InventoryItem i in items)
+        for(int i = 0; i < items.Length; i++)
         {
-            if (!i.IsEmpty())
-                interactables[i.realObject].Place(transform.position, transform.rotation);
+            InventoryItem item = items[i];
+
+            if (!item.IsEmpty())
+            {
+                //NavMeshHit hit;
+                //NavMesh.SamplePosition(transform.position + new Vector3(0,i,0), out hit, 10, NavMesh.AllAreas);
+                interactables[item.realObject].Place(transform.position + new Vector3(0, i, 0), transform.rotation);
+            }
         }
         InventoryController.Instance.ClearInventory();
     }

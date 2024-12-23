@@ -52,6 +52,7 @@ public class ScreechHeadController : MonoBehaviour
 
         attackTimer = parent.attackTime;
         doAttack = true;
+        doSight = true;
 
         DespawnHead(true);
         OnInitialize?.Invoke();

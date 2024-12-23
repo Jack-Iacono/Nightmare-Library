@@ -135,6 +135,8 @@ public class Interactable : MonoBehaviour
         trans.position = pos;
         trans.rotation = rot;
 
+        Debug.Log("Placing with Rotation: " + rot.ToString());
+
         Place(fromNetwork);
     }
 

@@ -13,15 +13,21 @@ public class Interactable : MonoBehaviour
     public List<PlacementType> placementTypes = new List<PlacementType>();
 
     /// <summary>
-    /// 0: Facing Player
+    /// 0: Facing Player 
     /// 1: Facing away from player
     /// </summary>
+    [Range(0,1)]
     public int floorPlacementType = 0;
     /// <summary>
     /// 0: Bottom down, no x or z rotation, facing player
     /// 1: Bottom on wall, top facing player
     /// </summary>
+    [Range(0,1)]
     public int wallPlacementType = 0;
+    /// <summary>
+    /// True: When the item is placed, disable the rigidbody to fix it to the surface. This will disable if the item is thrown or hit with the enemy hysteric interaction
+    /// </summary>
+    public bool fixPlacement = true;
 
 
     [SerializeField]
@@ -128,14 +134,16 @@ public class Interactable : MonoBehaviour
     public virtual void Place(bool fromNetwork = false)
     {
         EnableAll(true);
+
+        if (fixPlacement && hasRigidBody)
+            rb.isKinematic = true;
+
         OnPlace?.Invoke(fromNetwork);
     }
     public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
         trans.position = pos;
         trans.rotation = rot;
-
-        Debug.Log("Placing with Rotation: " + rot.ToString());
 
         Place(fromNetwork);
     }
@@ -146,13 +154,17 @@ public class Interactable : MonoBehaviour
         EnableAll(true);
 
         if (hasRigidBody)
+        {
+            rb.isKinematic = false;
             rb.AddForce(force, ForceMode.Impulse);
+        }
             
         OnThrow?.Invoke(force, fromNetwork);
     }
 
     public virtual void EnemyInteractHysterics(bool fromNetwork = false)
     {
+        rb.isKinematic = false;
         rb.AddForce
             (
             new Vector3

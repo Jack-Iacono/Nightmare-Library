@@ -26,7 +26,7 @@ public class InteractableNetwork : NetworkBehaviour
     private Vector3 targetPosition = Vector3.zero;
     private Vector3 targetVelocity = Vector3.zero;
 
-    private NetworkVariable<RbData> transformData = new NetworkVariable<RbData>(); 
+    private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>(); 
     private NetworkVariable<bool> allEnabled = new NetworkVariable<bool>();
 
     protected virtual void Awake()
@@ -150,11 +150,11 @@ public class InteractableNetwork : NetworkBehaviour
 
     private void TransmitTransformData()
     {
-        var state = new RbData
+        var state = new TransformDataRB
         {
             Position = parent.trans.position,
             Rotation = parent.trans.rotation,
-            Velocity = parent.rb.velocity
+            Velocity = parent.hasRigidBody ? parent.rb.velocity : Vector3.zero
         };
 
         // Needed because we are not able to change info if server has authority
@@ -168,26 +168,24 @@ public class InteractableNetwork : NetworkBehaviour
         }
     }
     [ServerRpc(RequireOwnership = false)]
-    private void TransmitTransformDataServerRpc(RbData state)
+    private void TransmitTransformDataServerRpc(TransformDataRB state)
     {
         transformData.Value = state;
     }
-    private void ConsumeTransformData(RbData previousValue, RbData newValue)
+    private void ConsumeTransformData(TransformDataRB previousValue, TransformDataRB newValue)
     {
-        Debug.Log("Rotation Changed " + transformData.Value.Rotation.ToString());
-
         // Ensure that the owner does not waste time updating to it's own values
         if (!IsOwner)
         {
-            Debug.Log("Updating Rotation to :" + newValue.Rotation.ToString());
-
             // Warps to the correct starting position
             if(!isUpdatingTransform)
             {
                 transform.rotation = transformData.Value.Rotation;
                 transform.position = transformData.Value.Position;
-                if (parent.hasRigidBody)
+                if (parent.hasRigidBody && !parent.rb.isKinematic)
+                {
                     parent.rb.velocity = transformData.Value.Velocity;
+                }
             }
 
             // Tell the object to begin updating it's transform and velocity
@@ -263,9 +261,9 @@ public class InteractableNetwork : NetworkBehaviour
         {
             if (IsOwner)
             {
-                transformData.Value = new RbData(parent.trans.position, parent.trans.rotation, parent.hasRigidBody ? parent.rb.velocity : Vector3.zero);
+                PlaceClientRpc(NetworkManager.LocalClientId);
                 allEnabled.Value = true;
-                //ConsumePlaceClientRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation));
+                TransmitTransformData();
             }
             else
                 TransmitPlaceServerRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation));
@@ -276,16 +274,16 @@ public class InteractableNetwork : NetworkBehaviour
     {
         parent.Place(data.Position, data.Rotation, true);
 
-        transformData.Value = new RbData(parent.trans.position, parent.trans.rotation, parent.hasRigidBody ? parent.rb.velocity : Vector3.zero);
-        allEnabled.Value = true;
+        PlaceClientRpc(sender);
 
-        //ConsumePlaceClientRpc(sender, data);
+        TransmitTransformData();
+        allEnabled.Value = true;
     }
     [ClientRpc]
-    protected virtual void ConsumePlaceClientRpc(ulong sender, TransformData data)
+    protected virtual void PlaceClientRpc(ulong sender)
     {
         if (!IsServer && NetworkManager.LocalClientId != sender)
-            parent.Place(data.Position, data.Rotation, true);
+            parent.Place(true);
     }
     #endregion
 
@@ -411,7 +409,7 @@ public class InteractableNetwork : NetworkBehaviour
             serializer.SerializeValue(ref zRot);
         }
     }
-    protected struct RbData : INetworkSerializable
+    protected struct TransformDataRB : INetworkSerializable
     {
         private float xPos, yPos, zPos;
         private float xRot, yRot, zRot;
@@ -448,7 +446,7 @@ public class InteractableNetwork : NetworkBehaviour
             }
         }
 
-        public RbData(Vector3 pos, Quaternion rot, Vector3 vel)
+        public TransformDataRB(Vector3 pos, Quaternion rot, Vector3 vel)
         {
             xPos = pos.x;
             yPos = pos.y;

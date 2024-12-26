@@ -134,11 +134,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   placementTypes: 0000000001000000
   floorPlacementType: 1
-  wallPlacementType: 1
+  wallPlacementType: 0
+  fixPlacement: 1
   precisePlacement: 1
   allowPlayerClick: 0
   allowPlayerPickup: 1
-  allowEnemyHysterics: 0
+  allowEnemyHysterics: 1
   allowEnemyFlicker: 0
   attachedLight: {fileID: 0}
   cam: {fileID: 6077936201343342321}

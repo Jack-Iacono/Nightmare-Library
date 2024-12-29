@@ -11,18 +11,24 @@ using UnityEngine.Android;
 public class InteractableNetwork : NetworkBehaviour
 {
     protected Interactable parent;
-    private const float interpolationStrength = 0.1f;
+    
 
     private bool canUpdateRigidbody = false;
     protected bool ownInteraction = false;
-    protected float velocityThreshold = 0.001f;
+
+    protected float movementThreshold = 0.001f;
     protected Vector3 previousPosition = Vector3.zero;
 
-    private int updateTransformFrequency = 3;
+    protected const float transformThreshold = 0.5f;
+    private const float interpolationStrength = 0.6f;
+
+    private int updateTransformFrequency = 1;
+    private int staticRectifyFrequency = 60;
+
     private bool wasUpdating = false;
     private int currentUpdateFrame = 0;
+    private int currentRectifyFrame = 0;
 
-    private bool isUpdatingTransform = false;
     private Vector3 targetPosition = Vector3.zero;
     private Vector3 targetVelocity = Vector3.zero;
 
@@ -42,6 +48,7 @@ public class InteractableNetwork : NetworkBehaviour
         }
 
         parent = GetComponent<Interactable>();
+        previousPosition = transform.position;
 
         if (IsServer)
             allEnabled.Value = true;
@@ -77,6 +84,12 @@ public class InteractableNetwork : NetworkBehaviour
         {
             transformData.OnValueChanged += ConsumeTransformData;
             allEnabled.OnValueChanged += ConsumeEnabledData;
+
+            ConsumeTransformData(transformData.Value, transformData.Value);
+        }
+        else
+        {
+            TransmitTransformData();
         }
     }
 
@@ -85,59 +98,37 @@ public class InteractableNetwork : NetworkBehaviour
         // Check to make sure the network is running to avoid calls going out without being connected and that this is on the server/owner
         if (NetworkConnectionController.IsRunning)
         {
-            // Check to see if the object has a rigidbody to update
-            if (canUpdateRigidbody)
+            if (IsOwner && canUpdateRigidbody)
             {
-                if (IsOwner)
+                // ensures the update only runs every few frames
+                if (currentUpdateFrame >= updateTransformFrequency)
                 {
-                    // ensures the update only runs every few frames
-                    if (currentUpdateFrame >= updateTransformFrequency)
+                    // Check if the object is moving enough to pass the velocity check
+                    if (Vector3.SqrMagnitude(previousPosition - transform.position) > movementThreshold * movementThreshold)
                     {
-                        // Check if the object is moving enough to pass the velocity check
-                        if (Vector3.SqrMagnitude(parent.rb.velocity) > velocityThreshold * velocityThreshold)
-                        {
-                            // Transmit this object's transform data
-                            TransmitTransformData();
-                            wasUpdating = true;
-                        }
-                        // Sends one more update just as the object stops moving
-                        else if (wasUpdating)
-                        {
-                            // Transmit this object's transform data
-                            TransmitTransformData();
-                            wasUpdating = false;
-                        }
+                        // Transmit this object's transform data
+                        TransmitTransformData();
+                        wasUpdating = true;
+                    }
+                    // Sends one more update just as the object stops moving
+                    else if (wasUpdating)
+                    {
+                        // Transmit this object's transform data
+                        TransmitTransformData();
+                        RectifyTransform();
+                        wasUpdating = false;
+                    }
 
-                        // Reset the frame counter
-                        currentUpdateFrame = 0;
-                    }
-                    else
-                    {
-                        // Increment the frame counter
-                        currentUpdateFrame++;
-                    }
+                    // Reset the frame counter
+                    currentUpdateFrame = 0;
+                    previousPosition = transform.position;
                 }
-                // Check if the object should be updating it's transform
-                else if (isUpdatingTransform && !parent.rb.isKinematic)
+                else
                 {
-                    // Interpolate the position and velocity toward the desired values
-                    // Higher Interpolation strength means more accuracy, but also more visual skipping
-                    parent.trans.position = Vector3.Slerp(parent.trans.position, targetPosition, interpolationStrength);
-
-                    if (parent.hasRigidBody)
-                        parent.rb.velocity = Vector3.Slerp(parent.rb.velocity, targetVelocity, interpolationStrength);
-
-                    // Check if the object is done moving. Turn off the updating to save processing speed
-                    if (parent.trans.position == targetPosition)
-                    {
-                        isUpdatingTransform = false;
-                        if(parent.hasRigidBody)
-                            parent.rb.velocity = Vector3.zero;
-                    }
+                    // Increment the frame counter
+                    currentUpdateFrame++;
                 }
             }
-
-            
         }
     }
 
@@ -177,26 +168,43 @@ public class InteractableNetwork : NetworkBehaviour
         // Ensure that the owner does not waste time updating to it's own values
         if (!IsOwner)
         {
-            // Warps to the correct starting position
-            if(!isUpdatingTransform)
+            if(Vector3.SqrMagnitude(newValue.Position - transform.position) < transformThreshold * transformThreshold)
             {
-                transform.rotation = transformData.Value.Rotation;
-                transform.position = transformData.Value.Position;
+                transform.rotation = Quaternion.Lerp(parent.trans.rotation, newValue.Rotation, interpolationStrength);
+                parent.trans.position = Vector3.Slerp(parent.trans.position, newValue.Position, interpolationStrength);
                 if (parent.hasRigidBody && !parent.rb.isKinematic)
                 {
                     parent.rb.velocity = transformData.Value.Velocity;
                 }
             }
-
-            // Tell the object to begin updating it's transform and velocity
-            isUpdatingTransform = true;
-
-            // Directly set the rotation to be completely accurate
-            transform.rotation = transformData.Value.Rotation;
-            
-            targetPosition = transformData.Value.Position;
-            targetVelocity = newValue.Velocity;
         }
+    }
+
+    /// <summary>
+    /// Forces a sync between the server object and the client object
+    /// </summary>
+    private void RectifyTransform()
+    {
+        if(NetworkManager.IsServer)
+            RectifyTransformClientRpc();
+        else
+        {
+            parent.trans.position = transformData.Value.Position;
+            parent.trans.rotation = transformData.Value.Rotation;
+            if (transformData.Value.Velocity != Vector3.zero && parent.hasRigidBody)
+            {
+                parent.rb.isKinematic = false;
+                parent.rb.velocity = transformData.Value.Velocity;
+            }
+        }
+
+        currentRectifyFrame = 0;
+    }
+    [ClientRpc]
+    private void RectifyTransformClientRpc()
+    {
+        if (!NetworkManager.IsServer)
+            RectifyTransform();
     }
 
     #endregion
@@ -236,7 +244,6 @@ public class InteractableNetwork : NetworkBehaviour
             else
             {
                 TransmitPickupServerRpc(NetworkManager.LocalClientId);
-                isUpdatingTransform = false;
             }
         }
     }
@@ -288,6 +295,7 @@ public class InteractableNetwork : NetworkBehaviour
     #endregion
 
     #region Throw
+
     protected virtual void OnThrow(Vector3 force, bool fromNetwork)
     {
         if (!fromNetwork)
@@ -295,7 +303,6 @@ public class InteractableNetwork : NetworkBehaviour
             // Owner will be server
             if (!IsOwner)
             {
-                isUpdatingTransform = false;
                 TransmitThrowServerRpc(NetworkManager.LocalClientId, parent.trans.position, force, parent.trans.rotation);
             }
             else
@@ -305,34 +312,32 @@ public class InteractableNetwork : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     protected virtual void TransmitThrowServerRpc(ulong sender, Vector3 pos, Vector3 force, Quaternion rot)
     {
-        parent.Throw(pos, force);
+        parent.Throw(pos, force, true);
 
         // Tell the game to update the transform
         currentUpdateFrame = updateTransformFrequency;
+
+        ConsumeThrowClientRpc(sender, pos, force, rot);
     }
     [ClientRpc]
     protected virtual void ConsumeThrowClientRpc(ulong sender, Vector3 pos, Vector3 force, Quaternion rot)
     {
-        if (NetworkManager.LocalClientId != sender)
+        if (NetworkManager.LocalClientId != sender && !NetworkManager.IsServer)
             parent.Throw(pos, force, true);
     }
+
     #endregion
 
     #region Enemy Interact Hysterics
     protected virtual void OnEnemyInteractHysterics(bool fromNetwork)
     {
-        
-    }
-    [ServerRpc(RequireOwnership = false)]
-    protected virtual void TransmitEnemyInteractHystericsServerRpc(ulong sender)
-    {
-        ConsumeEnemyInteractHystericsClientRpc(sender);
+        EnemyInteractHystericsClientRpc(NetworkManager.LocalClientId);
     }
     [ClientRpc]
-    protected virtual void ConsumeEnemyInteractHystericsClientRpc(ulong sender)
+    protected virtual void EnemyInteractHystericsClientRpc(ulong sender)
     {
         if (NetworkManager.LocalClientId != sender)
-            Debug.Log("Click on client " + sender);
+            parent.rb.isKinematic = false;
     }
     #endregion
 

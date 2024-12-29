@@ -12,6 +12,8 @@ public class Interactable : MonoBehaviour
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
 
+    public bool isPhysical { get; private set; } = true;
+
     /// <summary>
     /// 0: Facing Player 
     /// 1: Facing away from player
@@ -158,7 +160,7 @@ public class Interactable : MonoBehaviour
             rb.isKinematic = false;
             rb.AddForce(force, ForceMode.Impulse);
         }
-            
+
         OnThrow?.Invoke(force, fromNetwork);
     }
 
@@ -217,6 +219,8 @@ public class Interactable : MonoBehaviour
         }
         if (hasRigidBody)
             rb.isKinematic = !b;
+
+        isPhysical = b;
     }
 
     public void EnableMesh(bool b)

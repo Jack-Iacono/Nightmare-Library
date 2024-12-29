@@ -135,13 +135,15 @@ public class GameControllerNetwork : NetworkBehaviour
             hasSpawned = true;
         }
     }
-    // Used for delayed player entry
+    // Used for delayed player entry, this should kill them upon spawning in
     private void SpawnPlayer(ulong clientId)
     {
         GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, clientId);
         pPrefab.name = "Player " + clientId;
 
         spawnedPrefabs.Add(pPrefab);
+
+        pPrefab.GetComponent<PlayerController>().ReceiveAttack();
     }
 
     private void TransmitContinuousState()

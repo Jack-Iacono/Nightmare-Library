@@ -78,7 +78,6 @@ public abstract class LobbyController : NetworkBehaviour
     protected void OnPlayerInfoChanged(PlayerList previous, PlayerList current)
     {
         OnPlayerListChange?.Invoke();
-        Debug.Log(playerList.Value.ToString());
     }
 
     protected virtual void ServerEntryAction()

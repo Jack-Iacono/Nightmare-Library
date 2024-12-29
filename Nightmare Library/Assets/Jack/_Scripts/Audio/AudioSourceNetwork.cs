@@ -44,7 +44,6 @@ public class AudioSourceNetwork : NetworkBehaviour
 
     private void OnPoolObject()
     {
-        Debug.Log(isPooledObject.Value);
         if (isPooledObject.Value)
             parent.Pool();
     }

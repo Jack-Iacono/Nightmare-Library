@@ -34,8 +34,10 @@ public class mui_MultiplayerScreen : ScreenController
 
         if(NetworkConnectionController.IsRunning)
         {
-            if(NetworkConnectionController.instance.IsHost)
+            if(NetworkConnectionController.instance.IsServer)
                 startGameButton.SetActive(true);
+            else
+                startGameButton.SetActive(false);
 
             playerJoinText.gameObject.SetActive(true);
 

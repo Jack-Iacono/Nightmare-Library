@@ -69,7 +69,7 @@ public class SceneControllerNetwork : NetworkBehaviour
                 //Debug.Log($"Unloaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
                 break;
             case SceneEventType.LoadEventCompleted:
-                Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
+                //Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
 
                 UnloadScene();
 
@@ -110,7 +110,7 @@ public class SceneControllerNetwork : NetworkBehaviour
 
         // Unload the scene
         OnSceneUnload?.Invoke(this, sceneBuffer);
-        Debug.Log("Unloading: " + sceneBuffer.name);
+        //Debug.Log("Unloading: " + sceneBuffer.name);
         var status = NetworkManager.SceneManager.UnloadScene(SceneManager.GetSceneByName(sceneBuffer.name));
         //CheckStatus(status, false);
     }

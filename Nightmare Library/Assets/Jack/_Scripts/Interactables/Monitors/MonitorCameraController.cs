@@ -11,7 +11,8 @@ public class MonitorCameraController : Interactable
     public Camera cam;
     public RenderTexture renderTexture {  get; private set; }
     public bool isBroadcasting { get; private set; } = true;
-    public event EventHandler OnBroadcastChange;
+    public delegate void OnBroadcastChangeDelegate(bool broadcast);
+    public event OnBroadcastChangeDelegate OnBroadcastChange;
 
     protected override void Awake()
     {
@@ -31,11 +32,16 @@ public class MonitorCameraController : Interactable
         SetBroadcasting(true);
         base.Place(fromNetwork);
     }
+    public override void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
+    {
+        SetBroadcasting(true);
+        base.Throw(pos, force, fromNetwork);
+    }
 
     public void SetBroadcasting(bool b)
     {
         isBroadcasting = b;
-        OnBroadcastChange?.Invoke(this, EventArgs.Empty);
+        OnBroadcastChange?.Invoke(isBroadcasting);
     }
     public void SetViewing(bool b)
     {

@@ -229,7 +229,7 @@ public class InteractableNetwork : NetworkBehaviour
     protected virtual void ConsumeClickClientRpc(ulong sender)
     {
         if (NetworkManager.LocalClientId != sender)
-            Debug.Log("Click on client " + sender);
+            parent.Click(true);
     }
     #endregion
 

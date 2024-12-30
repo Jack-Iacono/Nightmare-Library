@@ -23,7 +23,13 @@ public class MonitorCameraNetwork : InteractableNetwork
         {
             monitor.OnBroadcastChange += OnBroadcastChange;
         }
+        else
+        {
+            isBroadcasting.OnValueChanged += OnBroadcastNetworkUpdate;
+        }
     }
+
+    
 
     public override void OnNetworkSpawn()
     {
@@ -35,8 +41,12 @@ public class MonitorCameraNetwork : InteractableNetwork
         monitor.SetBroadcasting(isBroadcasting.Value);
     }
 
-    private void OnBroadcastChange(object sender, EventArgs e)
+    private void OnBroadcastNetworkUpdate(bool previousValue, bool newValue)
     {
-        isBroadcasting.Value = monitor.isBroadcasting;
+        monitor.SetBroadcasting(newValue);
+    }
+    private void OnBroadcastChange(bool broadcasting)
+    {
+        isBroadcasting.Value = broadcasting;
     }
 }

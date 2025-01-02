@@ -32,12 +32,14 @@ public class AudioManager : NetworkBehaviour
 
     private void Awake()
     {
+        // Singleton
         if(Instance != null)
             Destroy(Instance);
         Instance = this;
 
         soundSourcePool = new ObjectPool();
 
+        // Sets the audio data's network reference
         for (int i = 0; i < sounds.Length; i++)
         {
             for(int j = 0; j < sounds[i].sounds.Length; j++)

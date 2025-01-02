@@ -121,6 +121,10 @@ public class Interactable : MonoBehaviour
                 {
                     EnableColliders(false);
                     EnableMesh(false);
+
+                    if (hasRigidBody)
+                        rb.isKinematic = true;
+
                     OnPickup?.Invoke(fromNetwork);
                 }
             }
@@ -128,6 +132,10 @@ public class Interactable : MonoBehaviour
             {
                 EnableColliders(false);
                 EnableMesh(false);
+
+                if (hasRigidBody)
+                    rb.isKinematic = true;
+
                 OnPickup?.Invoke(fromNetwork);
             }
         }
@@ -217,8 +225,8 @@ public class Interactable : MonoBehaviour
         {
             c.enabled = b;
         }
-        if (hasRigidBody)
-            rb.isKinematic = !b;
+        if (!b && hasRigidBody)
+            rb.isKinematic = true;
 
         isPhysical = b;
     }

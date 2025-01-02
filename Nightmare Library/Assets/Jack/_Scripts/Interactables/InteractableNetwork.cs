@@ -29,9 +29,6 @@ public class InteractableNetwork : NetworkBehaviour
     private int currentUpdateFrame = 0;
     private int currentRectifyFrame = 0;
 
-    private Vector3 targetPosition = Vector3.zero;
-    private Vector3 targetVelocity = Vector3.zero;
-
     private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>(); 
     private NetworkVariable<bool> allEnabled = new NetworkVariable<bool>();
 
@@ -98,7 +95,7 @@ public class InteractableNetwork : NetworkBehaviour
         // Check to make sure the network is running to avoid calls going out without being connected and that this is on the server/owner
         if (NetworkConnectionController.IsRunning)
         {
-            if (IsOwner && canUpdateRigidbody)
+            if (IsOwner && canUpdateRigidbody && allEnabled.Value)
             {
                 // ensures the update only runs every few frames
                 if (currentUpdateFrame >= updateTransformFrequency)
@@ -134,6 +131,7 @@ public class InteractableNetwork : NetworkBehaviour
 
     private void ConsumeEnabledData(bool previousValue, bool newValue)
     {
+        Debug.Log("Consuming " + newValue);
         parent.EnableAll(newValue);
     }
 

@@ -12,7 +12,7 @@ public class PlayerInteractionController : MonoBehaviour
     private PlayerController playerCont;
 
     [SerializeField]
-    private float interactDistance = 10f;
+    private float interactDistance = 4f;
     [SerializeField]
     private LayerMask interactLayers;
 
@@ -30,7 +30,7 @@ public class PlayerInteractionController : MonoBehaviour
     private bool isPlacePressed = false;
     private bool isPlaceFinish = false;
 
-    private float actionBufferTime = 0.1f;
+    private float actionBufferTime = 0.25f;
     private float actionBufferTimer = 0f;
     private bool actionBuffering = false;
 
@@ -41,6 +41,10 @@ public class PlayerInteractionController : MonoBehaviour
     private bool isPlacingItem = false;
     private Interactable currentHeldItem;
     private bool isPlacementValid = false;
+
+    public bool canSeeItem { get; private set; }
+    public delegate void OnItemSightChangeDelegate();
+    public event OnItemSightChangeDelegate onItemSightChange;
 
     // Start is called before the first frame update
     void Start()
@@ -86,12 +90,37 @@ public class PlayerInteractionController : MonoBehaviour
     }
     private void Check()
     {
+        // Create the ray that represents where the player is looking
+        Ray ray = playerCont.camCont.GetCameraRay();
+        RaycastHit hit;
+        bool raycastHit = false;
+
+        // Used for changing reticle to indicate when player is looking at an interactable
+        if(Physics.Raycast(ray, out hit, interactDistance, interactLayers))
+        {
+            raycastHit = true;
+            if (interactables.ContainsKey(hit.collider.gameObject))
+            {
+                if (!canSeeItem)
+                    onItemSightChange?.Invoke();
+                canSeeItem = true;
+            }
+            else
+            {
+                if (canSeeItem)
+                    onItemSightChange?.Invoke();
+                canSeeItem = false;
+            }
+        }
+        else
+        {
+            if (canSeeItem)
+                onItemSightChange?.Invoke();
+            canSeeItem = false;
+        }
+
         if (!actionBuffering && isActive)
         {
-            // Create the ray that represents where the player is looking
-            Ray ray = playerCont.camCont.GetCameraRay();
-            RaycastHit hit;
-
             // Get the currently held item, if there is one, from the Inventory controller
             InventoryItem temp = InventoryController.Instance.GetCurrentItem();
             if (!temp.IsEmpty())
@@ -108,7 +137,7 @@ public class PlayerInteractionController : MonoBehaviour
             }
 
             // Check if the player is looking at a surface
-            if (Physics.Raycast(ray, out hit, interactDistance, interactLayers))
+            if (raycastHit)
             {
                 // Check if the player is holding an item
                 if (currentHeldItem != null)
@@ -194,7 +223,7 @@ public class PlayerInteractionController : MonoBehaviour
                 }
 
                 // Check for interactions that aren't placing or throwing
-                if (interactables.ContainsKey(hit.collider.gameObject))
+                if (canSeeItem)
                 {
                     if(isClick)
                         interactables[hit.collider.gameObject].Click();

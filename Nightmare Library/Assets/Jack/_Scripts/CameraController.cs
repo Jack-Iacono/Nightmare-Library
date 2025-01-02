@@ -39,8 +39,10 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Check to make sure the game isn't paused
         if (!GameController.gamePaused)
         {
+            // Move the camera
             MoveCamera();
 
             // TEMPORARY!!!!
@@ -74,11 +76,13 @@ public class CameraController : MonoBehaviour
     }
     public void SetGhost(bool b)
     {
+        // Switches the active camera, ghosts see different layers than players
         normalCam.enabled = b;
         ghostCam.enabled = !b;
     }
     public void SetEnabled(bool b)
     {
+        // Sets whether the camera is in use, not being used much anymore since spectate rework
         if (!b)
         {
             normalCam.enabled = false;
@@ -86,6 +90,7 @@ public class CameraController : MonoBehaviour
         }
         else
         {
+            // Checks if the plaeyr is alive to determine which camera to use
             if (playerCont.isAlive)
             {
                 normalCam.enabled = true;
@@ -108,6 +113,7 @@ public class CameraController : MonoBehaviour
 
     public bool GetCameraSight(Collider col, float dist)
     {
+        // I don't think this is used, relic from old game
         float distance = Vector3.SqrMagnitude(col.transform.position - (transform.position - transform.up * -0.15f));
 
         if (distance <= dist * dist)
@@ -130,11 +136,14 @@ public class CameraController : MonoBehaviour
     }
     public bool GetCameraSight(Collider col)
     {
+        // Get a ray from the camera's position in a straight line forward
         Ray ray = new Ray(normalCam.transform.position, normalCam.transform.forward);
         RaycastHit hit;
 
+        // Check if the ray hits any layers that we are interested in
         if (Physics.Raycast(ray, out hit, 1000, collideLayers))
         {
+            // If the collider is the one we are looking for, return true
             if (hit.collider == col)
             {
                 return true;
@@ -144,6 +153,10 @@ public class CameraController : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Gets a ray straight forward from the camera's position
+    /// </summary>
+    /// <returns>The ray representing the camera's sightline</returns>
     public Ray GetCameraRay()
     {
         return new Ray(transform.position, transform.forward);

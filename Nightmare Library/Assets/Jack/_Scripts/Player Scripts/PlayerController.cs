@@ -152,11 +152,17 @@ public class PlayerController : MonoBehaviour
                 currentMove.y = jumpHeight;
             }
 
+            // Decide whether to use the accel or decel for the player given the presence of input
             float accelX = moveX == 0 ? groundDeceleration : groundAcceleration;
             float accelZ = moveZ == 0 ? groundDeceleration : groundAcceleration;
 
-            currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
-            currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+            // Old movement didn't move numbers at equal rates
+            //currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
+            //currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+
+            // Change the player's current movement vector to reflect the changes made through input
+            currentMove.x = Mathf.Lerp(currentMove.x, moveX, accelX);
+            currentMove.z = Mathf.Lerp(currentMove.z, moveZ, accelZ);
         }
         else
         {
@@ -166,11 +172,17 @@ public class PlayerController : MonoBehaviour
 
             currentMove.y -= gravity * -2 * Time.deltaTime;
 
+            // Decide whether to use the accel or decel for the player given the presence of input
             float accelX = moveX == 0 ? airDeceleration : airAcceleration;
             float accelZ = moveZ == 0 ? airDeceleration : airAcceleration;
 
-            currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
-            currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+            // Old movement didn't move numbers at equal rates
+            //currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
+            //currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+
+            // Change the player's current movement vector to reflect the changes made through input
+            currentMove.x = Mathf.Lerp(currentMove.x, moveX, accelX);
+            currentMove.z = Mathf.Lerp(currentMove.z, moveZ, accelZ);
         }
     }
     private void Move()

@@ -20,7 +20,7 @@ public class MonitorNetwork : InteractableNetwork
         var permission = NetworkVariableWritePermission.Server;
         cameraIndex = new NetworkVariable<int>(writePerm: permission);
 
-        if (NetworkManager.IsServer)
+        if (IsServer)
         {
             monitor.onCamIndexChange += OnParentIndexChange;
         }

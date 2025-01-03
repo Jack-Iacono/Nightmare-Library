@@ -35,7 +35,10 @@ public class GameControllerNetwork : NetworkBehaviour
             Destroy(this);
 
         GameController.OnNetworkGamePause += OnParentPause;
+
         GameController.OnGameEnd += OnGameEnd;
+        GameController.OnReturnToMenu += OnReturnToMenu;
+        
         LobbyController.OnLobbyEnter += OnLobbyEnter;
 
         var permission = NetworkVariableWritePermission.Owner;
@@ -78,12 +81,19 @@ public class GameControllerNetwork : NetworkBehaviour
     {
         ConsumePauseStateClientRpc(e);
     }
-    private void OnGameEnd(object sender, EventArgs e)
+
+    private void OnGameEnd()
+    {
+        
+    }
+    private void OnReturnToMenu()
     {
         // Unload Spawned Objects
         PrefabHandlerNetwork.Instance.DespawnPrefabs();
 
+        GameController.OnReturnToMenu -= OnReturnToMenu;
         GameController.OnGameEnd -= OnGameEnd;
+
         SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
     }
 
@@ -146,6 +156,8 @@ public class GameControllerNetwork : NetworkBehaviour
         pPrefab.GetComponent<PlayerController>().ReceiveAttack();
     }
 
+    #region Continuous Data
+
     private void TransmitContinuousState()
     {
         var state = new ContinuousData(parent.gameTimer);
@@ -191,7 +203,9 @@ public class GameControllerNetwork : NetworkBehaviour
         }
     }
 
-    
+    #endregion
+
+
     public override void OnDestroy()
     {
         // Should never not be this, but just better to check
@@ -200,6 +214,7 @@ public class GameControllerNetwork : NetworkBehaviour
 
         GameController.OnNetworkGamePause -= OnParentPause;
         GameController.OnGameEnd -= OnGameEnd;
+        GameController.OnReturnToMenu -= OnReturnToMenu;
         LobbyController.OnLobbyEnter -= OnLobbyEnter;
     }
 }

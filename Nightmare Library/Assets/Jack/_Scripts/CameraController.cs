@@ -111,29 +111,6 @@ public class CameraController : MonoBehaviour
 
     #region Get Methods
 
-    public bool GetCameraSight(Collider col, float dist)
-    {
-        // I don't think this is used, relic from old game
-        float distance = Vector3.SqrMagnitude(col.transform.position - (transform.position - transform.up * -0.15f));
-
-        if (distance <= dist * dist)
-        {
-            Ray ray = new Ray(normalCam.transform.position, normalCam.transform.forward);
-            RaycastHit hit;
-
-            float range = 50;
-
-            if (Physics.Raycast(ray, out hit, range, collideLayers))
-            {
-                if (hit.collider == col)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
     public bool GetCameraSight(Collider col)
     {
         // Get a ray from the camera's position in a straight line forward

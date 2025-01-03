@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class gui_HUDScreenController : ScreenController
 {
@@ -10,9 +12,21 @@ public class gui_HUDScreenController : ScreenController
     [SerializeField]
     private TMP_Text inventoryText;
 
+    [SerializeField]
+    private Image reticle;
+    [SerializeField]
+    private Sprite normalReticle;
+    [SerializeField]
+    private Sprite clickReticle;
+    [SerializeField]
+    private Sprite pickupReticle;
+
     private void Start()
     {
         InventoryController.Instance.onHeldItemChanged += OnInventoryHeldItemChanged;
+        PlayerInteractionController.onItemSightChange += OnItemSightChanged;
+
+        reticle.sprite = normalReticle;
     }
 
     private void Update()
@@ -46,5 +60,26 @@ public class gui_HUDScreenController : ScreenController
             inventoryText.text = item.realObject.name;
         else
             inventoryText.text = "Empty";
+    }
+
+    private void OnItemSightChanged(int interactionType)
+    {
+        switch (interactionType)
+        {
+            case -1:
+                reticle.sprite = normalReticle;
+                break;
+            case 0:
+                reticle.sprite = clickReticle;
+                break;
+            case 1:
+                reticle.sprite = pickupReticle;
+                break;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        PlayerInteractionController.onItemSightChange -= OnItemSightChanged;
     }
 }

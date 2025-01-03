@@ -12,7 +12,7 @@ public class PlayerInteractionController : MonoBehaviour
     private PlayerController playerCont;
 
     [SerializeField]
-    private float interactDistance = 4f;
+    private float interactDistance = 2f;
     [SerializeField]
     private LayerMask interactLayers;
 
@@ -43,8 +43,8 @@ public class PlayerInteractionController : MonoBehaviour
     private bool isPlacementValid = false;
 
     public bool canSeeItem { get; private set; }
-    public delegate void OnItemSightChangeDelegate();
-    public event OnItemSightChangeDelegate onItemSightChange;
+    public delegate void OnItemSightChangeDelegate(int interactionType);
+    public static event OnItemSightChangeDelegate onItemSightChange;
 
     // Start is called before the first frame update
     void Start()
@@ -101,21 +101,27 @@ public class PlayerInteractionController : MonoBehaviour
             raycastHit = true;
             if (interactables.ContainsKey(hit.collider.gameObject))
             {
+                int type = -1;
+                if (interactables[hit.collider.gameObject].allowPlayerClick)
+                    type = 0;
+                else if (interactables[hit.collider.gameObject].allowPlayerPickup)
+                    type = 1;
+
                 if (!canSeeItem)
-                    onItemSightChange?.Invoke();
+                    onItemSightChange?.Invoke(type);
                 canSeeItem = true;
             }
             else
             {
                 if (canSeeItem)
-                    onItemSightChange?.Invoke();
+                    onItemSightChange?.Invoke(-1);
                 canSeeItem = false;
             }
         }
         else
         {
             if (canSeeItem)
-                onItemSightChange?.Invoke();
+                onItemSightChange?.Invoke(-1);
             canSeeItem = false;
         }
 
@@ -130,6 +136,7 @@ public class PlayerInteractionController : MonoBehaviour
             if (currentHeldItem != null && isThrow)
             {
                 // TEMPORARY
+                // Not sure where to throw from or what velocity to have
                 currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
                 InventoryController.Instance.RemoveCurrentItem();
                 currentHeldItem = null;
@@ -142,7 +149,7 @@ public class PlayerInteractionController : MonoBehaviour
                 // Check if the player is holding an item
                 if (currentHeldItem != null)
                 {
-                    if (isPlaceStart)
+                    if (isPlaceStart || (isPlacePressed && !isPlacingItem))
                     {
                         currentHeldItem.SetMeshMaterial(clearPlacementMaterial);
                         currentHeldItem.EnableMesh(true);

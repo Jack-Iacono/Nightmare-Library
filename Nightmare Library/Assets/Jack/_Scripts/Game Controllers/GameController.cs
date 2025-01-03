@@ -19,7 +19,12 @@ public class GameController : MonoBehaviour
 
     // Multiplayer Events
     public static event EventHandler<bool> OnNetworkGamePause;
-    public static event EventHandler OnGameEnd;
+
+    public delegate void OnGameEndDelegate();
+    public static event OnGameEndDelegate OnGameEnd;
+
+    public delegate void OnReturnToMenuDelegate();
+    public static event OnReturnToMenuDelegate OnReturnToMenu;
 
     private void Awake()
     {
@@ -76,20 +81,25 @@ public class GameController : MonoBehaviour
 
         if (allPlayersDead && NetworkConnectionController.HasAuthority)
         {
-            StartCoroutine(EndGameCoroutine());
+            EndGame();
         }
     }
 
-    public IEnumerator EndGameCoroutine()
-    {
-        yield return new WaitForSeconds(5);
-        EndGame();
-    }
     public void EndGame()
     {
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
         {
-            OnGameEnd?.Invoke(this, EventArgs.Empty);
+            OnGameEnd?.Invoke();
+        }
+
+        // Load the end screen
+
+    }
+    public void ReturnToMenu()
+    {
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        {
+            OnReturnToMenu?.Invoke();
         }
         else
         {

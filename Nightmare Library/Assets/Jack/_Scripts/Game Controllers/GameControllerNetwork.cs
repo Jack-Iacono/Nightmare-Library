@@ -35,10 +35,6 @@ public class GameControllerNetwork : NetworkBehaviour
             Destroy(this);
 
         GameController.OnNetworkGamePause += OnParentPause;
-
-        GameController.OnGameEnd += OnGameEnd;
-        GameController.OnReturnToMenu += OnReturnToMenu;
-        
         LobbyController.OnLobbyEnter += OnLobbyEnter;
 
         var permission = NetworkVariableWritePermission.Owner;
@@ -53,13 +49,15 @@ public class GameControllerNetwork : NetworkBehaviour
 
         parent = GetComponent<GameController>();
 
-        if (!IsOwner)
-            parent.enabled = false;
-
         // Changes the gameController data for all versions of this gameobject
         if (!IsOwner)
         {
             parent.enabled = false;
+        }
+        else
+        {
+            GameController.OnGameEnd += OnGameEnd;
+            GameController.OnReturnToMenu += OnReturnToMenu;
         }
     }
 
@@ -79,13 +77,31 @@ public class GameControllerNetwork : NetworkBehaviour
 
     private void OnParentPause(object sender, bool e)
     {
-        ConsumePauseStateClientRpc(e);
+        OnParentPauseClientRpc(e);
     }
+    [ClientRpc]
+    private void OnParentPauseClientRpc(bool b)
+    {
+        if (NetworkConnectionController.IsRunning && !IsOwner)
+            parent.PauseGame(b);
+    }
+
+    #region Game Ending
 
     private void OnGameEnd()
     {
-        
+        if (NetworkManager.IsServer)
+            OnGameEndClientRpc();
     }
+    [ClientRpc]
+    private void OnGameEndClientRpc()
+    {
+        if (!NetworkManager.IsServer)
+        {
+            parent.EndGame();
+        }
+    }
+
     private void OnReturnToMenu()
     {
         // Unload Spawned Objects
@@ -96,6 +112,10 @@ public class GameControllerNetwork : NetworkBehaviour
 
         SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
     }
+
+    #endregion
+
+    #region Connecting to Game
 
     private void OnLobbyEnter(ulong clientId, bool isServer)
     {
@@ -145,6 +165,7 @@ public class GameControllerNetwork : NetworkBehaviour
             hasSpawned = true;
         }
     }
+
     // Used for delayed player entry, this should kill them upon spawning in
     private void SpawnPlayer(ulong clientId)
     {
@@ -155,6 +176,7 @@ public class GameControllerNetwork : NetworkBehaviour
 
         pPrefab.GetComponent<PlayerController>().ReceiveAttack();
     }
+    #endregion
 
     #region Continuous Data
 
@@ -179,13 +201,6 @@ public class GameControllerNetwork : NetworkBehaviour
     private void TransmitContinuousStateServerRpc(ContinuousData state)
     {
         contState.Value = state;
-    }
-
-    [ClientRpc]
-    private void ConsumePauseStateClientRpc(bool b)
-    {
-        if (NetworkConnectionController.IsRunning && !IsOwner)
-            parent.PauseGame(b);
     }
 
     private struct ContinuousData : INetworkSerializable

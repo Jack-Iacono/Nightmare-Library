@@ -35,7 +35,6 @@ public class GameController : MonoBehaviour
 
         PlayerController.OnPlayerKilled += OnPlayerKilled;
     }
-
     private void Start()
     {
         if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
@@ -87,15 +86,16 @@ public class GameController : MonoBehaviour
 
     public void EndGame()
     {
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        if(NetworkConnectionController.HasAuthority)
         {
+            PauseGame(true);
             OnGameEnd?.Invoke();
         }
 
         // Load the end screen
-
+        UIController.instance.ChangeToScreen(1);
     }
-    public void ReturnToMenu()
+    public static void ReturnToMenu()
     {
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
         {

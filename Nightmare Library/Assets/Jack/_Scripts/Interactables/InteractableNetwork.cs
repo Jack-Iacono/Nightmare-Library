@@ -131,7 +131,6 @@ public class InteractableNetwork : NetworkBehaviour
 
     private void ConsumeEnabledData(bool previousValue, bool newValue)
     {
-        Debug.Log("Consuming " + newValue);
         parent.EnableAll(newValue);
     }
 

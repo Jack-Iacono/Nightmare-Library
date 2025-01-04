@@ -11,22 +11,44 @@ public class ScreechHeadNetwork : NetworkBehaviour
 
     private void Awake()
     {
+        if (!NetworkConnectionController.connectedToLobby)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+
         parent = GetComponent<ScreechHeadController>();
-        parent.OnSpawnHead += OnSpawnHead;
+
+        if (NetworkManager.IsServer)
+        {
+            parent.OnSpawnHead += OnSpawnHead;
+            parent.OnAttack += OnAttack;
+        }
+
         parent.OnDespawnHead += OnDespawnHead;
-        parent.OnAttack += OnAttack;
         parent.OnInitialize += OnInitialize;
     }
 
-    public void OnInitialize(int index)
+    public void OnInitialize()
     {
         if (IsServer)
-            OnInitializeClientRpc(index);
+        {
+            // Sets this object to have the correct owner
+            GetComponent<NetworkObject>().ChangeOwnership(parent.targetPlayer.GetComponent<NetworkObject>().OwnerClientId);
+            OnInitializeClientRpc();
+        }
     }
     [ClientRpc]
-    private void OnInitializeClientRpc(int index)
+    private void OnInitializeClientRpc()
     {
-        parent.Initialize(index);
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
+        {
+            if (p.GetComponent<PlayerNetwork>().OwnerClientId == OwnerClientId)
+            {
+                parent.Initialize(p, true, NetworkManager.IsServer);
+                break;
+            }
+        }
     }
 
     public void OnAttack()
@@ -43,6 +65,7 @@ public class ScreechHeadNetwork : NetworkBehaviour
 
     public void OnSpawnHead(Vector3 offset)
     {
+        Debug.Log("Spawning Head on Server " + IsServer);
         if (IsServer)
             OnSpawnHeadClientRpc(offset, NetworkManager.LocalClientId);
     }
@@ -57,11 +80,19 @@ public class ScreechHeadNetwork : NetworkBehaviour
     {
         if (IsServer)
             OnDespawnHeadClientRpc(NetworkManager.LocalClientId);
+        else
+            OnDespawnHeadServerRpc(NetworkManager.LocalClientId);
+    }
+    [ServerRpc]
+    public void OnDespawnHeadServerRpc(ulong sender)
+    {
+        parent.DespawnHead(true);
+        OnDespawnHeadClientRpc(sender);
     }
     [ClientRpc]
     public void OnDespawnHeadClientRpc(ulong sender)
     {
-        if (sender != NetworkManager.LocalClientId)
+        if (!NetworkManager.IsServer && sender != NetworkManager.LocalClientId)
             parent.DespawnHead();
     }
 }

@@ -61,19 +61,15 @@ public class SceneControllerNetwork : NetworkBehaviour
                 {
                     sceneBuffer = SceneController.loadedScene;
                     SceneController.loadedScene = sceneEvent.Scene;
-                    //Debug.Log($"Loaded Scene: {SceneController.loadedScene.name}  || Unload Buffer: {sceneBuffer.name}");
                 }
-                else if (!NetworkManager.IsServer)
-                {
-                    SceneController.loadedScene = sceneEvent.Scene;
-                }
+                
                 //Debug.Log($"Loaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
                 break;
             case SceneEventType.UnloadComplete:
                 //Debug.Log($"Unloaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
                 break;
             case SceneEventType.LoadEventCompleted:
-                Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
+                //Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
 
                 UnloadScene();
 
@@ -106,8 +102,7 @@ public class SceneControllerNetwork : NetworkBehaviour
         // Assure only the server calls this when the NetworkObject is
         // spawned and the scene is loaded.
         //Debug.Log($"Loaded Scene: {loadedScene.name}  || Unload Buffer: {unloadBuffer.name}");
-        //Debug.Log(OfflineSceneController.loadedScene.name);
-        //Debug.Log(!IsServer + " || " + !IsSpawned + " || " + !OfflineSceneController.loadedScene.IsValid() + " || " + !OfflineSceneController.loadedScene.isLoaded);
+        //Debug.Log((!IsServer).ToString() + " || " + (!IsSpawned).ToString() + " || " + (!sceneBuffer.IsValid()).ToString() + " || " + (!sceneBuffer.isLoaded).ToString());
         if (!IsServer || !IsSpawned || !sceneBuffer.IsValid() || !sceneBuffer.isLoaded)
         {
             return;
@@ -115,6 +110,7 @@ public class SceneControllerNetwork : NetworkBehaviour
 
         // Unload the scene
         OnSceneUnload?.Invoke(this, sceneBuffer);
+        //Debug.Log("Unloading: " + sceneBuffer.name);
         var status = NetworkManager.SceneManager.UnloadScene(SceneManager.GetSceneByName(sceneBuffer.name));
         //CheckStatus(status, false);
     }

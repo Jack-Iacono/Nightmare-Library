@@ -2,55 +2,68 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Unity.Burst.CompilerServices;
 using Unity.Netcode;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 [RequireComponent(typeof(Enemy))]
 public class EnemyNetwork : NetworkBehaviour
 {
     [SerializeField] private bool _serverAuth;
 
-    private Enemy enemyController;
+    public Enemy parent { get; private set; }
 
     private NetworkVariable<PlayerContinuousNetworkData> contState;
     private NetworkVariable<PlayerIntermittentNetworkData> intState;
 
     private void Awake()
     {
+        if (!NetworkConnectionController.connectedToLobby)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+
         // Can only be written to by server or owner
         var permission = _serverAuth ? NetworkVariableWritePermission.Server : NetworkVariableWritePermission.Owner;
         contState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);
         intState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
 
-        enemyController = GetComponent<Enemy>();
+        parent = GetComponent<Enemy>();
+        parent.OnInitialize += OnInitialize;
     }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
-        enemyController.Activate(IsOwner);
+        parent.Activate(IsOwner);
 
         if (IsOwner)
         {
-            enemyController.OnPlaySound += OnPlaySound;
-            enemyController.OnHallucination += OnHallucination;
-            enemyController.OnLightFlicker += OnLightFlicker;
+            parent.OnPlaySound += OnPlaySound;
+            parent.OnHallucination += OnHallucination;
+            parent.OnLightFlicker += OnLightFlicker;
 
-            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
-            {
-                enemyController.OnSpawnFootprint += OnSpawnFootprint;
-                CreateFootprintPool();
-            }
-            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.TRAPPER))
-            {
-                enemyController.OnSpawnTrap += OnSpawnTrap;
-                CreateTrapPool();
-            }
-                
+            // Possible Optimize
+            parent.OnSpawnFootprint += OnSpawnFootprint;
+            parent.OnSpawnTrap += OnSpawnTrap;
         }
+    }
+    private void OnInitialize()
+    {
+        if (IsServer)
+        {
+            OnInitializeClientRpc(parent.presets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
+        }
+    }
+    [ClientRpc]
+    private void OnInitializeClientRpc(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
+    {
+        parent.enemyType = parent.presets[typeIndex];
+        parent.aAttack = (EnemyPreset.aAttackEnum)activeAttackIndex;
+        parent.pAttack = (EnemyPreset.pAttackEnum)passiveAttackIndex;
     }
 
     // Update is called once per frame
@@ -83,37 +96,14 @@ public class EnemyNetwork : NetworkBehaviour
     private void PlaySoundClientRpc(string sound)
     {
         if (!NetworkManager.IsServer)
-            enemyController.PlaySound(sound);
-    }
-
-    public void CreateFootprintPool()
-    {
-        enemyController.objPool.PoolObject(enemyController.footprintPrefabOnline, 10, true);
-
-        List<GameObject> list = enemyController.objPool.GetPool(enemyController.footprintPrefabOnline);
-
-        foreach(GameObject obj in list)
-        {
-            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-        }
-    }
-    public void CreateTrapPool()
-    {
-        enemyController.objPool.PoolObject(enemyController.trapPrefabOnline, 10, true);
-
-        List<GameObject> list = enemyController.objPool.GetPool(enemyController.trapPrefabOnline);
-
-        foreach (GameObject obj in list)
-        {
-            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-        }
+            parent.PlaySound(sound);
     }
 
     public void OnSpawnFootprint(Vector3 pos)
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = enemyController.objPool.GetObject(enemyController.footprintPrefabOnline);
+            var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
             print.transform.position = pos;
             print.GetComponent<FootprintController>().Activate();
@@ -124,7 +114,7 @@ public class EnemyNetwork : NetworkBehaviour
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = enemyController.objPool.GetObject(enemyController.trapPrefabOnline);
+            var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
             print.transform.position = pos;
             print.GetComponent<TrapController>().Activate();
@@ -143,7 +133,7 @@ public class EnemyNetwork : NetworkBehaviour
     private void OnHallucinationClientRpc(bool b)
     {
         if (!NetworkManager.IsServer)
-            enemyController.SetHallucinating(b, false);
+            parent.SetHallucinating(b, false);
     }
 
     private void OnLightFlicker(object sender, EventArgs e)
@@ -156,7 +146,7 @@ public class EnemyNetwork : NetworkBehaviour
     [ClientRpc]
     private void OnLightFlickerClientRpc()
     {
-        enemyController.FlickerLights(false);
+        parent.FlickerLights(false);
     }
 
     #endregion

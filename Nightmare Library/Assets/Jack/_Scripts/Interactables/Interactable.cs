@@ -12,16 +12,24 @@ public class Interactable : MonoBehaviour
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
 
+    public bool isPhysical { get; private set; } = true;
+
     /// <summary>
-    /// 0: Facing Player
+    /// 0: Facing Player 
     /// 1: Facing away from player
     /// </summary>
+    [Range(0,1)]
     public int floorPlacementType = 0;
     /// <summary>
     /// 0: Bottom down, no x or z rotation, facing player
     /// 1: Bottom on wall, top facing player
     /// </summary>
+    [Range(0,1)]
     public int wallPlacementType = 0;
+    /// <summary>
+    /// True: When the item is placed, disable the rigidbody to fix it to the surface. This will disable if the item is thrown or hit with the enemy hysteric interaction
+    /// </summary>
+    public bool fixPlacement = true;
 
 
     [SerializeField]
@@ -56,6 +64,9 @@ public class Interactable : MonoBehaviour
     public event OnPlaceDelegate OnPlace;
     public delegate void OnThrowDelegate(Vector3 force, bool fromNetwork = false);
     public event OnThrowDelegate OnThrow;
+
+    public delegate void OnAllEnabledDelegate(bool enabled);
+    public event OnAllEnabledDelegate OnAllEnabled;
 
     public delegate void OnEnemyInteractHystericsDelegate(bool fromNetwork = false);
     public event OnEnemyInteractHystericsDelegate OnEnemyInteractHysterics;
@@ -110,6 +121,10 @@ public class Interactable : MonoBehaviour
                 {
                     EnableColliders(false);
                     EnableMesh(false);
+
+                    if (hasRigidBody)
+                        rb.isKinematic = true;
+
                     OnPickup?.Invoke(fromNetwork);
                 }
             }
@@ -117,6 +132,10 @@ public class Interactable : MonoBehaviour
             {
                 EnableColliders(false);
                 EnableMesh(false);
+
+                if (hasRigidBody)
+                    rb.isKinematic = true;
+
                 OnPickup?.Invoke(fromNetwork);
             }
         }
@@ -125,6 +144,10 @@ public class Interactable : MonoBehaviour
     public virtual void Place(bool fromNetwork = false)
     {
         EnableAll(true);
+
+        if (fixPlacement && hasRigidBody)
+            rb.isKinematic = true;
+
         OnPlace?.Invoke(fromNetwork);
     }
     public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
@@ -141,13 +164,17 @@ public class Interactable : MonoBehaviour
         EnableAll(true);
 
         if (hasRigidBody)
+        {
+            rb.isKinematic = false;
             rb.AddForce(force, ForceMode.Impulse);
-            
+        }
+
         OnThrow?.Invoke(force, fromNetwork);
     }
 
     public virtual void EnemyInteractHysterics(bool fromNetwork = false)
     {
+        rb.isKinematic = false;
         rb.AddForce
             (
             new Vector3
@@ -188,6 +215,8 @@ public class Interactable : MonoBehaviour
         EnableMesh(b);
         if (b)
             ResetMeshMaterial();
+
+        OnAllEnabled?.Invoke(b);
     }
 
     public void EnableColliders(bool b)
@@ -196,8 +225,10 @@ public class Interactable : MonoBehaviour
         {
             c.enabled = b;
         }
-        if (hasRigidBody)
-            rb.isKinematic = !b;
+        if (!b && hasRigidBody)
+            rb.isKinematic = true;
+
+        isPhysical = b;
     }
 
     public void EnableMesh(bool b)

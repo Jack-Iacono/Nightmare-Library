@@ -56,11 +56,6 @@ public class NetworkConnectionController : NetworkBehaviour
         get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
     }
 
-    public static bool IsOnline
-    {
-        get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
-    }
-
     public static async Task<bool> ConnectToLobby()
     {
         bool connected = false;
@@ -115,6 +110,7 @@ public class NetworkConnectionController : NetworkBehaviour
 
             currentConnectionTimer = 0;
             Debug.Log("Connection Successful");
+
             return;
         }
         else
@@ -146,7 +142,6 @@ public class NetworkConnectionController : NetworkBehaviour
         StopNetworkManager();
 
         allocation = null;
-
         connectedToLobby = false;
     }
     public static void StopNetworkManager()
@@ -247,6 +242,13 @@ public class NetworkConnectionController : NetworkBehaviour
         transport = FindObjectOfType<UnityTransport>();
 
         DontDestroyOnLoad(this);
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            transport.SetHostRelayData(allocation.RelayServer.IpV4, (ushort)allocation.RelayServer.Port, allocation.AllocationIdBytes, new byte[64], allocation.ConnectionData);
+        }
     }
     private async void OnApplicationQuit()
     {

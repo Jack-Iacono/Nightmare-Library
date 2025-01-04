@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 858308870471911617}
   - component: {fileID: 848618968928024411}
   - component: {fileID: 3434709074680225784}
+  - component: {fileID: -1646677342014547017}
+  - component: {fileID: -3395529063050158530}
   m_Layer: 10
   m_Name: Enemy Interactable
   m_TagString: Untagged
@@ -75,7 +77,7 @@ Rigidbody:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 16384
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
@@ -103,6 +105,39 @@ MonoBehaviour:
   allowPlayerPickup: 1
   allowEnemyHysterics: 1
   allowEnemyFlicker: 0
+  attachedLight: {fileID: 0}
+--- !u!114 &-1646677342014547017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9005950701217598113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 934286768
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &-3395529063050158530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9005950701217598113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 936cbeb4606f5d042bf6554349aa64b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &9221067980410880935
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,21 +12,21 @@ public class PlayerController : MonoBehaviour
 {
     public static PlayerController ownerInstance;
 
-    public static List<PlayerController> playerInstances = new List<PlayerController>();
-
-    private static int currentlySpectating;
-    private int myPlayerIndex;
+    public static Dictionary<GameObject, PlayerController> playerInstances = new Dictionary<GameObject, PlayerController>();
 
     public static LayerMask playerLayerMask;
+
+    private const int playerLayer = 6;
+    private const int ghostLayer = 14;
 
     public CameraController camCont;
     private PlayerInteractionController interactionCont;
 
-    private Collider playerCollider;
+    [Header("Mesh / Material")]
     [SerializeField]
-    private List<MeshRenderer> playerMeshes;
+    private List<MeshMaterialLink> meshMaterials;
 
-    [SerializeField]
+    [NonSerialized]
     public bool isAlive = true;
 
     [Header("Movement Variables")]
@@ -63,18 +63,17 @@ public class PlayerController : MonoBehaviour
     private bool isSprinting = false;
 
     public event EventHandler OnPlayerAttacked;
-    public static event EventHandler OnPlayerKilled;
+    public delegate void PlayerKilledDelegate(PlayerController player);
+    public static event PlayerKilledDelegate OnPlayerKilled;
 
     private bool isTrapped = false;
     private float trapTimer = 0;
 
     private void Awake()
     {
-        playerInstances.Add(this);
-        myPlayerIndex = playerInstances.Count - 1;
+        playerInstances.Add(gameObject, this);
 
         charCont = GetComponent<CharacterController>();
-        playerCollider = GetComponent<Collider>();
         interactionCont = GetComponent<PlayerInteractionController>();
 
         // TEMPORARY
@@ -82,7 +81,12 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(-20, 1, 0);
         charCont.enabled = true;
 
-        if (!NetworkConnectionController.IsOnline)
+        for (int i = 0; i < meshMaterials.Count; i++)
+        {
+            meshMaterials[i].renderer.material = meshMaterials[i].normal;
+        }
+
+        if (!NetworkConnectionController.connectedToLobby)
             ownerInstance = this;
 
         playerLayerMask = gameObject.layer;
@@ -123,6 +127,11 @@ public class PlayerController : MonoBehaviour
                 Input.GetAxis("Vertical")
             );
         isSprinting = Input.GetKey(keySprint);
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            interactionCont.DropItems();
+        }
     }
     private void CalculateNormalMove()
     {
@@ -143,11 +152,17 @@ public class PlayerController : MonoBehaviour
                 currentMove.y = jumpHeight;
             }
 
+            // Decide whether to use the accel or decel for the player given the presence of input
             float accelX = moveX == 0 ? groundDeceleration : groundAcceleration;
             float accelZ = moveZ == 0 ? groundDeceleration : groundAcceleration;
 
-            currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
-            currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+            // Old movement didn't move numbers at equal rates
+            //currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
+            //currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+
+            // Change the player's current movement vector to reflect the changes made through input
+            currentMove.x = Mathf.Lerp(currentMove.x, moveX, accelX);
+            currentMove.z = Mathf.Lerp(currentMove.z, moveZ, accelZ);
         }
         else
         {
@@ -157,11 +172,17 @@ public class PlayerController : MonoBehaviour
 
             currentMove.y -= gravity * -2 * Time.deltaTime;
 
+            // Decide whether to use the accel or decel for the player given the presence of input
             float accelX = moveX == 0 ? airDeceleration : airAcceleration;
             float accelZ = moveZ == 0 ? airDeceleration : airAcceleration;
 
-            currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
-            currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+            // Old movement didn't move numbers at equal rates
+            //currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
+            //currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+
+            // Change the player's current movement vector to reflect the changes made through input
+            currentMove.x = Mathf.Lerp(currentMove.x, moveX, accelX);
+            currentMove.z = Mathf.Lerp(currentMove.z, moveZ, accelZ);
         }
     }
     private void Move()
@@ -172,7 +193,8 @@ public class PlayerController : MonoBehaviour
     public void OnDestroy()
     {
         //Takes itself out of the player array
-        playerInstances.Remove(this);
+        OnPlayerKilled?.Invoke(this);
+        playerInstances.Remove(gameObject);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -186,32 +208,32 @@ public class PlayerController : MonoBehaviour
 
     public void ReceiveAttack()
     {
-        if (!NetworkConnectionController.IsOnline)
+        if (!NetworkConnectionController.connectedToLobby)
         {
-            Kill();
+            Kill(true);
         }
         OnPlayerAttacked?.Invoke(this, EventArgs.Empty);
     }
-    public void Kill()
+    public void Kill(bool becomeGhost)
     {
-        Activate(false);
         isAlive = false;
 
-        playerCollider.enabled = false;
-        charCont.enabled = false;
-        foreach(MeshRenderer r in playerMeshes)
+        for (int i = 0; i < meshMaterials.Count; i++)
         {
-            r.enabled = false;
+            meshMaterials[i].renderer.material = meshMaterials[i].ghost;
+            meshMaterials[i].renderer.gameObject.layer = ghostLayer;
         }
 
-        OnPlayerKilled?.Invoke(this, EventArgs.Empty);
+        gameObject.layer = ghostLayer;
+        charCont.excludeLayers = playerLayer | 1 << 15;
 
-        int aliveIndex = GetAlivePlayer();
+        OnPlayerKilled?.Invoke(this);
 
-        if (aliveIndex != -1)
-            SpectatePlayer(aliveIndex);
-        else
-            camCont.SetEnabled(true);
+        interactionCont.enabled = false;
+        interactionCont.DropItems();
+
+        if(becomeGhost)
+            camCont.SetGhost(false);
     }
 
     public void Trap(float duration)
@@ -224,7 +246,6 @@ public class PlayerController : MonoBehaviour
     {
         enabled = b;
         camCont.SetEnabled(b);
-        //charCont.enabled = b;
         interactionCont.enabled = b;
 
         if (b)
@@ -239,23 +260,12 @@ public class PlayerController : MonoBehaviour
         camCont.enabled = !b;
     }
 
-    public static void SpectatePlayer(int index)
+    [Serializable]
+    public class MeshMaterialLink
     {
-        if (playerInstances[index].isAlive)
-        {
-            playerInstances[currentlySpectating].camCont.Spectate(false);
-            playerInstances[index].camCont.Spectate(true);
-            currentlySpectating = index;
-        }
+        public MeshRenderer renderer;
+        public Material normal;
+        public Material ghost;
     }
-    private int GetAlivePlayer()
-    {
-        for(int i = 0; i < playerInstances.Count; i++)
-        {
-            if (playerInstances[i].isAlive)
-                return i;
-        }
-
-        return -1;
-    }
+    
 }

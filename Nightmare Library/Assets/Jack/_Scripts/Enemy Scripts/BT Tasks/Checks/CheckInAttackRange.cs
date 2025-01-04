@@ -56,7 +56,7 @@ public class CheckInAttackRange : Node
         PriorityQueue<Transform> queue = new PriorityQueue<Transform>();
 
         // Eliminate the players that are too far from the scan range and place them in closest to furtherst order
-        foreach (PlayerController p in PlayerController.playerInstances)
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
         {
             float dist = Vector3.Distance(p.transform.position, user.transform.position);
 

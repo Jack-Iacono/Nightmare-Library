@@ -28,7 +28,7 @@ public class TaskAttackPlayersInRange : Node
         {
             agent.speed = 0;
 
-            foreach (PlayerController p in PlayerController.playerInstances)
+            foreach (PlayerController p in PlayerController.playerInstances.Values)
             {
                 if(Vector3.Distance(p.transform.position, transform.position) <= range)
                 {

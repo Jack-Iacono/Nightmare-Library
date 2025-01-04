@@ -18,6 +18,11 @@ public abstract class PassiveAttack
     public virtual void Initialize() { }
     public abstract void Update(float dt);
 
+    public Enemy GetOwner()
+    {
+        return owner;
+    }
+
     public virtual void OnDestroy()
     {
 

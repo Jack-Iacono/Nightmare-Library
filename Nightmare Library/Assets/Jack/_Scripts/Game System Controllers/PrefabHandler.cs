@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class PrefabHandler : MonoBehaviour
@@ -12,8 +13,13 @@ public class PrefabHandler : MonoBehaviour
 
     [Header("Enemy Prefabs")]
     public GameObject e_Enemy;
+    public GameObject e_EvidenceFootprint;
+    public GameObject e_EvidenceTrap;
     public GameObject e_WardenSensor;
     public GameObject e_ScreechHead;
+
+    [Header("Audio")]
+    public GameObject a_AudioSource;
 
     private void Awake()
     {
@@ -24,14 +30,28 @@ public class PrefabHandler : MonoBehaviour
 
     public GameObject InstantiatePrefab(GameObject obj, Vector3 pos, Quaternion rot)
     {
-        if(network != null)
-            return network.InstantiatePrefab(obj, pos, rot);
+        GameObject g = Instantiate(obj, pos, rot);
+
+        if (network != null)
+            network.InstantiatePrefab(g);
         else
-            return Instantiate(obj, pos, rot);
+        {
+            // Removes network behavior from the object since it is not needed
+            NetworkBehaviour b;
+            if(g.TryGetComponent(out b))
+            {
+                Destroy(b);
+                Destroy(g.GetComponent<NetworkObject>());
+            }
+        }
+
+        return g;
     }
     public GameObject InstantiatePrefabOnline(GameObject obj, Vector3 pos, Quaternion rot, ulong owner = ulong.MaxValue)
     {
-        return network.InstantiatePrefab(obj, pos, rot, owner);
+        GameObject g = Instantiate(obj, pos, rot);
+        network.InstantiatePrefab(g, owner);
+        return g;
     }
     public GameObject InstantiatePrefabOffline(GameObject obj, Vector3 pos, Quaternion rot)
     {

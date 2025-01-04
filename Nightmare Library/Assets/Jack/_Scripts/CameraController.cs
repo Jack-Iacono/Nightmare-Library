@@ -7,7 +7,11 @@ public class CameraController : MonoBehaviour
 {
     [Header("GameObjects")]
     public PlayerController playerCont;
-    public Camera cam;
+
+    // Using 2 different camera for post processing effects later on, could change to layermasks
+    public Camera normalCam;
+    public Camera ghostCam;
+
     public AudioListener audioListener;
 
     //Static instance of this camera
@@ -35,8 +39,10 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Check to make sure the game isn't paused
         if (!GameController.gamePaused)
         {
+            // Move the camera
             MoveCamera();
 
             // TEMPORARY!!!!
@@ -68,51 +74,53 @@ public class CameraController : MonoBehaviour
         //Rotates the player to always be facing the direction of the camera
         playerCont.transform.localRotation = Quaternion.Euler(0f, yRotation, 0f);
     }
+    public void SetGhost(bool b)
+    {
+        // Switches the active camera, ghosts see different layers than players
+        normalCam.enabled = b;
+        ghostCam.enabled = !b;
+    }
     public void SetEnabled(bool b)
     {
-        cam.enabled = b;
+        // Sets whether the camera is in use, not being used much anymore since spectate rework
+        if (!b)
+        {
+            normalCam.enabled = false;
+            ghostCam.enabled = false;
+        }
+        else
+        {
+            // Checks if the plaeyr is alive to determine which camera to use
+            if (playerCont.isAlive)
+            {
+                normalCam.enabled = true;
+                ghostCam.enabled = false;
+            }
+            else
+            {
+                normalCam.enabled = false;
+                ghostCam.enabled = true;
+            }
+        }
+
         audioListener.enabled = b;
         enabled = b;
-    }
-    public void Spectate(bool b)
-    {
-        cam.enabled = b;
-        audioListener.enabled = b;
     }
 
     #endregion
 
     #region Get Methods
 
-    public bool GetCameraSight(Collider col, float dist)
-    {
-        float distance = Vector3.SqrMagnitude(col.transform.position - (transform.position - transform.up * -0.15f));
-
-        if (distance <= dist * dist)
-        {
-            Ray ray = new Ray(cam.transform.position, cam.transform.forward);
-            RaycastHit hit;
-
-            float range = 50;
-
-            if (Physics.Raycast(ray, out hit, range, collideLayers))
-            {
-                if (hit.collider == col)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
     public bool GetCameraSight(Collider col)
     {
-        Ray ray = new Ray(cam.transform.position, cam.transform.forward);
+        // Get a ray from the camera's position in a straight line forward
+        Ray ray = new Ray(normalCam.transform.position, normalCam.transform.forward);
         RaycastHit hit;
 
+        // Check if the ray hits any layers that we are interested in
         if (Physics.Raycast(ray, out hit, 1000, collideLayers))
         {
+            // If the collider is the one we are looking for, return true
             if (hit.collider == col)
             {
                 return true;
@@ -122,6 +130,10 @@ public class CameraController : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Gets a ray straight forward from the camera's position
+    /// </summary>
+    /// <returns>The ray representing the camera's sightline</returns>
     public Ray GetCameraRay()
     {
         return new Ray(transform.position, transform.forward);

@@ -34,8 +34,10 @@ public class mui_MultiplayerScreen : ScreenController
 
         if(NetworkConnectionController.IsRunning)
         {
-            if(NetworkConnectionController.instance.IsHost)
+            if(NetworkConnectionController.instance.IsServer)
                 startGameButton.SetActive(true);
+            else
+                startGameButton.SetActive(false);
 
             playerJoinText.gameObject.SetActive(true);
 
@@ -79,7 +81,7 @@ public class mui_MultiplayerScreen : ScreenController
 
     private void OnNetworkConnected()
     {
-        if (NetworkConnectionController.IsOnline)
+        if (NetworkConnectionController.IsRunning)
         {
             if (NetworkConnectionController.instance.IsHost)
                 startGameButton.SetActive(true);
@@ -108,11 +110,18 @@ public class mui_MultiplayerScreen : ScreenController
     {
         playerJoinText.text = string.Empty;
 
-        Dictionary<ulong, LobbyController.PlayerInfo> dict = LobbyController.playerList.GetDictionary();
-
-        foreach(ulong clientId in dict.Keys)
+        if (NetworkConnectionController.connectedToLobby)
         {
-            playerJoinText.text += "(" + clientId + ")" + dict[clientId].username + "\n";
+            Dictionary<ulong, LobbyController.PlayerInfo> dict = LobbyController.playerList.Value.GetDictionary();
+
+            foreach (ulong clientId in dict.Keys)
+            {
+                playerJoinText.text += "(" + clientId + ")" + dict[clientId].username + "\n";
+            }
+        }
+        else
+        {
+            playerJoinText.text = "Feteching Players";
         }
     }
 

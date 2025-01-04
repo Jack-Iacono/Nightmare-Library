@@ -26,7 +26,7 @@ public class pa_Screech : PassiveAttack
 
     public override void Initialize()
     {
-        foreach(PlayerController p in PlayerController.playerInstances)
+        foreach(PlayerController p in PlayerController.playerInstances.Values)
         {
             ScreechHeadController cont = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_ScreechHead, Vector3.zero, Quaternion.identity).GetComponent<ScreechHeadController>();
             headControllers.Add(cont, new HeadData(baseChance, coolDownTicks));
@@ -78,7 +78,7 @@ public class pa_Screech : PassiveAttack
     public void AttackPlayer(PlayerController player)
     {
         // Remove to actually attack player
-        //player.ReceiveAttack();
+        player.ReceiveAttack();
     }
 
     public Vector3 GetRandomOffset()
@@ -127,7 +127,7 @@ public class pa_Screech : PassiveAttack
         public void TickCooldown()
         {
             cooldown--;
-            Debug.Log(cooldown);
+            //Debug.Log(cooldown);
         }
     }
 }

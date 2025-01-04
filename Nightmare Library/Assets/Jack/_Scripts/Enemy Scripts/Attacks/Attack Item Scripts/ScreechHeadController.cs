@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class ScreechHeadController : MonoBehaviour
 {
-    private pa_Screech parent;
+    public pa_Screech parent { get; private set; }
+    private AudioSourceController audioController;
 
     private Vector3 offset = Vector3.zero;
     public PlayerController targetPlayer;
@@ -15,15 +16,15 @@ public class ScreechHeadController : MonoBehaviour
     public bool isSpawned = false;
     private float sightTolerance = -0.94f;
 
-    // Stops this item from attacking if it doesn't need to
-    private bool doAttacks = false;
-
     private MeshRenderer[] meshRenderers;
 
     private float attackTimer = 0;
 
     // Used to stop overflow
     public bool hasAttacked = false;
+
+    private bool doAttack = false;
+    private bool doSight = false;
 
     public delegate void SpawnHeadDelegate(Vector3 pos);
     public event SpawnHeadDelegate OnSpawnHead;
@@ -34,12 +35,13 @@ public class ScreechHeadController : MonoBehaviour
     public delegate void AttackDelegate();
     public event AttackDelegate OnAttack;
 
-    public delegate void InitializeDelegate(int index);
+    public delegate void InitializeDelegate();
     public event InitializeDelegate OnInitialize;
 
     private void Awake()
     {
         meshRenderers = GetComponentsInChildren<MeshRenderer>();
+        audioController = GetComponent<AudioSourceController>();
     }
     public void Initialize(pa_Screech parent, PlayerController player)
     {
@@ -49,26 +51,28 @@ public class ScreechHeadController : MonoBehaviour
         trans = transform;
 
         attackTimer = parent.attackTime;
+        doAttack = true;
+        doSight = true;
 
-        DespawnHead();
-
-        OnInitialize?.Invoke(PlayerController.playerInstances.IndexOf(targetPlayer));
+        DespawnHead(true);
+        OnInitialize?.Invoke();
     }
-    public void Initialize(int playerIndex)
+    public void Initialize(PlayerController player, bool owner, bool server)
     {
-        targetPlayer = PlayerController.playerInstances[playerIndex];
+        targetPlayer = player;
         playerCamTrans = targetPlayer.camCont.transform;
         trans = transform;
 
-        doAttacks = false;
+        doAttack = server;
+        doSight = owner;
 
-        DespawnHead();
+        DespawnHead(true);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (targetPlayer == null)
+        if (targetPlayer == null || !targetPlayer.isAlive)
             DespawnHead();
 
         if (isSpawned)
@@ -76,12 +80,12 @@ public class ScreechHeadController : MonoBehaviour
             trans.position = targetPlayer.transform.position + offset + Vector3.up;
 
             // Is the player looking at this object
-            if(Vector3.Dot(trans.forward, playerCamTrans.forward) < sightTolerance)
+            if(doSight && Vector3.Dot(trans.forward, playerCamTrans.forward) < sightTolerance)
             {
                 DespawnHead();
             }
 
-            if (doAttacks)
+            if (doAttack)
             {
                 if (attackTimer <= 0)
                 {
@@ -108,21 +112,29 @@ public class ScreechHeadController : MonoBehaviour
 
     public void SpawnHead(Vector3 offset)
     {
+        Debug.Log("Spawning Head");
+
         this.offset = offset;
         isSpawned = true;
         transform.position = targetPlayer.transform.position + offset + Vector3.up;
         transform.LookAt(targetPlayer.transform.position + Vector3.up);
 
+        audioController.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.TEST_SOUNDS), trans.position);
+
         EnableMesh(true);
 
         OnSpawnHead?.Invoke(offset);
     }
-    public void DespawnHead()
+    public void DespawnHead(bool fromNetwork = false)
     {
         isSpawned = false;
         EnableMesh(false);
 
-        OnDespawnHead?.Invoke();
+        if(doAttack)
+            attackTimer = parent.attackTime;
+
+        if (!fromNetwork)
+            OnDespawnHead?.Invoke();
     }
 
     public void EnableMesh(bool b)

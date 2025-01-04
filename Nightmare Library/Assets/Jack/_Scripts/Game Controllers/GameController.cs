@@ -19,7 +19,12 @@ public class GameController : MonoBehaviour
 
     // Multiplayer Events
     public static event EventHandler<bool> OnNetworkGamePause;
-    public static event EventHandler OnGameEnd;
+
+    public delegate void OnGameEndDelegate();
+    public static event OnGameEndDelegate OnGameEnd;
+
+    public delegate void OnReturnToMenuDelegate();
+    public static event OnReturnToMenuDelegate OnReturnToMenu;
 
     private void Awake()
     {
@@ -30,7 +35,6 @@ public class GameController : MonoBehaviour
 
         PlayerController.OnPlayerKilled += OnPlayerKilled;
     }
-
     private void Start()
     {
         if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
@@ -40,8 +44,8 @@ public class GameController : MonoBehaviour
 
     private void SpawnPrefabs()
     {
-        PrefabHandler.Instance.InstantiatePrefabOffline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
-        PrefabHandler.Instance.InstantiatePrefabOffline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+        PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
+        PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
     }
 
 
@@ -55,12 +59,17 @@ public class GameController : MonoBehaviour
             else
                 EndGame();
         }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            EndGame();
+        }
     }
 
-    private void OnPlayerKilled(object sender, EventArgs e)
+    private void OnPlayerKilled(PlayerController player)
     {
         bool allPlayersDead = true;
-        foreach(PlayerController p in PlayerController.playerInstances)
+        foreach(PlayerController p in PlayerController.playerInstances.Values)
         {
             if (p.isAlive)
             {
@@ -71,21 +80,26 @@ public class GameController : MonoBehaviour
 
         if (allPlayersDead && NetworkConnectionController.HasAuthority)
         {
-            PauseGame(true);
-            StartCoroutine(EndGameCoroutine());
+            EndGame();
         }
     }
 
-    public IEnumerator EndGameCoroutine()
-    {
-        yield return new WaitForSeconds(5);
-        EndGame();
-    }
     public void EndGame()
+    {
+        if(NetworkConnectionController.HasAuthority)
+        {
+            PauseGame(true);
+            OnGameEnd?.Invoke();
+        }
+
+        // Load the end screen
+        UIController.instance.ChangeToScreen(1);
+    }
+    public static void ReturnToMenu()
     {
         if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
         {
-            OnGameEnd?.Invoke(this, EventArgs.Empty);
+            OnReturnToMenu?.Invoke();
         }
         else
         {

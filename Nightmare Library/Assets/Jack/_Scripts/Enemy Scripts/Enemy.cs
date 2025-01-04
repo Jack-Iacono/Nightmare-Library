@@ -1,13 +1,12 @@
 using System;
 using UnityEngine;
 using UnityEngine.AI;
-
-using BehaviorTree;
-using UnityEditor.Timeline;
 using System.Collections.Generic;
 
 public class Enemy : MonoBehaviour
 {
+    public static List<Enemy> enemyInstances = new List<Enemy>();
+
     [Header("Enemy Characteristics")]
     [SerializeField]
     public float moveSpeed = 10;
@@ -24,24 +23,18 @@ public class Enemy : MonoBehaviour
 
     public ObjectPool objPool = new ObjectPool();
 
-    public enum aAttackEnum { RUSH, STALKER, WARDEN, NULL };
-    public enum pAttackEnum { IDOLS, TEMP, SEARCH, NULL };
-
     [Header("Attack Variables")]
-    [SerializeField]
-    public aAttackEnum aAttack;
-    [SerializeField]
-    public pAttackEnum pAttack;
+    public List<EnemyPreset> presets = new List<EnemyPreset>();
+    [NonSerialized]
+    public EnemyPreset enemyType;
+
+    public EnemyPreset.aAttackEnum aAttack;
+    public EnemyPreset.pAttackEnum pAttack;
 
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
-    public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT, TRAPPER, HALLUCINATOR, LIGHT_FLICKER };
-    [Header("Evidence Variables")]
-
-    [SerializeField]
-    public List<EvidenceEnum> evidenceList = new List<EvidenceEnum>();
-    protected List<Evidence> evidence = new List<Evidence>();
+    protected Evidence[] evidence = new Evidence[EnemyPreset.EvidenceCount];
 
     [Space(10)]
     public LayerMask interactionLayers = 1 << 10;
@@ -51,15 +44,10 @@ public class Enemy : MonoBehaviour
     public event EventHandler<string> OnPlaySound;
     
     [Space(10)]
-    public GameObject footprintPrefab;
-    public GameObject footprintPrefabOnline;
     private List<GameObject> footprintList = new List<GameObject>();
     public delegate void FootprintDelegate(Vector3 pos);
     public event FootprintDelegate OnSpawnFootprint;
 
-    [Space(10)]
-    public GameObject trapPrefab;
-    public GameObject trapPrefabOnline;
     public delegate void TrapDelegate(Vector3 pos);
     public event TrapDelegate OnSpawnTrap;
 
@@ -74,7 +62,16 @@ public class Enemy : MonoBehaviour
     public float lightFlickerRange = 40f;
     public event EventHandler OnLightFlicker;
 
+    public delegate void OnInitializeDelegate();
+    public event OnInitializeDelegate OnInitialize;
+
     #region Initialization
+
+    private void Awake()
+    {
+        if(!enemyInstances.Contains(this))
+            enemyInstances.Add(this);
+    }
 
     private void Start()
     {
@@ -91,67 +88,31 @@ public class Enemy : MonoBehaviour
 
         navAgent.Warp(spawnLocation);
 
-        // Assigning Attacks
-        switch (aAttack)
-        {
-            case aAttackEnum.RUSH:
-                activeAttackTree = new aa_Rush(this);
-                break;
-            case aAttackEnum.STALKER:
-                activeAttackTree = new aa_Stalk(this);
-                break;
-            case aAttackEnum.WARDEN:
-                activeAttackTree = new aa_Warden(this);
-                break;
-        }
+        // Gets the enemy preset that this will follow
+        enemyType = presets[UnityEngine.Random.Range(0, presets.Count)];
 
-        switch (pAttack)
-        {
-            case pAttackEnum.IDOLS:
-                passiveAttackTree = new pa_Idols(this);
-                break;
-            case pAttackEnum.TEMP:
-                passiveAttackTree = new pa_Temps(this);
-                break;
-            case pAttackEnum.SEARCH:
-                passiveAttackTree = new pa_Screech(this);
-                break;
-        }
+        // Chooses a random active and passive attack from the preset
+        aAttack = enemyType.GetRandomActiveAttack();
+        pAttack = enemyType.GetRandomPassiveAttack();
 
+        Debug.Log("Active Attack: " + aAttack.ToString() + "\nPassive Attack: " + pAttack.ToString());
+
+        // Gets the attack script for each chosen attack
+        activeAttackTree = enemyType.GetActiveAttack(aAttack, this);
+        passiveAttackTree = enemyType.GetPassiveAttack(pAttack, this);
+
+        // Initializes the attacks
         if(activeAttackTree != null)
             activeAttackTree.Initialize();
         if(passiveAttackTree != null)
             passiveAttackTree.Initialize();
 
-        for(int i = 0; i < evidenceList.Count; i++)
-        {
-            switch(evidenceList[i])
-            {
-                case EvidenceEnum.HYSTERICS:
-                    evidence.Add(new ev_Hysterics(this));
-                    break;
-                case EvidenceEnum.MUSIC_LOVER:
-                    evidence.Add(new ev_MusicLover(this));
-                    break;
-                case EvidenceEnum.FOOTPRINT:
-                    evidence.Add(new ev_Footprint(this));
-                    if (!NetworkConnectionController.IsRunning)
-                        objPool.PoolObject(footprintPrefab, 10);
-                    break;
-                case EvidenceEnum.TRAPPER:
-                    evidence.Add(new ev_Trapper(this));
-                    if (!NetworkConnectionController.IsRunning)
-                        objPool.PoolObject(trapPrefab, 10);
-                    break;
-                case EvidenceEnum.HALLUCINATOR:
-                    evidence.Add(new ev_Hallucinator(this));
-                    break;
-                case EvidenceEnum.LIGHT_FLICKER:
-                    evidence.Add(new ev_Flicker(this));
-                    break;
-            }
-        }
+        // Gets the evidence from the enemy preset
+        evidence = enemyType.GetEvidence(this);
+
+        OnInitialize?.Invoke();
     }
+
     public virtual void Spawn()
     {
         //Spawn Stuff
@@ -213,7 +174,7 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            var print = objPool.GetObject(footprintPrefab);
+            var print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
             print.GetComponent<FootprintController>().Activate();
             print.transform.position = hit.point;
@@ -232,7 +193,7 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            var print = objPool.GetObject(trapPrefab);
+            var print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
             print.GetComponent<TrapController>().Activate();
             print.transform.position = hit.point;
@@ -271,10 +232,32 @@ public class Enemy : MonoBehaviour
             OnLightFlicker?.Invoke(this, EventArgs.Empty);
     }
 
+    public ActiveAttack GetActiveAttack()
+    {
+        return activeAttackTree;
+    }
+    public PassiveAttack GetPassiveAttack()
+    {
+        return passiveAttackTree;
+    }
+
     protected virtual void OnGamePause(object sender, bool e)
     {
         if(navAgent.isOnNavMesh)
             navAgent.isStopped = e;
+    }
+
+    public override string ToString()
+    {
+        string temp = String.Empty;
+        temp += "Active Attack: " + aAttack.ToString();
+        temp += "\nPassive Attack: " + pAttack.ToString();
+        temp += "\nEvidence: ";
+        foreach(EnemyPreset.EvidenceEnum e in enemyType.evidence)
+        {
+            temp += e.ToString() + ", ";
+        }
+        return temp;
     }
 
     private void OnDestroy()
@@ -284,11 +267,7 @@ public class Enemy : MonoBehaviour
         if(passiveAttackTree != null)
             passiveAttackTree.OnDestroy();
 
+        enemyInstances.Remove(this);
         GameController.OnGamePause -= OnGamePause;
-    }
-
-    private void OnDrawGizmos()
-    {
-        
     }
 }

@@ -52,13 +52,18 @@ public class TrapController : MonoBehaviour
         OnTrapDespawn?.Invoke(this, fromNetwork);
     }
 
+    // OPTIMIZE
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Player" && other.GetComponent<PlayerController>() == PlayerController.ownerInstance)
+        if(other.tag == "Player")
         {
-            Debug.Log("Owner");
-            other.GetComponent<PlayerController>().Trap(trapDuration);
-            Deactivate();
+            PlayerController p = other.GetComponent<PlayerController>();
+
+            if(p != null && p == PlayerController.ownerInstance)
+            {
+                other.GetComponent<PlayerController>().Trap(trapDuration);
+                Deactivate();
+            }
         }
     }
 }

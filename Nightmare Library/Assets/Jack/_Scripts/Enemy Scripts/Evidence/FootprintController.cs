@@ -16,7 +16,7 @@ public class FootprintController : MonoBehaviour
 
     private void Start()
     {
-        if(!NetworkConnectionController.IsRunning)
+        if(!NetworkConnectionController.connectedToLobby)
             gameObject.SetActive(false);
     }
 

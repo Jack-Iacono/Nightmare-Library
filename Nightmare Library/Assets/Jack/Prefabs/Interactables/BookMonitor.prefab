@@ -171,6 +171,8 @@ GameObject:
   - component: {fileID: 6110878011006236418}
   - component: {fileID: 8206730060164481959}
   - component: {fileID: 2227103003649647046}
+  - component: {fileID: 4231045874375854625}
+  - component: {fileID: 9131480718115928990}
   m_Layer: 0
   m_Name: BookMonitor
   m_TagString: Untagged
@@ -206,9 +208,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11ad8eb3eeb62154d818c2c9c799f38c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  placementTypes: 
+  floorPlacementType: 0
+  wallPlacementType: 0
+  fixPlacement: 1
+  precisePlacement: 0
+  allowPlayerClick: 1
+  allowPlayerPickup: 0
+  allowEnemyHysterics: 0
+  allowEnemyFlicker: 0
+  attachedLight: {fileID: 0}
   monitorViewBlocker: {fileID: 1675350480802446714}
   monitorPicture: {fileID: 6483801627467110108}
-  pairedBooks: []
+  linkedCameras:
+  - {fileID: 0}
   useRadius: 5
 --- !u!65 &2227103003649647046
 BoxCollider:
@@ -231,6 +244,38 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 0.1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4231045874375854625
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2148425685793034210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 1013914625
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &9131480718115928990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2148425685793034210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 163a3e1e62e902142af8c51c902033c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3812938619351425503
 GameObject:
   m_ObjectHideFlags: 0

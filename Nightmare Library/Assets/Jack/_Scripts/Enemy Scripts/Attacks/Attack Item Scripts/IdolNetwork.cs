@@ -11,11 +11,23 @@ public class IdolNetwork : InteractableNetwork
 
     public override void OnNetworkSpawn()
     {
-        base.OnNetworkSpawn();
-        idolCont = GetComponent<IdolController>();
         
-        if (IsOwner)
-            idolCont.OnIdolActivated += OnIdolActivated;
+        if (!NetworkConnectionController.connectedToLobby)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+        else
+        {
+            idolCont = GetComponent<IdolController>();
+
+            if (IsOwner)
+                idolCont.OnIdolActivated += OnIdolActivated;
+
+            PrefabHandlerNetwork.AddSpawnedPrefab(GetComponent<NetworkObject>());
+        }
+
+        base.OnNetworkSpawn();
     }
 
     protected override void OnClick(bool fromNetwork = false)
@@ -31,7 +43,6 @@ public class IdolNetwork : InteractableNetwork
 
     private void OnIdolActivated(object sender, bool b)
     {
-        Debug.Log("Check");
         if (IsOwner)
         {
             ConsumeIdolCountChangeClientRpc(b);
@@ -40,7 +51,6 @@ public class IdolNetwork : InteractableNetwork
     [ClientRpc]
     private void ConsumeIdolCountChangeClientRpc(bool activeState)
     {
-        Debug.Log("Client Change");
         gameObject.SetActive(activeState);
     }
 

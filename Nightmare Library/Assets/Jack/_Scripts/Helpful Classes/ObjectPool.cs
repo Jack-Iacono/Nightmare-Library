@@ -50,17 +50,30 @@ public class ObjectPool
 
     public GameObject AddObject(GameObject gObject)
     {
-        GameObject newObject = InstantiateObject(gObject, pooledObjects[gObject.name][0].transform.parent);
+        GameObject newObject = InstantiateObject(gObject, pooledObjects[gObject.name][0].transform);
         pooledObjects[gObject.name].Add(newObject);
         return newObject;
     }
     private GameObject InstantiateObject(GameObject obj, Transform parent, bool setActive = false)
     {
-        GameObject g = GameObject.Instantiate(obj, parent);
+        GameObject g = PrefabHandler.Instance.InstantiatePrefab(obj, parent.position, parent.rotation);
+
         g.SendMessage("Initialize", SendMessageOptions.DontRequireReceiver);
+        if (NetworkConnectionController.IsRunning)
+            g.SendMessage("OnPoolSpawn", SendMessageOptions.DontRequireReceiver);
         g.SetActive(setActive);
         return g;
     }
+
+    public void AddObjectToPool(GameObject pool, GameObject addedObject)
+    {
+        if(pooledObjects.ContainsKey(pool.name))
+            pooledObjects[pool.name].Add(addedObject);
+        else
+        {
+            pooledObjects.Add(pool.name, new List<GameObject> { addedObject });
+        }
+    } 
 
     public GameObject GetObject(GameObject g)
     {
@@ -77,5 +90,10 @@ public class ObjectPool
     public List<GameObject> GetPool(GameObject g)
     {
         return pooledObjects[g.name];
+    }
+
+    public void ClearPool()
+    {   
+        pooledObjects.Clear(); 
     }
 }

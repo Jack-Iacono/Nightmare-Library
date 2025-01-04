@@ -152,9 +152,8 @@ MonoBehaviour:
   fovRange: 20
   attackRange: 2
   spawnLocation: {x: 20, y: 1, z: 0}
-  aAttack: 3
-  pAttack: 3
-  evidenceList: 000000000100000002000000030000000400000005000000
+  presets:
+  - {fileID: 11400000, guid: c77dbe13533d60f4ba018cc0511215cf, type: 2}
   interactionLayers:
     serializedVersion: 2
     m_Bits: 1024

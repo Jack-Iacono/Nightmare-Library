@@ -709,6 +709,7 @@ MonoBehaviour:
   showAnimTime: 0
   hideAnimTime: 0
   endGameButton: {fileID: 6292575853930880653}
+  endGameText: {fileID: 3738023389882697289}
 --- !u!1 &6268513336005545364
 GameObject:
   m_ObjectHideFlags: 0

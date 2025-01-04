@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Unity.Burst.CompilerServices;
 using Unity.Netcode;
 using UnityEngine;
@@ -11,7 +12,7 @@ public class EnemyNetwork : NetworkBehaviour
 {
     [SerializeField] private bool _serverAuth;
 
-    public Enemy owner { get; private set; }
+    public Enemy parent { get; private set; }
 
     private NetworkVariable<PlayerContinuousNetworkData> contState;
     private NetworkVariable<PlayerIntermittentNetworkData> intState;
@@ -29,27 +30,40 @@ public class EnemyNetwork : NetworkBehaviour
         contState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);
         intState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
 
-        owner = GetComponent<Enemy>();
+        parent = GetComponent<Enemy>();
+        parent.OnInitialize += OnInitialize;
     }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
-        owner.Activate(IsOwner);
+        parent.Activate(IsOwner);
 
         if (IsOwner)
         {
-            owner.OnPlaySound += OnPlaySound;
-            owner.OnHallucination += OnHallucination;
-            owner.OnLightFlicker += OnLightFlicker;
+            parent.OnPlaySound += OnPlaySound;
+            parent.OnHallucination += OnHallucination;
+            parent.OnLightFlicker += OnLightFlicker;
 
-            if (owner.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
-                owner.OnSpawnFootprint += OnSpawnFootprint;
-            if (owner.evidenceList.Contains(Enemy.EvidenceEnum.TRAPPER))
-                owner.OnSpawnTrap += OnSpawnTrap;
-                
+            // Possible Optimize
+            parent.OnSpawnFootprint += OnSpawnFootprint;
+            parent.OnSpawnTrap += OnSpawnTrap;
         }
+    }
+    private void OnInitialize()
+    {
+        if (IsServer)
+        {
+            OnInitializeClientRpc(parent.presets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
+        }
+    }
+    [ClientRpc]
+    private void OnInitializeClientRpc(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
+    {
+        parent.enemyType = parent.presets[typeIndex];
+        parent.aAttack = (EnemyPreset.aAttackEnum)activeAttackIndex;
+        parent.pAttack = (EnemyPreset.pAttackEnum)passiveAttackIndex;
     }
 
     // Update is called once per frame
@@ -82,14 +96,14 @@ public class EnemyNetwork : NetworkBehaviour
     private void PlaySoundClientRpc(string sound)
     {
         if (!NetworkManager.IsServer)
-            owner.PlaySound(sound);
+            parent.PlaySound(sound);
     }
 
     public void OnSpawnFootprint(Vector3 pos)
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = owner.objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
+            var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
             print.transform.position = pos;
             print.GetComponent<FootprintController>().Activate();
@@ -100,7 +114,7 @@ public class EnemyNetwork : NetworkBehaviour
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = owner.objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
+            var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
             print.transform.position = pos;
             print.GetComponent<TrapController>().Activate();
@@ -119,7 +133,7 @@ public class EnemyNetwork : NetworkBehaviour
     private void OnHallucinationClientRpc(bool b)
     {
         if (!NetworkManager.IsServer)
-            owner.SetHallucinating(b, false);
+            parent.SetHallucinating(b, false);
     }
 
     private void OnLightFlicker(object sender, EventArgs e)
@@ -132,7 +146,7 @@ public class EnemyNetwork : NetworkBehaviour
     [ClientRpc]
     private void OnLightFlickerClientRpc()
     {
-        owner.FlickerLights(false);
+        parent.FlickerLights(false);
     }
 
     #endregion

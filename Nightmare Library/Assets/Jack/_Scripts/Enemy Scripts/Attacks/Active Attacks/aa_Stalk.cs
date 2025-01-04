@@ -89,10 +89,10 @@ public class aa_Stalk : ActiveAttack
 
             // Remove any players that are at the desk
             List<PlayerController> validPlayers = new List<PlayerController>(PlayerController.playerInstances.Values);
-            foreach(PlayerController p in validPlayers)
+            for(int i = validPlayers.Count - 1; i > 0; i--)
             {
-                if(!p.isAlive || DeskController.playersAtDesk.Contains(p))
-                    validPlayers.Remove(p);
+                if (!validPlayers[i].isAlive || DeskController.playersAtDesk.Contains(validPlayers[i]))
+                    validPlayers.Remove(validPlayers[i]);
             }
 
             // Set the stalking target for this attack

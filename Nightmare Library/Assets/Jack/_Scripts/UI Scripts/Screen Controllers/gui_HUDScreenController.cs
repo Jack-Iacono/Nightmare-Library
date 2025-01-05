@@ -26,6 +26,7 @@ public class gui_HUDScreenController : ScreenController
         InventoryController.Instance.onHeldItemChanged += OnInventoryHeldItemChanged;
         PlayerInteractionController.onItemSightChange += OnItemSightChanged;
 
+        inventoryText.text = "Empty";
         reticle.sprite = normalReticle;
     }
 

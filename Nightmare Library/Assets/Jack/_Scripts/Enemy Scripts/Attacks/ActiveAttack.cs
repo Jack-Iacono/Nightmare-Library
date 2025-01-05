@@ -64,10 +64,10 @@ public abstract class ActiveAttack : BehaviorTree.Tree
                 RaycastHit hit;
 
                 // Check to see if the ray hit the ground
-                if 
+                if
                     (
-                    Physics.Raycast(ray, out hit, 100, envLayers) && 
-                    hit.collider.gameObject.layer != 13 && 
+                    Physics.Raycast(ray, out hit, 100, envLayers) &&
+                    hit.collider.gameObject.layer != 13 &&
                     hit.normal == Vector3.up &&
                     !Physics.CheckBox(hit.point + Vector3.up * 2, Vector3.one, Quaternion.identity, envLayers)
                     )

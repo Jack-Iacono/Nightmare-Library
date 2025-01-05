@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3604074352554018161}
   - component: {fileID: 7162542402152559683}
   - component: {fileID: 2565385880572109394}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Veil
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -96,7 +96,7 @@ GameObject:
   - component: {fileID: 3953284871925788144}
   - component: {fileID: 8861432142527287153}
   - component: {fileID: 5501774863480536854}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Desk Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -195,6 +195,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3162487198
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -279,6 +284,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 121273765
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -363,6 +373,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3137894238
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -447,6 +462,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 905985170
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -531,6 +551,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 2941453539
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -615,6 +640,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 4248108608
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -699,6 +729,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 1572161969
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -783,6 +818,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 2736015342
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -867,6 +907,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 4191001714
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -951,6 +996,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 858167151
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer
@@ -1035,6 +1085,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1837587765898222260}
     m_Modifications:
+    - target: {fileID: -8172012495814302263, guid: 30e2ec54a67496f42b688d867d7fd37a,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 2821894180
+      objectReference: {fileID: 0}
     - target: {fileID: 1935627551914009682, guid: 30e2ec54a67496f42b688d867d7fd37a,
         type: 3}
       propertyPath: m_Layer

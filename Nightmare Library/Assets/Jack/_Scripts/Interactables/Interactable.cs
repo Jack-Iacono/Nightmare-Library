@@ -100,7 +100,11 @@ public class Interactable : MonoBehaviour
         {
             colliders.Add(col);
         }
-        mainColliderSize = colliders[0].bounds.size;
+
+        if (colliders.Count > 0)
+            mainColliderSize = colliders[0].bounds.size;
+        else
+            mainColliderSize = Vector3.zero;
 
         hasRigidBody = TryGetComponent(out rb);
         trans = transform;
@@ -110,35 +114,16 @@ public class Interactable : MonoBehaviour
     {
         OnClick?.Invoke(fromNetwork);
     }
-    public virtual void Pickup(bool fromNetwork = false)
+    public virtual GameObject Pickup(bool fromNetwork = false)
     {
-        if (allowPlayerPickup)
-        {
-            // Decyphers between local pickup and pickup via notification
-            if (!fromNetwork)
-            {
-                if (InventoryController.Instance.AddItem(gameObject))
-                {
-                    EnableColliders(false);
-                    EnableMesh(false);
+        EnableAll(false);
 
-                    if (hasRigidBody)
-                        rb.isKinematic = true;
+        if (hasRigidBody)
+            rb.isKinematic = true;
 
-                    OnPickup?.Invoke(fromNetwork);
-                }
-            }
-            else
-            {
-                EnableColliders(false);
-                EnableMesh(false);
+        OnPickup?.Invoke(fromNetwork);
 
-                if (hasRigidBody)
-                    rb.isKinematic = true;
-
-                OnPickup?.Invoke(fromNetwork);
-            }
-        }
+        return gameObject;
     }
 
     public virtual void Place(bool fromNetwork = false)

@@ -154,6 +154,8 @@ MonoBehaviour:
   spawnLocation: {x: 20, y: 1, z: 0}
   presets:
   - {fileID: 11400000, guid: c77dbe13533d60f4ba018cc0511215cf, type: 2}
+  aAttack: 0
+  pAttack: 0
   interactionLayers:
     serializedVersion: 2
     m_Bits: 1024

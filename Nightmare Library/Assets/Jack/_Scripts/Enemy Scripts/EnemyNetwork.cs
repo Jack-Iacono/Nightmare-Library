@@ -105,8 +105,7 @@ public class EnemyNetwork : NetworkBehaviour
         {
             var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
-            print.transform.position = pos;
-            print.GetComponent<FootprintController>().Activate();
+            print.GetComponent<FootprintController>().Place(pos, Quaternion.identity);
             print.SetActive(true);
         }
     }
@@ -116,8 +115,7 @@ public class EnemyNetwork : NetworkBehaviour
         {
             var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
-            print.transform.position = pos;
-            print.GetComponent<TrapController>().Activate();
+            print.GetComponent<TrapController>().Place(pos, print.transform.rotation);
             print.SetActive(true);
         }
     }

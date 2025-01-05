@@ -232,10 +232,12 @@ public class PlayerInteractionController : MonoBehaviour
                 // Check for interactions that aren't placing or throwing
                 if (canSeeItem)
                 {
-                    if(isClick)
+                    if(isClick && interactables[hit.collider.gameObject].allowPlayerClick)
                         interactables[hit.collider.gameObject].Click();
-                    else if (isPickup && InventoryController.Instance.HasOpenSlot())
-                        interactables[hit.collider.gameObject].Pickup();
+                    else if (isPickup && interactables[hit.collider.gameObject].allowPlayerPickup && InventoryController.Instance.HasOpenSlot())
+                    {
+                        InventoryController.Instance.AddItem(interactables[hit.collider.gameObject].Pickup());
+                    }
 
                     actionBuffering = true;
                 }

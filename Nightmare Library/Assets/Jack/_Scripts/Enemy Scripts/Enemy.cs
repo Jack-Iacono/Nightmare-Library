@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections.Generic;
+using Unity.Services.Authentication;
 
 public class Enemy : MonoBehaviour
 {
@@ -176,8 +177,7 @@ public class Enemy : MonoBehaviour
         {
             var print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
-            print.GetComponent<FootprintController>().Activate();
-            print.transform.position = hit.point;
+            print.GetComponent<FootprintController>().Place(hit.point, Quaternion.identity);
             print.SetActive(true);
         }
     }
@@ -193,10 +193,9 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            var print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
+            GameObject print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
-            print.GetComponent<TrapController>().Activate();
-            print.transform.position = hit.point;
+            Interactable.interactables[print].Place(hit.point, Quaternion.identity);
             print.SetActive(true);
         }
 
@@ -250,7 +249,8 @@ public class Enemy : MonoBehaviour
     public override string ToString()
     {
         string temp = String.Empty;
-        temp += "Active Attack: " + aAttack.ToString();
+        temp += enemyType.enemyName;
+        temp += "\nActive Attack: " + aAttack.ToString();
         temp += "\nPassive Attack: " + pAttack.ToString();
         temp += "\nEvidence: ";
         foreach(EnemyPreset.EvidenceEnum e in enemyType.evidence)

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MonitorController : Interactable
+public class MonitorController : MonoBehaviour
 {
     [Header("Monitor Variabels")]
     public GameObject monitorViewBlocker;
@@ -94,20 +94,20 @@ public class MonitorController : Interactable
         CheckPlayerInRange();
     }
 
-    public override void Click(bool fromNetwork = false)
+    public void SetCameraIndex(int i)
     {
-        cameraIndex = (cameraIndex + 1) % linkedCameras.Count;
+        cameraIndex = i;
+        ChangeCamera(cameraIndex);
+    }
+
+    public void Click(bool upDown)
+    {
+        cameraIndex = (cameraIndex + (upDown ? 1 : -1)) % linkedCameras.Count;
+        cameraIndex = cameraIndex < 0 ? linkedCameras.Count - 1 : cameraIndex;
         ChangeCamera(cameraIndex);
 
         Debug.Log("New Camera Index " + cameraIndex);
 
         onCamIndexChange?.Invoke(cameraIndex);
-
-        base.Click(fromNetwork);
-    }
-    public void SetCameraIndex(int i)
-    {
-        cameraIndex = i;
-        ChangeCamera(cameraIndex);
     }
 }

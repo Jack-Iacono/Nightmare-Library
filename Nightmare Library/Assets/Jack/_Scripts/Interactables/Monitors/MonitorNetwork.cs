@@ -6,15 +6,13 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(MonitorController))]
-public class MonitorNetwork : InteractableNetwork
+public class MonitorNetwork : NetworkBehaviour
 {
     private MonitorController monitor;
     private NetworkVariable<int> cameraIndex;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
-
         monitor = GetComponent<MonitorController>();
 
         var permission = NetworkVariableWritePermission.Server;

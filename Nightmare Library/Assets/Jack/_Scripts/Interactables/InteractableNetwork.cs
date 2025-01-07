@@ -10,7 +10,6 @@ using NetVar;
 public class InteractableNetwork : NetworkBehaviour
 {
     protected Interactable parent;
-    
 
     private bool canUpdateRigidbody = false;
     protected bool ownInteraction = false;
@@ -20,6 +19,9 @@ public class InteractableNetwork : NetworkBehaviour
 
     protected const float transformThreshold = 0.5f;
     private const float interpolationStrength = 0.6f;
+
+    private int rectifyFrequency = 10;
+    private int rectifyFrame = 0;
 
     private int updateTransformFrequency = 1;
 
@@ -76,6 +78,14 @@ public class InteractableNetwork : NetworkBehaviour
 
         if (!IsOwner)
         {
+            if (rectifyFrame < rectifyFrequency)
+                rectifyFrame++;
+            else
+            {
+                RectifyTransform();
+                rectifyFrame = 0;
+            }
+
             transformData.OnValueChanged += ConsumeTransformData;
             allEnabled.OnValueChanged += ConsumeEnabledData;
 
@@ -171,6 +181,8 @@ public class InteractableNetwork : NetworkBehaviour
                     parent.rb.velocity = transformData.Value.Velocity;
                 }
             }
+
+            rectifyFrame = 0;
         }
     }
 

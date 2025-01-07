@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
@@ -18,8 +19,13 @@ public class moui_CameraScreenNetwork : NetworkBehaviour
         }
 
         parent = GetComponent<moui_CameraScreenController>();
+        parent.OnStartFinish += OnParentStartFinish;
+    }
 
-        Debug.Log(cameraIndex.Value);
+    private void OnParentStartFinish()
+    {
+        if (!IsOwner)
+            parent.SetCameraIndex(cameraIndex.Value);
     }
 
     public override void OnNetworkSpawn()

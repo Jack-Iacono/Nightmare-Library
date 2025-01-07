@@ -24,6 +24,9 @@ public class moui_CameraScreenController : ScreenController
     public delegate void OnCamIndexChangeDelegate(int index);
     public OnCamIndexChangeDelegate OnCamIndexChange;
 
+    public delegate void OnStartFinishDelegate();
+    public OnStartFinishDelegate OnStartFinish;
+
     private RenderTexture display;
 
     // Start is called before the first frame update
@@ -37,6 +40,8 @@ public class moui_CameraScreenController : ScreenController
 
         ChangeCamera(0);
         playerCheckTimer = playerCheckTime;
+
+        OnStartFinish?.Invoke();
     }
 
     // Update is called once per frame

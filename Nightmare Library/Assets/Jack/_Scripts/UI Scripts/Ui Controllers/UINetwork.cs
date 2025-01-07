@@ -28,9 +28,8 @@ public class UINetwork : NetworkBehaviour
             parent.OnScreenIndexChange += OnScreenChange;
         }
     }
-    public override void OnNetworkSpawn()
+    private void Start()
     {
-        base.OnNetworkSpawn();
         if (!IsOwner)
             parent.ChangeToScreen(screenIndex.Value);
     }

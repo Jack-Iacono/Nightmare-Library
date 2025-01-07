@@ -93,7 +93,7 @@ public class GameController : MonoBehaviour
         }
 
         // Load the end screen
-        UIController.instance.ChangeToScreen(1);
+        UIController.mainInstance.ChangeToScreen(1);
     }
     public static void ReturnToMenu()
     {

@@ -3,18 +3,21 @@ using UnityEngine;
 
 public abstract class UIController : MonoBehaviour
 {
-    public static UIController instance;
+    public static UIController mainInstance;
 
     public List<ScreenController> screens = new List<ScreenController>();
     protected int currentScreen = 0;
     protected int nextScreen;
 
+    public delegate void OnScreenIndexChangeDelegate(int index);
+    public event OnScreenIndexChangeDelegate OnScreenIndexChange;
+
     protected virtual void Awake()
     {
-        if (instance != null)
-            Destroy(instance);
+        if (mainInstance != null)
+            Destroy(mainInstance);
 
-        instance = this;
+        mainInstance = this;
     }
     protected virtual void Start()
     {
@@ -60,6 +63,17 @@ public abstract class UIController : MonoBehaviour
         // sets the current screen to the new screen
         currentScreen = nextScreen;
         nextScreen = -1;
+
+        OnScreenIndexChange?.Invoke(currentScreen);
+    }
+    public void NextScreen()
+    {
+        ChangeToScreen((currentScreen + 1) % screens.Count);
+    }
+    public void PreviousScreen()
+    {
+        int index = (currentScreen + 1) % screens.Count;
+        ChangeToScreen(index < 0 ? screens.Count - 1 : index);
     }
 
     #region Events

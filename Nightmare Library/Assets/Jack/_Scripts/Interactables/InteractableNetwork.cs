@@ -22,11 +22,9 @@ public class InteractableNetwork : NetworkBehaviour
     private const float interpolationStrength = 0.6f;
 
     private int updateTransformFrequency = 1;
-    private int staticRectifyFrequency = 60;
 
     private bool wasUpdating = false;
     private int currentUpdateFrame = 0;
-    private int currentRectifyFrame = 0;
 
     private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>(); 
     private NetworkVariable<bool> allEnabled = new NetworkVariable<bool>();
@@ -193,8 +191,6 @@ public class InteractableNetwork : NetworkBehaviour
                 parent.rb.velocity = transformData.Value.Velocity;
             }
         }
-
-        currentRectifyFrame = 0;
     }
     [ClientRpc]
     private void RectifyTransformClientRpc()

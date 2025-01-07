@@ -1,14 +1,17 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MonitorController : MonoBehaviour
+public class moui_CameraScreenController : ScreenController
 {
     [Header("Monitor Variabels")]
-    public GameObject monitorViewBlocker;
-    public RawImage monitorPicture;
+    [SerializeField]
+    private TMP_Text cameraText;
+    public GameObject cameraNoSignalScreen;
+    public RawImage cameraPicture;
 
     public List<MonitorCameraController> linkedCameras = new List<MonitorCameraController>();
     private int cameraIndex = 0;
@@ -19,14 +22,14 @@ public class MonitorController : MonoBehaviour
     private LayerMask playerMask = 1 << 6;
 
     public delegate void OnCamIndexChangeDelegate(int index);
-    public OnCamIndexChangeDelegate onCamIndexChange;
+    public OnCamIndexChangeDelegate OnCamIndexChange;
 
     private RenderTexture display;
 
     // Start is called before the first frame update
-    void Start()
+    protected void Start()
     {
-        for(int i = 0; i < linkedCameras.Count; i++)
+        for (int i = 0; i < linkedCameras.Count; i++)
         {
             linkedCameras[i].SetViewing(false);
             linkedCameras[i].OnBroadcastChange += OnCameraBroadcastChange;
@@ -39,32 +42,31 @@ public class MonitorController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(playerCheckTimer > 0)
+        if (playerCheckTimer > 0)
             playerCheckTimer -= Time.deltaTime;
         else
         {
-            CheckPlayerInRange();
+            CheckCameraBroadcasting();
             playerCheckTimer = playerCheckTime;
         }
     }
 
     private void OnCameraBroadcastChange(bool broadcasting)
     {
-        CheckPlayerInRange();
+        CheckCameraBroadcasting();
     }
 
-    private void CheckPlayerInRange()
+    private void CheckCameraBroadcasting()
     {
         if (linkedCameras[cameraIndex].isBroadcasting)
         {
-            bool inRange = Physics.OverlapSphere(transform.position, useRadius, playerMask).Length > 0;
-            monitorViewBlocker.SetActive(!inRange || !linkedCameras[cameraIndex].isBroadcasting);
+            cameraNoSignalScreen.SetActive(false);
         }
         else
         {
             // Checks to see if any other cameras are broadcasting
             bool found = false;
-            for(int i = 0; i < linkedCameras.Count; i++)
+            for (int i = 0; i < linkedCameras.Count; i++)
             {
                 if (linkedCameras[i].isBroadcasting)
                 {
@@ -77,9 +79,8 @@ public class MonitorController : MonoBehaviour
             if (!found)
             {
                 Debug.Log("No camera broadcasting");
-                monitorViewBlocker.SetActive(true);
+                cameraNoSignalScreen.SetActive(true);
             }
-            
         }
     }
     public void ChangeCamera(int i)
@@ -89,9 +90,12 @@ public class MonitorController : MonoBehaviour
         linkedCameras[cameraIndex].SetViewing(true);
 
         display = linkedCameras[cameraIndex].renderTexture;
-        monitorPicture.texture = display;
+        cameraPicture.texture = display;
 
-        CheckPlayerInRange();
+        cameraText.text = "Cam " + cameraIndex;
+
+        CheckCameraBroadcasting();
+        OnCamIndexChange?.Invoke(cameraIndex);
     }
 
     public void SetCameraIndex(int i)
@@ -105,9 +109,5 @@ public class MonitorController : MonoBehaviour
         cameraIndex = (cameraIndex + (upDown ? 1 : -1)) % linkedCameras.Count;
         cameraIndex = cameraIndex < 0 ? linkedCameras.Count - 1 : cameraIndex;
         ChangeCamera(cameraIndex);
-
-        Debug.Log("New Camera Index " + cameraIndex);
-
-        onCamIndexChange?.Invoke(cameraIndex);
     }
 }

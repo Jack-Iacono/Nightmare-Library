@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using UnityEngine;
-using UnityEditor.SceneManagement;
 using System;
 
 public class SceneController : MonoBehaviour

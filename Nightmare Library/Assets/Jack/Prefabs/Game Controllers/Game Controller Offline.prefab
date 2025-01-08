@@ -53,6 +53,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameTimer: 100
+  enemyPresets:
+  - {fileID: 11400000, guid: c77dbe13533d60f4ba018cc0511215cf, type: 2}
 --- !u!114 &1626611085352431638
 MonoBehaviour:
   m_ObjectHideFlags: 0

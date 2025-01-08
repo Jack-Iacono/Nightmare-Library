@@ -8,6 +8,9 @@ using static Enemy;
 [CreateAssetMenu(fileName = "EnemyPreset", menuName = "ScriptableObjects/EnemyPreset", order = 1)]
 public class EnemyPreset : ScriptableObject
 {
+    public static List<EnemyPreset> presets = new List<EnemyPreset>();
+    public bool includeInGame = false;
+
     public string enemyName;
     public string description;
 
@@ -126,4 +129,20 @@ public class EnemyPreset : ScriptableObject
 
         return list;
     }
+
+#if UNITY_EDITOR
+    // Sets the static list to include the correct enemy presets
+    private void OnValidate()
+    {
+        if (includeInGame && !presets.Contains(this))
+        {
+            presets.Add(this);
+        }
+        else if (!includeInGame && presets.Contains(this))
+        {
+            presets.Remove(this);
+        }
+    }
+#endif
+
 }

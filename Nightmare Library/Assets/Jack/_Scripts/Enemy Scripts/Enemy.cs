@@ -25,7 +25,6 @@ public class Enemy : MonoBehaviour
     public ObjectPool objPool = new ObjectPool();
 
     [Header("Attack Variables")]
-    public List<EnemyPreset> presets = new List<EnemyPreset>();
     [NonSerialized]
     public EnemyPreset enemyType;
 
@@ -77,6 +76,7 @@ public class Enemy : MonoBehaviour
     private void Start()
     {
         Initialize();
+        Debug.Log(EnemyPreset.presets[0].name);
     }
     public virtual void Initialize()
     {
@@ -90,7 +90,7 @@ public class Enemy : MonoBehaviour
         navAgent.Warp(spawnLocation);
 
         // Gets the enemy preset that this will follow
-        enemyType = presets[UnityEngine.Random.Range(0, presets.Count)];
+        enemyType = GameController.instance.enemyPresets[UnityEngine.Random.Range(0, GameController.instance.enemyPresets.Count)];
 
         // Chooses a random active and passive attack from the preset
         aAttack = enemyType.GetRandomActiveAttack();

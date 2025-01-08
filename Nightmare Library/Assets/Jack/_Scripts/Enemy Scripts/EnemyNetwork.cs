@@ -55,13 +55,13 @@ public class EnemyNetwork : NetworkBehaviour
     {
         if (IsServer)
         {
-            OnInitializeClientRpc(parent.presets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
+            OnInitializeClientRpc(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
         }
     }
     [ClientRpc]
     private void OnInitializeClientRpc(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
     {
-        parent.enemyType = parent.presets[typeIndex];
+        parent.enemyType = GameController.instance.enemyPresets[typeIndex];
         parent.aAttack = (EnemyPreset.aAttackEnum)activeAttackIndex;
         parent.pAttack = (EnemyPreset.pAttackEnum)passiveAttackIndex;
     }

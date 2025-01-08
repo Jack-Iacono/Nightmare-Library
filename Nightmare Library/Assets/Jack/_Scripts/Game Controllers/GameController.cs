@@ -12,6 +12,9 @@ public class GameController : MonoBehaviour
 
     public float gameTimer = 480;
 
+    public List<EnemyPreset> enemyPresets = new List<EnemyPreset>();
+    public const int enemyCount = 1;
+
     // Local Events
     public static event EventHandler<bool> OnGamePause;
 
@@ -45,7 +48,10 @@ public class GameController : MonoBehaviour
     private void SpawnPrefabs()
     {
         PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
-        PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+        for(int i = 0; i < enemyCount; i++)
+        {
+            PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+        }
     }
 
 

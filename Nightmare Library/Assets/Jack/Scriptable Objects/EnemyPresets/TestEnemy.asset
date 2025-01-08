@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44d86c9be31808c4c83bd98820d6d8cc, type: 3}
   m_Name: TestEnemy
   m_EditorClassIdentifier: 
+  includeInGame: 1
   enemyName: Test Enemy
   description: A Basic Test Enemy
   activeAttacks: 03000000

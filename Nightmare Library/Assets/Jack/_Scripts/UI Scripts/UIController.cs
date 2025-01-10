@@ -72,7 +72,7 @@ public abstract class UIController : MonoBehaviour
     }
     public void PreviousScreen()
     {
-        int index = (currentScreen + 1) % screens.Count;
+        int index = (currentScreen - 1) % screens.Count;
         ChangeToScreen(index < 0 ? screens.Count - 1 : index);
     }
 

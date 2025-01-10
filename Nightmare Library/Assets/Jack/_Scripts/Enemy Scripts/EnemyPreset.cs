@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static Enemy;
 
@@ -125,6 +126,16 @@ public class EnemyPreset : ScriptableObject
         }
 
         return list;
+    }
+
+    public bool CheckEvidence(List<EvidenceEnum> list)
+    {
+        foreach (EvidenceEnum e in list)
+        {
+            if(!evidence.Contains(e))
+                return false;
+        }
+        return true;
     }
 
 }

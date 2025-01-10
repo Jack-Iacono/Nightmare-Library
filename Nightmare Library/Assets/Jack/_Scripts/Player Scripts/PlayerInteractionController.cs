@@ -46,6 +46,9 @@ public class PlayerInteractionController : MonoBehaviour
     public delegate void OnItemSightChangeDelegate(int interactionType);
     public static event OnItemSightChangeDelegate onItemSightChange;
 
+    private Interactable currentSeenItem;
+    private int currentSightType = -1;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -101,14 +104,32 @@ public class PlayerInteractionController : MonoBehaviour
             raycastHit = true;
             if (interactables.ContainsKey(hit.collider.gameObject))
             {
+                // Assign the default type to "null"
                 int type = -1;
-                if (interactables[hit.collider.gameObject].allowPlayerClick)
+                // Store the interaactable that is currently being viewed
+                Interactable itemInView = interactables[hit.collider.gameObject];
+
+                // Check to see which interaction can happen for the viewed item
+                if (itemInView.allowPlayerClick)
                     type = 0;
-                else if (interactables[hit.collider.gameObject].allowPlayerPickup)
+                else if (itemInView.allowPlayerPickup)
                     type = 1;
 
-                if (!canSeeItem)
+                // Send message to items that are being hovered or are being un-hovered
+                if(itemInView != currentSeenItem)
+                {
+                    if (currentSeenItem != null)
+                        currentSeenItem.Hover(false);
+                    itemInView.Hover(true);
+                    currentSeenItem = itemInView;
+                }
+                    
+                if (!canSeeItem || currentSightType != type)
+                {
                     onItemSightChange?.Invoke(type);
+                    currentSightType = type;
+                }
+
                 canSeeItem = true;
             }
             else
@@ -116,6 +137,12 @@ public class PlayerInteractionController : MonoBehaviour
                 if (canSeeItem)
                     onItemSightChange?.Invoke(-1);
                 canSeeItem = false;
+
+                if (currentSeenItem != null)
+                {
+                    currentSeenItem.Hover(false);
+                    currentSeenItem = null;
+                }
             }
         }
         else
@@ -123,6 +150,12 @@ public class PlayerInteractionController : MonoBehaviour
             if (canSeeItem)
                 onItemSightChange?.Invoke(-1);
             canSeeItem = false;
+
+            if(currentSeenItem != null)
+            {
+                currentSeenItem.Hover(false);
+                currentSeenItem = null;
+            }
         }
 
         if (!actionBuffering && isActive)

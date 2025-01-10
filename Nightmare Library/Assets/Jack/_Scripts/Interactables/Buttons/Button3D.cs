@@ -60,6 +60,11 @@ public class Button3D : Interactable
         base.Click(fromNetwork);
         m_OnClick?.Invoke();
     }
+    public override void Hover(bool onOff)
+    {
+        base.Hover(onOff);
+        Debug.Log("Hover: " + onOff);
+    }
 
     public void SetText(string text)
     {
@@ -68,5 +73,10 @@ public class Button3D : Interactable
     public void SetDelegate(ButtonClickedEvent e)
     {
         m_OnClick = e;
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        throw new NotImplementedException();
     }
 }

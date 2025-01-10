@@ -89,13 +89,16 @@ public class Interactable : MonoBehaviour
 
     protected virtual void Awake()
     {
+        // Add this object to the dictionary for easy referncing from other scripts via the gameObject
         interactables.Add(gameObject, this);
 
+        // Find the renderers present on this object for use with placement
         foreach(MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
         {
             renderMaterialList.Add(r, r.material);
         }
 
+        // Find all the colliders associated with this object
         foreach(Collider col in GetComponentsInChildren<Collider>())
         {
             colliders.Add(col);
@@ -109,6 +112,12 @@ public class Interactable : MonoBehaviour
         hasRigidBody = TryGetComponent(out rb);
         trans = transform;
     }
+
+    /// <summary>
+    /// Called by the player interaction controller, notifies this interactable about a change in the hover state
+    /// </summary>
+    /// <param name="onOff">True: The interactable is being hovered over || False: The interactable has stopped being hovered over</param>
+    public virtual void Hover(bool onOff) { }
 
     public virtual void Click(bool fromNetwork = false)
     {

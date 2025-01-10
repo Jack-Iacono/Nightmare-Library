@@ -76,7 +76,6 @@ public class Enemy : MonoBehaviour
     private void Start()
     {
         Initialize();
-        Debug.Log(EnemyPreset.presets[0].name);
     }
     public virtual void Initialize()
     {

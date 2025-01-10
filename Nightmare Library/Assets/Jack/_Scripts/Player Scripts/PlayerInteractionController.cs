@@ -12,7 +12,7 @@ public class PlayerInteractionController : MonoBehaviour
     private PlayerController playerCont;
 
     [SerializeField]
-    private float interactDistance = 2f;
+    private float interactDistance = 4f;
     [SerializeField]
     private LayerMask interactLayers;
 

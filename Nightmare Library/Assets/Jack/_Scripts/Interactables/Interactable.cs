@@ -7,7 +7,7 @@ public class Interactable : MonoBehaviour
 {
     // Used for quick interactable look up
     public static Dictionary<GameObject, Interactable> interactables { get; private set; } = new Dictionary<GameObject, Interactable>();
-    public Transform trans { get; private set; }
+    public Transform trans { get; protected set; }
 
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
@@ -36,10 +36,10 @@ public class Interactable : MonoBehaviour
     public bool precisePlacement = false;
 
     // Contains the mesh renderer as well as the default mesh
-    private Dictionary<MeshRenderer, Material> renderMaterialList = new Dictionary<MeshRenderer, Material>();
+    protected Dictionary<MeshRenderer, Material> renderMaterialList = new Dictionary<MeshRenderer, Material>();
 
-    private List<Collider> colliders = new List<Collider>();
-    private Vector3 mainColliderSize = Vector3.zero;
+    protected List<Collider> colliders = new List<Collider>();
+    protected Vector3 mainColliderSize = Vector3.zero;
 
     [NonSerialized]
     public bool hasRigidBody = false;

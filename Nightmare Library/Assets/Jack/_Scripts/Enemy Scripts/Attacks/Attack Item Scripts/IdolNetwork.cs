@@ -30,7 +30,7 @@ public class IdolNetwork : InteractableNetwork
         base.OnNetworkSpawn();
     }
 
-    protected override void OnClick(bool fromNetwork = false)
+    protected override void OnClick(Interactable interactable, bool fromNetwork = false)
     {
         if (!IsOwner)
             TransmitClickServerRpc(NetworkManager.LocalClientId);

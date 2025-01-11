@@ -9,6 +9,9 @@ public class Interactable : MonoBehaviour
     public static Dictionary<GameObject, Interactable> interactables { get; private set; } = new Dictionary<GameObject, Interactable>();
     public Transform trans { get; protected set; }
 
+    [SerializeField]
+    private GameObject gameobjectOverride = null;
+
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
 
@@ -56,7 +59,7 @@ public class Interactable : MonoBehaviour
     [SerializeField]
     public bool allowEnemyFlicker = false;
 
-    public delegate void OnClickDelegate(bool fromNetwork = false);
+    public delegate void OnClickDelegate(Interactable interactable, bool fromNetwork = false);
     public event OnClickDelegate OnClick;
     public delegate void OnPickupDelegate(bool fromNetwork = false);
     public event OnPickupDelegate OnPickup;
@@ -90,10 +93,13 @@ public class Interactable : MonoBehaviour
     protected virtual void Awake()
     {
         // Add this object to the dictionary for easy referncing from other scripts via the gameObject
-        interactables.Add(gameObject, this);
+        if (gameobjectOverride == null)
+            interactables.Add(gameObject, this);
+        else
+            interactables.Add(gameobjectOverride, this);
 
         // Find the renderers present on this object for use with placement
-        foreach(MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
+        foreach (MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
         {
             renderMaterialList.Add(r, r.material);
         }
@@ -121,7 +127,7 @@ public class Interactable : MonoBehaviour
 
     public virtual void Click(bool fromNetwork = false)
     {
-        OnClick?.Invoke(fromNetwork);
+        OnClick?.Invoke(this, fromNetwork);
     }
     public virtual GameObject Pickup(bool fromNetwork = false)
     {

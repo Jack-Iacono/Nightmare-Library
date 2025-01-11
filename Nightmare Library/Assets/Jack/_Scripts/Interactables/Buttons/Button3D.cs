@@ -14,37 +14,18 @@ public class Button3D : Interactable
     [Header("Button Variables")]
     [SerializeField]
     private TMP_Text text;
-    [SerializeField]    
-    private GameObject gameobjectOverride = null;
+    
     [Space(10)]
     [SerializeField]
     private ButtonClickedEvent m_OnClick = new ButtonClickedEvent();
 
+    private Image image;
+
 
     protected override void Awake()
     {
-        if (gameobjectOverride == null)
-            interactables.Add(gameObject, this);
-        else
-            interactables.Add(gameobjectOverride, this);
-
-        foreach (MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
-        {
-            renderMaterialList.Add(r, r.material);
-        }
-
-        foreach (Collider col in GetComponentsInChildren<Collider>())
-        {
-            colliders.Add(col);
-        }
-
-        if (colliders.Count > 0)
-            mainColliderSize = colliders[0].bounds.size;
-        else
-            mainColliderSize = Vector3.zero;
-
-        hasRigidBody = TryGetComponent(out rb);
-        trans = transform;
+        base.Awake();
+        image = GetComponent<Image>();
     }
 
     [Serializable]
@@ -63,7 +44,6 @@ public class Button3D : Interactable
     public override void Hover(bool onOff)
     {
         base.Hover(onOff);
-        Debug.Log("Hover: " + onOff);
     }
 
     public void SetText(string text)
@@ -73,6 +53,10 @@ public class Button3D : Interactable
     public void SetDelegate(ButtonClickedEvent e)
     {
         m_OnClick = e;
+    }
+    public void SetColor(Color color)
+    {
+        image.color = color;
     }
 
     public void OnPointerClick(PointerEventData eventData)

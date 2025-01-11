@@ -16,7 +16,9 @@ public class moui_EvidenceScreenController : ScreenController
     private List<Button3D> nameButtons = new List<Button3D>();
     [SerializeField]
     private List<Button3D> evidenceButtons = new List<Button3D>();
-    private Dictionary<EnemyPreset, Button3D> presetLink = new Dictionary<EnemyPreset, Button3D>();
+
+    private BiDict<Button3D, EnemyPreset> presetLink = new BiDict<Button3D, EnemyPreset>();
+    private BiDict<Button3D, EvidenceEnum> evidenceLink = new BiDict<Button3D, EvidenceEnum>();
 
     private List<EvidenceEnum> selectedEvidence = new List<EvidenceEnum>();
 
@@ -34,13 +36,8 @@ public class moui_EvidenceScreenController : ScreenController
             {
                 // Set the text of the button to the enemy name
                 nameButtons[i].SetText(presets[i].enemyName);
-                presetLink.Add(presets[i], nameButtons[i]);
-
-                // Need this to ensure the delegate does not reference the variable i
-                EnemyPreset p = presets[i];
-
-                // Set the button to call the click method from the desired enemy
-                nameButtons[i].onClick.AddListener(() => NameButtonClicked(p));
+                presetLink.Add(nameButtons[i], presets[i]);
+                nameButtons[i].OnClick += NameButtonClicked;
             }
             else
                 nameButtons[i].gameObject.SetActive(false);
@@ -52,42 +49,47 @@ public class moui_EvidenceScreenController : ScreenController
             if (evidenceEnums.Count > i)
             {
                 evidenceButtons[i].SetText(evidenceEnums[i].ToString());
-                EvidenceEnum e = evidenceEnums[i];
-                evidenceButtons[i].onClick.AddListener(() => EvidenceButtonClicked(e));
+                evidenceLink.Add(evidenceButtons[i], evidenceEnums[i]);
+                evidenceButtons[i].OnClick += EvidenceButtonClicked;
             }
             else
                 evidenceButtons[i].gameObject.SetActive(false);
         }
     }
 
-    public void NameButtonClicked(EnemyPreset p)
+    public void NameButtonClicked(Interactable interactable, bool fromNetwork)
     {
-
+        Debug.Log(presetLink[(Button3D)interactable].name);
     }
-    public void EvidenceButtonClicked(EvidenceEnum e)
+    public void EvidenceButtonClicked(Interactable interactable, bool fromNetwork)
     {
-        if (selectedEvidence.Contains(e))
-            selectedEvidence.Remove(e);
-        else
-            selectedEvidence.Add(e);
+        Button3D button = (Button3D)interactable;
+        EvidenceEnum e = evidenceLink[button];
 
-        string temp = "Selected Evidence:";
-        foreach(EvidenceEnum test in selectedEvidence)
+        if (selectedEvidence.Contains(e))
         {
-            temp += " " + test.ToString();
+            selectedEvidence.Remove(e);
+            button.SetColor(Color.white);
         }
-        Debug.Log(temp);
+        else
+        {
+            selectedEvidence.Add(e);
+            button.SetColor(Color.grey);
+        }
+            
+
         CheckNames();
     }
+
     private void CheckNames()
     {
-        foreach(EnemyPreset p in presetLink.Keys)
+        foreach(EnemyPreset p in presetLink.Keys2)
         {
-            Debug.Log(p.enemyName);
             if (p.CheckEvidence(selectedEvidence))
                 presetLink[p].gameObject.SetActive(true);
             else
                 presetLink[p].gameObject.SetActive(false);
         }
     }
+
 }

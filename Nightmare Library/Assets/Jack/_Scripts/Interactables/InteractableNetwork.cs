@@ -214,7 +214,7 @@ public class InteractableNetwork : NetworkBehaviour
     #endregion
 
     #region Click
-    protected virtual void OnClick(bool fromNetwork = false)
+    protected virtual void OnClick(Interactable interactable, bool fromNetwork = false)
     {
         if (!fromNetwork)
         {

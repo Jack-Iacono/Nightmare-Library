@@ -28,6 +28,9 @@ public class EnemyPreset : ScriptableObject
     }
     public aAttackEnum GetRandomActiveAttack(aAttackEnum[] exclude)
     {
+        if(exclude.Length == 0)
+            return GetRandomActiveAttack();
+
         List<aAttackEnum> temp = new List<aAttackEnum>(activeAttacks);
         for (int i = 0; i < exclude.Length; i++)
         {
@@ -47,6 +50,9 @@ public class EnemyPreset : ScriptableObject
     }
     public pAttackEnum GetRandomPassiveAttack(pAttackEnum[] exclude)
     {
+        if (exclude.Length == 0)
+            return GetRandomPassiveAttack();
+
         List<pAttackEnum> temp = new List<pAttackEnum>(passiveAttacks);
         for (int i = 0; i < exclude.Length; i++)
         {

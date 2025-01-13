@@ -13,7 +13,8 @@ public class GameController : MonoBehaviour
     public float gameTimer = 480;
 
     public List<EnemyPreset> enemyPresets = new List<EnemyPreset>();
-    public const int enemyCount = 1;
+    public const int enemyCount = 2;
+    private static List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(enemyCount);
 
     // Local Events
     public static event EventHandler<bool> OnGamePause;
@@ -37,6 +38,10 @@ public class GameController : MonoBehaviour
             Destroy(this);
 
         PlayerController.OnPlayerKilled += OnPlayerKilled;
+        for (int i = 0; i < enemyCount; i++)
+        {
+            enemyGuesses.Add(null);
+        }
     }
     private void Start()
     {
@@ -90,12 +95,26 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public static void MakeGuess(int index, EnemyPreset preset)
+    {
+        
+        enemyGuesses[index] = preset;
+    }
+
     public void EndGame()
     {
         if(NetworkConnectionController.HasAuthority)
         {
             PauseGame(true);
             OnGameEnd?.Invoke();
+        }
+
+        for(int i = 0; i < enemyCount; i++)
+        {
+            if(enemyGuesses[i] != null && Enemy.enemyInstances[i].enemyType == enemyGuesses[i])
+                Debug.Log("Guess " + i + " is correct");
+            else
+                Debug.Log("Guess " + i + " is wrong");
         }
 
         // Load the end screen

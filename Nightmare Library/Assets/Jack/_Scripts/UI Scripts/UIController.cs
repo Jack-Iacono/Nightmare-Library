@@ -12,6 +12,9 @@ public abstract class UIController : MonoBehaviour
     public delegate void OnScreenIndexChangeDelegate(int index);
     public event OnScreenIndexChangeDelegate OnScreenIndexChange;
 
+    public delegate void OnStartFinishDelegate();
+    public event OnStartFinishDelegate OnStartFinish;
+
     protected virtual void Awake()
     {
         if (mainInstance != null)
@@ -36,6 +39,8 @@ public abstract class UIController : MonoBehaviour
 
         // Registers this script with the OnGamePause event
         GameController.OnGamePause += OnGamePause;
+
+        OnStartFinish?.Invoke();
     }
 
     private void OnDestroy()

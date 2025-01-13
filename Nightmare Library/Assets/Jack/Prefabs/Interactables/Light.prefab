@@ -151,6 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4633a56595702ab4bb90d1adefbb8c9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameobjectOverride: {fileID: 0}
   placementTypes: 
   floorPlacementType: 0
   wallPlacementType: 0
@@ -160,7 +161,7 @@ MonoBehaviour:
   allowPlayerPickup: 0
   allowEnemyHysterics: 0
   allowEnemyFlicker: 1
-  attachedLight: {fileID: 0}
+  attachedLight: {fileID: 2387114679293393926}
 --- !u!1 &8759124631110718374
 GameObject:
   m_ObjectHideFlags: 0

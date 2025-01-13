@@ -22,26 +22,35 @@ public class UINetwork : NetworkBehaviour
         }
 
         parent = GetComponent<UIController>();
-
-        if (IsServer)
-        {
-            parent.OnScreenIndexChange += OnScreenChange;
-        }
+        parent.OnStartFinish += OnParentStartFinish;
     }
-    private void Start()
+
+    private void OnParentStartFinish()
     {
         if (!IsOwner)
             parent.ChangeToScreen(screenIndex.Value);
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (IsOwner)
+        {
+            parent.OnScreenIndexChange += OnScreenChange;
+        }
+        else
+        {
+            screenIndex.OnValueChanged += OnScreenIndexChange;
+            parent.ChangeToScreen(screenIndex.Value);
+        }
+    }
+
     private void OnScreenChange(int index)
     {
-        Debug.Log("Changing Screen");
         screenIndex.Value = index;
     }
-    private void OnCameraIndexChange(int previousValue, int newValue)
+    private void OnScreenIndexChange(int previousValue, int newValue)
     {
-        Debug.Log("New Screen Value " + newValue);
         parent.ChangeToScreen(newValue);
     }
 }

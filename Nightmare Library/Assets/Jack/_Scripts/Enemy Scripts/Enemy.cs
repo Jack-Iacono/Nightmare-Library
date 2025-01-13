@@ -4,9 +4,13 @@ using UnityEngine.AI;
 using System.Collections.Generic;
 using Unity.Services.Authentication;
 
+using static EnemyPreset;
+
 public class Enemy : MonoBehaviour
 {
     public static List<Enemy> enemyInstances = new List<Enemy>();
+    protected static List<aAttackEnum> inUseActiveAttacks = new List<aAttackEnum>();
+    protected static List<pAttackEnum> inUsePassiveAttacks = new List<pAttackEnum>();
 
     [Header("Enemy Characteristics")]
     [SerializeField]
@@ -92,8 +96,12 @@ public class Enemy : MonoBehaviour
         enemyType = GameController.instance.enemyPresets[UnityEngine.Random.Range(0, GameController.instance.enemyPresets.Count)];
 
         // Chooses a random active and passive attack from the preset
-        aAttack = enemyType.GetRandomActiveAttack();
-        pAttack = enemyType.GetRandomPassiveAttack();
+        aAttack = enemyType.GetRandomActiveAttack(inUseActiveAttacks.ToArray());
+        pAttack = enemyType.GetRandomPassiveAttack(inUsePassiveAttacks.ToArray());
+
+        // Add these attacks to a list that ensures that other enemies don't use the same attacks, not that this would cause problems tho
+        inUseActiveAttacks.Add(aAttack);
+        inUsePassiveAttacks.Add(pAttack);
 
         Debug.Log("Active Attack: " + aAttack.ToString() + "\nPassive Attack: " + pAttack.ToString());
 
@@ -247,16 +255,12 @@ public class Enemy : MonoBehaviour
 
     public override string ToString()
     {
-        string temp = String.Empty;
-        temp += enemyType.enemyName;
-        temp += "\nActive Attack: " + aAttack.ToString();
-        temp += "\nPassive Attack: " + pAttack.ToString();
-        temp += "\nEvidence: ";
+        string s = $"{enemyType.enemyName}\nActive Attack: {aAttack.ToString()}\nPassive Attack: {pAttack.ToString()}\nEvidence: ";
         foreach(EnemyPreset.EvidenceEnum e in enemyType.evidence)
         {
-            temp += e.ToString() + ", ";
+            s += e.ToString() + ", ";
         }
-        return temp;
+        return s;
     }
 
     private void OnDestroy()
@@ -265,6 +269,9 @@ public class Enemy : MonoBehaviour
             activeAttackTree.OnDestroy();
         if(passiveAttackTree != null)
             passiveAttackTree.OnDestroy();
+
+        inUseActiveAttacks.Clear();
+        inUsePassiveAttacks.Clear();
 
         enemyInstances.Remove(this);
         GameController.OnGamePause -= OnGamePause;

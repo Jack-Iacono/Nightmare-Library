@@ -184,6 +184,9 @@ public class PlayerInteractionController : MonoBehaviour
                 {
                     if (isPlaceStart || (isPlacePressed && !isPlacingItem))
                     {
+                        // Working like this as it will not be networked this way
+                        currentHeldItem.gameObject.SetActive(true);
+                        currentHeldItem.EnableColliders(false);
                         currentHeldItem.SetMeshMaterial(clearPlacementMaterial);
                         currentHeldItem.EnableMesh(true);
 
@@ -254,6 +257,8 @@ public class PlayerInteractionController : MonoBehaviour
                         }
                         else
                         {
+                            // Working like this as it will not be networked this way
+                            currentHeldItem.gameObject.SetActive(false);
                             currentHeldItem.EnableMesh(false);
                         }
 

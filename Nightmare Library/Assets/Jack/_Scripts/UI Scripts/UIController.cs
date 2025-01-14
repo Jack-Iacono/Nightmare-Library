@@ -6,7 +6,7 @@ public abstract class UIController : MonoBehaviour
     public static UIController mainInstance;
 
     public List<ScreenController> screens = new List<ScreenController>();
-    protected int currentScreen = 0;
+    protected int currentScreen = -1;
     protected int nextScreen;
 
     public delegate void OnScreenIndexChangeDelegate(int index);
@@ -35,7 +35,7 @@ public abstract class UIController : MonoBehaviour
                 screens[i].HideScreen();
         }
 
-        screens[0].ShowScreen();
+        ChangeToScreen(0);
 
         // Registers this script with the OnGamePause event
         GameController.OnGamePause += OnGamePause;

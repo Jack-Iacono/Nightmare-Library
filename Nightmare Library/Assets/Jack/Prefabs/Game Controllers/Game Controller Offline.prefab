@@ -52,7 +52,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbafe0d98bd7b894f9a85203486bf6a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameTimer: 100
+  gameTimer: 10000
   enemyPresets:
   - {fileID: 11400000, guid: c77dbe13533d60f4ba018cc0511215cf, type: 2}
   - {fileID: 11400000, guid: 1e0beca956d577944acf20ccc0bab9a8, type: 2}
@@ -118,7 +118,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 810394806
+  GlobalObjectIdHash: 1957153884
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0

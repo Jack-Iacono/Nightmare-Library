@@ -20,7 +20,7 @@ public class InteractableNetwork : NetworkBehaviour
     protected const float transformThreshold = 0.5f;
     private const float interpolationStrength = 0.6f;
 
-    private int rectifyFrequency = 10;
+    private int rectifyFrequency = 60;
     private int rectifyFrame = 0;
 
     private int updateTransformFrequency = 1;
@@ -29,7 +29,7 @@ public class InteractableNetwork : NetworkBehaviour
     private int currentUpdateFrame = 0;
 
     private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>(); 
-    private NetworkVariable<bool> allEnabled = new NetworkVariable<bool>();
+    private NetworkVariable<bool> isPhysical = new NetworkVariable<bool>();
 
     protected virtual void Awake()
     {
@@ -47,7 +47,7 @@ public class InteractableNetwork : NetworkBehaviour
         previousPosition = transform.position;
 
         if (IsServer)
-            allEnabled.Value = true;
+            isPhysical.Value = true;
         else
             ConsumeEnabledData(true, true);
     }
@@ -72,28 +72,20 @@ public class InteractableNetwork : NetworkBehaviour
         if(parent.allowEnemyFlicker)
             parent.OnEnemyInteractFlicker += OnEnemyInteractFlicker;
 
-        parent.OnAllEnabled += OnAllEnabled;
-
+        parent.OnSetPhysical += OnAllEnabled;
         canUpdateRigidbody = parent.hasRigidBody;
 
         if (!IsOwner)
         {
-            if (rectifyFrame < rectifyFrequency)
-                rectifyFrame++;
-            else
-            {
-                RectifyTransform();
-                rectifyFrame = 0;
-            }
-
             transformData.OnValueChanged += ConsumeTransformData;
-            allEnabled.OnValueChanged += ConsumeEnabledData;
+            isPhysical.OnValueChanged += ConsumeEnabledData;
 
             ConsumeTransformData(transformData.Value, transformData.Value);
         }
         else
         {
             TransmitTransformData();
+            OnAllEnabled(parent.isPhysical);
         }
     }
 
@@ -102,7 +94,7 @@ public class InteractableNetwork : NetworkBehaviour
         // Check to make sure the network is running to avoid calls going out without being connected and that this is on the server/owner
         if (NetworkConnectionController.IsRunning)
         {
-            if (IsOwner && canUpdateRigidbody && allEnabled.Value)
+            if (IsOwner && canUpdateRigidbody && isPhysical.Value)
             {
                 // ensures the update only runs every few frames
                 if (currentUpdateFrame >= updateTransformFrequency)
@@ -133,12 +125,22 @@ public class InteractableNetwork : NetworkBehaviour
                     currentUpdateFrame++;
                 }
             }
+            else if (!IsOwner && parent.hasRigidBody && parent.rb.velocity == Vector3.zero)
+            {
+                if (rectifyFrame < rectifyFrequency)
+                    rectifyFrame++;
+                else
+                {
+                    //RectifyTransform();
+                    rectifyFrame = 0;
+                }
+            }
         }
     }
 
     private void ConsumeEnabledData(bool previousValue, bool newValue)
     {
-        parent.EnableAll(newValue);
+        parent.SetPhysical(newValue);
     }
 
     #region Transform
@@ -272,9 +274,9 @@ public class InteractableNetwork : NetworkBehaviour
         {
             if (IsOwner)
             {
-                PlaceClientRpc(NetworkManager.LocalClientId);
-                allEnabled.Value = true;
                 TransmitTransformData();
+                isPhysical.Value = true;
+                PlaceClientRpc(new TransformData(parent.trans.position, parent.trans.rotation), NetworkManager.LocalClientId);
             }
             else
                 TransmitPlaceServerRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation));
@@ -285,16 +287,16 @@ public class InteractableNetwork : NetworkBehaviour
     {
         parent.Place(data.Position, data.Rotation, true);
 
-        PlaceClientRpc(sender);
+        PlaceClientRpc(data, sender);
 
         TransmitTransformData();
-        allEnabled.Value = true;
+        isPhysical.Value = true;
     }
     [ClientRpc]
-    protected virtual void PlaceClientRpc(ulong sender)
+    protected virtual void PlaceClientRpc(TransformData data, ulong sender)
     {
         if (!IsServer && NetworkManager.LocalClientId != sender)
-            parent.Place(true);
+            parent.Place(data.Position, data.Rotation, true);
     }
     #endregion
 
@@ -367,6 +369,6 @@ public class InteractableNetwork : NetworkBehaviour
     private void OnAllEnabled(bool enabled)
     {
         if (IsServer)
-            allEnabled.Value = enabled;
+            isPhysical.Value = enabled;
     }
 }

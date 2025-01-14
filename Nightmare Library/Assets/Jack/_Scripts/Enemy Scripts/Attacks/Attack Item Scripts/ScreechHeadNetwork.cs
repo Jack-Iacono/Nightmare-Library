@@ -83,7 +83,7 @@ public class ScreechHeadNetwork : NetworkBehaviour
         else
             OnDespawnHeadServerRpc(NetworkManager.LocalClientId);
     }
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void OnDespawnHeadServerRpc(ulong sender)
     {
         parent.DespawnHead(true);
@@ -93,6 +93,6 @@ public class ScreechHeadNetwork : NetworkBehaviour
     public void OnDespawnHeadClientRpc(ulong sender)
     {
         if (!NetworkManager.IsServer && sender != NetworkManager.LocalClientId)
-            parent.DespawnHead();
+            parent.DespawnHead(true);
     }
 }

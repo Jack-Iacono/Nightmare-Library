@@ -69,7 +69,7 @@ public class Interactable : MonoBehaviour
     public event OnThrowDelegate OnThrow;
 
     public delegate void OnAllEnabledDelegate(bool enabled);
-    public event OnAllEnabledDelegate OnAllEnabled;
+    public event OnAllEnabledDelegate OnSetPhysical;
 
     public delegate void OnEnemyInteractHystericsDelegate(bool fromNetwork = false);
     public event OnEnemyInteractHystericsDelegate OnEnemyInteractHysterics;
@@ -131,7 +131,7 @@ public class Interactable : MonoBehaviour
     }
     public virtual GameObject Pickup(bool fromNetwork = false)
     {
-        EnableAll(false);
+        SetPhysical(false);
 
         if (hasRigidBody)
             rb.isKinematic = true;
@@ -143,7 +143,7 @@ public class Interactable : MonoBehaviour
 
     public virtual void Place(bool fromNetwork = false)
     {
-        EnableAll(true);
+        SetPhysical(true);
 
         if (fixPlacement && hasRigidBody)
             rb.isKinematic = true;
@@ -161,7 +161,7 @@ public class Interactable : MonoBehaviour
     public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
     {
         trans.position = pos;
-        EnableAll(true);
+        SetPhysical(true);
 
         if (hasRigidBody)
         {
@@ -209,16 +209,17 @@ public class Interactable : MonoBehaviour
         isFlickering = false;
     }
 
-    public void EnableAll(bool b)
+    public void SetPhysical(bool b)
     {
         EnableColliders(b);
         EnableMesh(b);
+        gameObject.SetActive(b);
+
         if (b)
             ResetMeshMaterial();
 
-        OnAllEnabled?.Invoke(b);
+        OnSetPhysical?.Invoke(b);
     }
-
     public void EnableColliders(bool b)
     {
         foreach(Collider c in colliders)

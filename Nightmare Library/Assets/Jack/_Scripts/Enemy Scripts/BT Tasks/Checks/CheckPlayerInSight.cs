@@ -51,7 +51,8 @@ public class CheckPlayerInSight : Node
         {
             float dist = Vector3.Distance(p.transform.position, transform.position);
 
-            if (p.isAlive && dist <= fovRange)
+            // Check to see if the player is not at the desk, is alive and is in the fovRange
+            if (!DeskController.playersAtDesk.Contains(p) && p.isAlive && dist <= fovRange)
             {
                 queue.Insert(new PriorityQueue<Transform>.Element(p.transform, (int)dist));
             }

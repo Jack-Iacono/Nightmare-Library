@@ -41,7 +41,10 @@ public class EnemyPreset : ScriptableObject
         if (temp.Count > 0)
             return temp[UnityEngine.Random.Range(0, temp.Count)];
         else
+        {
+            Debug.LogWarning("Enemy Active Attack Assignment Error for " + enemyName + ": No Valid Attacks");
             return aAttackEnum.NULL;
+        }
     }
 
     public pAttackEnum GetRandomPassiveAttack()
@@ -63,7 +66,10 @@ public class EnemyPreset : ScriptableObject
         if (temp.Count > 0)
             return temp[UnityEngine.Random.Range(0, temp.Count)];
         else
+        {
+            Debug.LogWarning("Enemy Passive Attack Assignment Error for " + enemyName + ": No Valid Attacks");
             return pAttackEnum.NULL;
+        }
     }
 
     public ActiveAttack GetActiveAttack(aAttackEnum attack, Enemy e)

@@ -41,7 +41,7 @@ public class aa_Warden : ActiveAttack
             new Sequence(new List<Node>()
             {
                 new CheckConditionNewTarget(this, owner),
-                new TaskWait(1)
+                new TaskWait(this, 1)
             }),
             // Checks if the player is in sight and removes the alert queue if there is a player
             new Sequence(new List<Node>()
@@ -57,7 +57,7 @@ public class aa_Warden : ActiveAttack
                 new Selector(new List<Node>()
                 {
                     new CheckPlayerInSight(this, owner.navAgent, 40, -0.8f),
-                    new TaskWait(3),
+                    new TaskWait(this, 3),
                 }),
                 new TaskRemoveTarget(this)
             }),
@@ -66,7 +66,7 @@ public class aa_Warden : ActiveAttack
             {
                 new CheckConditionWardenAlert(this),
                 new TaskWardenCheckAlert(this, owner),
-                new TaskWait(3),
+                new TaskWait(this, 3),
                 new TaskClearAlertLocation(this)
             }),
             // Wander by default

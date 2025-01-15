@@ -63,7 +63,7 @@ public class SceneController : MonoBehaviour
     }
     private void OnSceneUnload(Scene s)
     {
-        Debug.Log($"Scene {s.name} unloaded");
+        //Debug.Log($"Scene {s.name} unloaded");
     }
 
     public static void LoadScene(m_Scene scene, bool offlineOverride = false)

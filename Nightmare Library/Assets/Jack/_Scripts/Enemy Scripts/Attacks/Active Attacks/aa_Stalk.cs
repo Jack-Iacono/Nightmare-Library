@@ -47,16 +47,16 @@ public class aa_Stalk : ActiveAttack
                     new Sequence(new List<Node>()
                     {
                         new CheckInPlayerSight(this, owner),
-                        new TaskWait(0.25f),
+                        new TaskWait(this, 0.25f),
                         new TaskWarpAway(this,owner.navAgent),
-                        new TaskWait(5, 2)
+                        new TaskWait(this, 5, 2)
                     }),
                     // Attack Behavior
                     new Sequence(new List<Node>()
                     {
                         new CheckTargetInRange(this, owner.transform, 4),
                         new TaskAttackTarget(owner.navAgent),
-                        new TaskWait(3),
+                        new TaskWait(this, 3),
                         new TaskResetStalk(this),
                         new TaskWarpAway(this,owner.navAgent),
                     }),
@@ -64,7 +64,7 @@ public class aa_Stalk : ActiveAttack
                     new Sequence(new List<Node>()
                     {
                         new TaskStalkWarpBehind(this, owner),
-                        new TaskWait(5),
+                        new TaskWait(this, 5),
                         new TaskStalkCloseIn(this, owner.navAgent)
                     })
                 }),

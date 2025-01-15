@@ -35,7 +35,7 @@ public class aa_Rush : ActiveAttack
             new Sequence(new List<Node>
             {
                 new TaskRushTarget(this, owner.navAgent, atNodePause, rushSpeed),
-                new TaskWait(reachGoalPause),
+                new TaskWait(this, reachGoalPause, 0, reachGoalPause - 1),
                 new TaskRushGetNewPath(this)
             }),
         });
@@ -48,8 +48,6 @@ public class aa_Rush : ActiveAttack
         
         if(path.Count > 0)
         {
-            Debug.Log("Getting Next Node: " + path[0].name);
-
             EnemyNavNode node = path[0];
             path.RemoveAt(0);
             return node;
@@ -66,11 +64,9 @@ public class aa_Rush : ActiveAttack
 
         path = EnemyNavGraph.GetPathToPoint(previousGoal, currentGoal);
 
-        ///*
         for(int i = 0; i < path.Count - 1; i++)
         {
             path[i].RayToNode(path[i + 1]);
         }
-        //*/
     }
 }

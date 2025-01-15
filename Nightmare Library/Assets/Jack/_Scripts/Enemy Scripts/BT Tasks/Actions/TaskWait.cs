@@ -3,9 +3,12 @@ using BehaviorTree;
 
 public class TaskWait : Node
 {
+    protected ActiveAttack owner;
+
     protected float waitTime { get; private set; }
     protected float waitTimer { get; private set; }
     protected float waitDiff { get; private set; }
+    protected float timeChange { get; private set; }    
     /// <summary>
     /// When the timer will restart, 0 = On Reset, 1 = On End
     /// </summary>
@@ -13,11 +16,18 @@ public class TaskWait : Node
 
     private bool timerFinished = false;
 
-    public TaskWait(float waitTime, float waitDiff = 0, int resetType = 0)
+    /// <param name="owner">The Active Attack that owns this timer</param>
+    /// <param name="waitTime">The average time that should be waited</param>
+    /// <param name="waitDiff">The average deviation from the average time</param>
+    /// <param name="timeChange">The amount that this value should change with the Enemy's level</param>
+    /// <param name="resetType">When the timer will restart, 0 = On Reset, 1 = On End</param>
+    public TaskWait(ActiveAttack owner, float waitTime, float waitDiff = 0, float timeChange = 0, int resetType = 0)
     {
         this.waitTime = waitTime;
         this.waitDiff = waitDiff;
         this.resetType = resetType;
+        this.timeChange = timeChange;
+        this.owner = owner;
     }
 
     public override Status Check(float dt)
@@ -48,7 +58,11 @@ public class TaskWait : Node
                 else
                 {
                     // Gets a random time within the given contraints
-                    waitTimer = Random.Range(waitTime + waitDiff / 2, waitTime - waitDiff / 2);
+                    waitTimer = Random.Range
+                        (
+                            (waitTime - ((float)owner.currentLevel / ActiveAttack.maxLevel * timeChange)) + waitDiff / 2, 
+                            (waitTime - ((float)owner.currentLevel / ActiveAttack.maxLevel * timeChange)) - waitDiff / 2
+                        );
 
                     OnStart();
 

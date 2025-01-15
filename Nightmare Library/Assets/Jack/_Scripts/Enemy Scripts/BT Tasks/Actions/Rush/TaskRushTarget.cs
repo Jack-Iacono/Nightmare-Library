@@ -49,8 +49,8 @@ public class TaskRushTarget : Node
         else if (currentTargetNode != null)
         {
             navAgent.destination = currentTargetNode.position;
-            navAgent.speed = speed;
-            navAgent.acceleration = 1000;
+            navAgent.speed = speed * owner.currentLevel;
+            navAgent.acceleration = 1000 * owner.currentLevel;
 
             // Is the player close enough to the target node
             if (Vector3.SqrMagnitude(transform.position - currentTargetNode.position) < 1)

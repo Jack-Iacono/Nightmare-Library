@@ -52,11 +52,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbafe0d98bd7b894f9a85203486bf6a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameTimer: 10000
   enemyPresets:
   - {fileID: 11400000, guid: c77dbe13533d60f4ba018cc0511215cf, type: 2}
-  - {fileID: 11400000, guid: 1e0beca956d577944acf20ccc0bab9a8, type: 2}
-  - {fileID: 11400000, guid: 093ca5d0d2ca1c44d956ac8e6e466027, type: 2}
 --- !u!114 &1626611085352431638
 MonoBehaviour:
   m_ObjectHideFlags: 0

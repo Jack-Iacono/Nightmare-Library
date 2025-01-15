@@ -10,10 +10,16 @@ public class GameController : MonoBehaviour
 
     public static bool gamePaused = false;
 
-    public float gameTimer = 480;
+    public const float gameTime = 50;
+    public float gameTimer { get; set; } = gameTime;
+
+    private const int totalLevels = 5;
+    private int gameTimeLevel = 1;
+    public delegate void OnLevelChangeDelegate(int theshold);
+    public static OnLevelChangeDelegate OnLevelChange;
 
     public List<EnemyPreset> enemyPresets = new List<EnemyPreset>();
-    public const int enemyCount = 2;
+    public const int enemyCount = 1;
     private static List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(enemyCount);
 
     // Local Events
@@ -66,7 +72,16 @@ public class GameController : MonoBehaviour
         if (!gamePaused)
         {
             if (gameTimer > 0)
+            {
                 gameTimer -= Time.deltaTime;
+
+                // Tells the other scripts that the game level is increasing, this makes the game more difficult
+                if (gameTime - gameTimer > gameTimeLevel * (gameTime / totalLevels))
+                {
+                    gameTimeLevel++;
+                    OnLevelChange?.Invoke(gameTimeLevel);
+                }
+            }
             else
                 EndGame();
         }

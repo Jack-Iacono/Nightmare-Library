@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: Test Enemy 3
   description: Do I need to say it?
-  activeAttacks: 03000000
-  passiveAttacks: 02000000
+  activeAttacks: 02000000
+  passiveAttacks: 03000000
   evidence: 000000000200000003000000

@@ -9,6 +9,7 @@ using static EnemyPreset;
 public class Enemy : MonoBehaviour
 {
     public static List<Enemy> enemyInstances = new List<Enemy>();
+    protected static List<EnemyPreset> inUsePresets = new List<EnemyPreset>();
     protected static List<aAttackEnum> inUseActiveAttacks = new List<aAttackEnum>();
     protected static List<pAttackEnum> inUsePassiveAttacks = new List<pAttackEnum>();
 
@@ -92,8 +93,14 @@ public class Enemy : MonoBehaviour
 
         navAgent.Warp(spawnLocation);
 
-        // Gets the enemy preset that this will follow
-        enemyType = GameController.instance.enemyPresets[UnityEngine.Random.Range(0, GameController.instance.enemyPresets.Count)];
+        // Gets the enemy preset that this will follow, does not pick one which is already in use
+        List<EnemyPreset> validPresets = new List<EnemyPreset>(GameController.instance.enemyPresets);
+        foreach(EnemyPreset preset in inUsePresets)
+        {
+            validPresets.Remove(preset);
+        }
+        enemyType = validPresets[UnityEngine.Random.Range(0, validPresets.Count)];
+        inUsePresets.Add(enemyType);
 
         // Chooses a random active and passive attack from the preset
         aAttack = enemyType.GetRandomActiveAttack(inUseActiveAttacks.ToArray());
@@ -102,8 +109,6 @@ public class Enemy : MonoBehaviour
         // Add these attacks to a list that ensures that other enemies don't use the same attacks, not that this would cause problems tho
         inUseActiveAttacks.Add(aAttack);
         inUsePassiveAttacks.Add(pAttack);
-
-        Debug.Log("Active Attack: " + aAttack.ToString() + "\nPassive Attack: " + pAttack.ToString());
 
         // Gets the attack script for each chosen attack
         activeAttackTree = enemyType.GetActiveAttack(aAttack, this);
@@ -270,6 +275,7 @@ public class Enemy : MonoBehaviour
         if(passiveAttackTree != null)
             passiveAttackTree.OnDestroy();
 
+        inUsePresets.Clear();
         inUseActiveAttacks.Clear();
         inUsePassiveAttacks.Clear();
 

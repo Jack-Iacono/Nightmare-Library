@@ -21,6 +21,9 @@ public class pa_Screech : PassiveAttack
 
     public pa_Screech(Enemy owner) : base(owner)
     {
+        name = "Screech";
+        toolTip = "Yes I took this idea from Doors, what of it. Ur mom took the idea for you from other people.";
+
         intervalTimer = intervalTime;
     }
 

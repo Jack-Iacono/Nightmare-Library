@@ -38,9 +38,9 @@ public class TaskWanderTimed : Node
     }
     public override Status Check(float dt)
     {
-        // Timer for how long the enemy should wander for
+        // Timer for how long the enemy should wander for, does not increment if no players are out of the office
         if (wanderTimer > 0)
-            wanderTimer -= dt;
+            wanderTimer -= DeskController.playersAtDesk.Count < PlayerController.playerInstances.Count ? dt : 0;
         else
         {
             wanderTimer = Random.Range(wanderTimeMin, wanderTimeMax);

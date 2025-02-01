@@ -4,12 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public abstract class ActiveAttack : BehaviorTree.Tree
+public abstract class ActiveAttack : Attack
 {
-    public string name;
-    public string toolTip;
-
-    protected Enemy owner;
+    protected BehaviorTree.Tree tree;
 
     // These variables are used among almost all attacks
     public Transform currentTargetDynamic { get; protected set; } = null;
@@ -19,15 +16,17 @@ public abstract class ActiveAttack : BehaviorTree.Tree
     public List<List<Vector3>> validWanderLocations { get; protected set; } = new List<List<Vector3>>();
     public float wanderRange = 25;
 
-    public const int maxLevel = 10;
-    protected int startingLevel = 1;
-    public int currentLevel;
-
     public ActiveAttack(Enemy owner)
     {
         this.owner = owner;
         GameController.OnLevelChange += OnLevelChange;
         currentLevel = startingLevel;
+        tree = new BehaviorTree.Tree();
+    }
+
+    public override void Update(float dt)
+    {
+        tree.UpdateTree(dt);
     }
 
     public void SetCurrentTarget(Transform t)
@@ -85,16 +84,5 @@ public abstract class ActiveAttack : BehaviorTree.Tree
                 }
             }
         }
-    }
-
-    protected void OnLevelChange(int level)
-    {
-        currentLevel = startingLevel + level - 1;
-        currentLevel = currentLevel > maxLevel ? maxLevel : currentLevel;
-    }
-
-    public virtual void OnDestroy()
-    {
-        GameController.OnLevelChange -= OnLevelChange;
     }
 }

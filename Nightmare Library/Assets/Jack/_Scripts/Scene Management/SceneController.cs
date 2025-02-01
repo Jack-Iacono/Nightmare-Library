@@ -11,12 +11,11 @@ public class SceneController : MonoBehaviour
 
     public static Scene loadedScene;
 
-    public enum m_Scene { MAIN_MENU, OFFLINE_GAME, ONLINE_GAME };
+    public enum m_Scene { MAIN_MENU, GAME };
     public readonly static Dictionary<m_Scene, string> scenes = new Dictionary<m_Scene, string>
         {
             { m_Scene.MAIN_MENU, "j_Menu" },
-            { m_Scene.OFFLINE_GAME, "j_OfflineGame" },
-            { m_Scene.ONLINE_GAME, "j_OnlineGame" }
+            { m_Scene.GAME, "j_Game" }
         };
 
     public static event EventHandler<string> OnChangeScene;

@@ -5,7 +5,10 @@ using UnityEngine;
 
 public class GameLobbyController : LobbyController
 {
-    public GameObject playerPrefab;
+    protected override void Awake()
+    {
+        base.Awake();
+    }
 
     // Start is called before the first frame update
     protected override void Start()

@@ -21,6 +21,8 @@ public class pa_Idols : PassiveAttack
 
     public pa_Idols(Enemy owner) : base(owner)
     {
+        name = "Idols";
+        toolTip = "It spawns stuff somewhere, not sure that letting them stay around is a good idea";
     }
 
     public override void Initialize()

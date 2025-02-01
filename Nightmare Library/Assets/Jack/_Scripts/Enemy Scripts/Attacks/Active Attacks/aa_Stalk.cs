@@ -15,10 +15,11 @@ public class aa_Stalk : ActiveAttack
 
     public aa_Stalk(Enemy owner) : base(owner)
     {
-
+        name = "Stalker";
+        toolTip = "This guy should go to jail, clearly what they do isn't legal. Especially the killing part, that might be bad.";
     }
 
-    protected override Node SetupTree()
+    public override void Initialize()
     {
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
 
@@ -77,7 +78,7 @@ public class aa_Stalk : ActiveAttack
             })
         });
 
-        return root;
+        tree.SetupTree(root);
     }
 
     public bool BeginStalking()

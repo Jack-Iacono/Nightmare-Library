@@ -142,7 +142,7 @@ public class Enemy : MonoBehaviour
         float dt = Time.deltaTime;
 
         if(activeAttackTree != null )
-            activeAttackTree.UpdateTree(dt);
+            activeAttackTree.Update(dt);
         if(passiveAttackTree != null )
             passiveAttackTree.Update(dt);
 

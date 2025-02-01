@@ -16,6 +16,9 @@ public class pa_Temps : PassiveAttack
 
     public pa_Temps(Enemy owner) : base(owner)
     {
+        name = "Temperature";
+        toolTip = "Wear a coat, but only if it's cold";
+
         // Gets a random movement for the temp
         upOrDown = Random.Range(0,2) == 0 ? true : false;
     }

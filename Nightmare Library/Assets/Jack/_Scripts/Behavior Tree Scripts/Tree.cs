@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace BehaviorTree
 {
-    public abstract class Tree
+    public class Tree
     {
         public Node root = null;
 
@@ -20,6 +20,13 @@ namespace BehaviorTree
             }
         }
 
-        protected abstract Node SetupTree();
+        protected Node SetupTree()
+        {
+            return null;
+        }
+        public void SetupTree(Node n)
+        {
+            root = n;
+        }
     }
 }

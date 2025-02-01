@@ -27,7 +27,7 @@ public abstract class LobbyController : NetworkBehaviour
     {
         if (instance != null)
             Destroy(instance);
-        
+
         instance = this;
     }
 

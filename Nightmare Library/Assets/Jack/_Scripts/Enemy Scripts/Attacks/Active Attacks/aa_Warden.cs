@@ -18,10 +18,13 @@ public class aa_Warden : ActiveAttack
 
     public aa_Warden(Enemy owner) : base(owner)
     {
+        name = "Warden";
+        toolTip = "He guards something, just not sure what";
+
         diff = wanderRange / ringCount;
     }
 
-    protected override Node SetupTree()
+    public override void Initialize()
     {
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
         AssignArea();
@@ -73,7 +76,7 @@ public class aa_Warden : ActiveAttack
             new TaskWander(this, owner.navAgent, 5)
         });
 
-        return root;
+        tree.SetupTree(root);
     }
 
     protected void AssignArea()

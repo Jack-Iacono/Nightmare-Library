@@ -30,12 +30,12 @@ public class MainMenuLobbyController : LobbyController
     public void PlayOnlineCreate()
     {
         GameController.isNetworkGame = true;
-        SceneController.LoadScene(SceneController.m_Scene.ONLINE_GAME);
+        SceneController.LoadScene(SceneController.m_Scene.GAME);
     }
     public void PlayOffline()
     {
         GameController.isNetworkGame = false;
-        SceneController.LoadScene(SceneController.m_Scene.OFFLINE_GAME);
+        SceneController.LoadScene(SceneController.m_Scene.GAME);
     }
     public async void PlayOnlineJoin(string joinCode)
     {

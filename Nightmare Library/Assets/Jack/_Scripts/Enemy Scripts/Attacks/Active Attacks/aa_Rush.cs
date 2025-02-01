@@ -16,9 +16,11 @@ public class aa_Rush : ActiveAttack
 
     public aa_Rush(Enemy owner) : base(owner)
     {
+        name = "Rush";
+        toolTip = "I couldn't even tell you if I wanted to";
     }
 
-    protected override Node SetupTree()
+    public override void Initialize() 
     {
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
         GetNewPath();
@@ -40,7 +42,7 @@ public class aa_Rush : ActiveAttack
             }),
         });
 
-        return root;
+        tree.SetupTree(root);
     }
 
     public EnemyNavNode GetNextNode()

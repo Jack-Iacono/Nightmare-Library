@@ -17,9 +17,8 @@ public abstract class Attack
 
     public abstract void Update(float dt);
 
-    protected void OnLevelChange(int level)
+    protected virtual void OnLevelChange(int level)
     {
-        Debug.Log("Current Level for " + name + " set to " + level);
         currentLevel = startingLevel + level - 1;
         currentLevel = currentLevel > maxLevel ? maxLevel : currentLevel;
     }

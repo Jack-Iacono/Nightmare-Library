@@ -11,9 +11,9 @@ public class TaskRushTarget : Node
     private NavMeshAgent navAgent;
     private Transform transform;
 
-    private float speed = 50;
+    public float speed = 50;
 
-    private float nodeWaitTime = 1;
+    public float nodeWaitTime = 1;
     private float nodeWaitTimer = 1;
 
     private bool atNodeWait = false;

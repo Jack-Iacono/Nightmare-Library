@@ -14,6 +14,10 @@ public class aa_Rush : ActiveAttack
     private EnemyNavNode currentGoal;
     private EnemyNavNode previousGoal;
 
+    // These methods allow the enemy to update the values for attacks during level up
+    private TaskWait atNodePauseNode;
+    private TaskRushTarget rushTargetNode;
+
     public aa_Rush(Enemy owner) : base(owner)
     {
         name = "Rush";
@@ -24,6 +28,10 @@ public class aa_Rush : ActiveAttack
     {
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
         GetNewPath();
+
+        // References stored so that they can have values changed later
+        atNodePauseNode = new TaskWait(this, reachGoalPause, 0);
+        rushTargetNode = new TaskRushTarget(this, owner.navAgent, atNodePause, rushSpeed);
 
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -36,8 +44,8 @@ public class aa_Rush : ActiveAttack
             }),
             new Sequence(new List<Node>
             {
-                new TaskRushTarget(this, owner.navAgent, atNodePause, rushSpeed),
-                new TaskWait(this, reachGoalPause, 0, reachGoalPause - 1),
+                rushTargetNode,
+                atNodePauseNode,
                 new TaskRushGetNewPath(this)
             }),
         });
@@ -70,5 +78,15 @@ public class aa_Rush : ActiveAttack
         {
             path[i].RayToNode(path[i + 1]);
         }
+    }
+
+    protected override void OnLevelChange(int level)
+    {
+        base.OnLevelChange(level);
+
+        atNodePauseNode.waitTime = Mathf.Clamp(reachGoalPause - (level * 0.5f), 0, 1000000);
+
+        rushTargetNode.nodeWaitTime = atNodePause;
+        rushTargetNode.speed = rushSpeed * level;
     }
 }

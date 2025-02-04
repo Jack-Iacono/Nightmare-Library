@@ -116,9 +116,9 @@ public class Enemy : MonoBehaviour
 
         // Initializes the attacks
         if(activeAttackTree != null)
-            activeAttackTree.Initialize();
+            activeAttackTree.Initialize(4);
         if(passiveAttackTree != null)
-            passiveAttackTree.Initialize();
+            passiveAttackTree.Initialize(4);
 
         // Gets the evidence from the enemy preset
         evidence = enemyType.GetEvidence(this);

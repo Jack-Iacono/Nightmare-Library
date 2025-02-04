@@ -95,4 +95,10 @@ public class TaskWanderTimed : Node
         isWaiting = false;
         pointWaitTimer = Random.Range(pointWaitTimeMin, pointWaitTimeMax);
     }
+
+    public void OnLevelChange(float min, float max)
+    {
+        wanderTimeMin = min;
+        wanderTimeMax = max;
+    }
 }

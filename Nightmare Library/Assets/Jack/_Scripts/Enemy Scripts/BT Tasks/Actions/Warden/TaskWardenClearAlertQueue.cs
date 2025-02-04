@@ -14,6 +14,8 @@ public class TaskWardenClearAlertQueue : Node
     {
         owner.ClearAlertItems();
 
+        Debug.Log("Clearing Alert Queue");
+
         status = Status.SUCCESS;
         return status;
     }

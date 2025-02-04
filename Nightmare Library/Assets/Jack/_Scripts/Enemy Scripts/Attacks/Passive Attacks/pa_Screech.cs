@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class pa_Screech : PassiveAttack
 {
-    private float baseChance = 0.9f;
-    private float chanceIncrease = 0.5f;
+    private const float baseSpawnChanceIncrease = 0.05f;
+    private const float baseSpawnChance = 0.3f;
+    private float spawnChance = baseSpawnChance;
+    private float spawnChanceIncrease = baseSpawnChanceIncrease;
 
     // In ticks of the interval, not seconds
-    private int coolDownTicks = 3;
+    private const int baseCoolDownTicks = 3;
+    private int coolDownTicks = baseCoolDownTicks;
+
     // this is in seconds
     public float attackTime = 10;
+    private const float baseAttackTime = 10;
     
     private float dist = 2;
 
@@ -27,16 +32,16 @@ public class pa_Screech : PassiveAttack
         intervalTimer = intervalTime;
     }
 
-    public override void Initialize()
+    public override void Initialize(int level = 1)
     {
-        foreach(PlayerController p in PlayerController.playerInstances.Values)
+        base.Initialize();
+
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
         {
             ScreechHeadController cont = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_ScreechHead, Vector3.zero, Quaternion.identity).GetComponent<ScreechHeadController>();
-            headControllers.Add(cont, new HeadData(baseChance, coolDownTicks));
+            headControllers.Add(cont, new HeadData(spawnChance, coolDownTicks));
             cont.Initialize(this, p);
         }
-        
-        base.Initialize();
     }
 
     public override void Update(float dt)
@@ -59,14 +64,14 @@ public class pa_Screech : PassiveAttack
                         if (rand < chance)
                         {
                             //Spawn
-                            headControllers[s].SetChance(baseChance);
+                            headControllers[s].SetChance(spawnChance);
                             headControllers[s].SetCooldown(coolDownTicks);
 
                             s.SpawnHead(GetRandomOffset());
                         }
                         else
                         {
-                            headControllers[s].IncreaseChance(chanceIncrease);
+                            headControllers[s].IncreaseChance(spawnChanceIncrease);
                         }
                     }
                     else
@@ -103,6 +108,20 @@ public class pa_Screech : PassiveAttack
         base.OnDestroy();
     }
 
+    protected override void OnLevelChange(int level)
+    {
+        base.OnLevelChange(level);
+
+        spawnChance = baseSpawnChance;
+        spawnChanceIncrease = baseSpawnChanceIncrease;
+
+        // Changes the base chance for each head
+        foreach (HeadData data in headControllers.Values)
+        {
+            data.SetChance(spawnChance);
+        }
+    }
+
     protected class HeadData
     {
         public float chance;
@@ -130,8 +149,9 @@ public class pa_Screech : PassiveAttack
         public void TickCooldown()
         {
             cooldown--;
-            //Debug.Log(cooldown);
         }
     }
+
+    
 }
 

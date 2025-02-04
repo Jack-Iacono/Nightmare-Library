@@ -11,9 +11,9 @@ public class TaskRushTarget : Node
     private NavMeshAgent navAgent;
     private Transform transform;
 
-    public float speed = 50;
+    private float speed = 50;
 
-    public float nodeWaitTime = 1;
+    private float nodeWaitTime = 1;
     private float nodeWaitTimer = 1;
 
     private bool atNodeWait = false;
@@ -67,5 +67,11 @@ public class TaskRushTarget : Node
 
         status = Status.RUNNING;
         return status;
+    }
+
+    public void OnLevelChange(float nodeWaitTime, float speed)
+    {
+        this.nodeWaitTime = nodeWaitTime;
+        this.speed = speed;
     }
 }

@@ -13,7 +13,11 @@ public abstract class Attack
     protected int startingLevel = 1;
     public int currentLevel;
 
-    public virtual void Initialize() { }
+    public virtual void Initialize(int level = 1) 
+    {
+        startingLevel = level;
+        currentLevel = startingLevel;
+    }
 
     public abstract void Update(float dt);
 

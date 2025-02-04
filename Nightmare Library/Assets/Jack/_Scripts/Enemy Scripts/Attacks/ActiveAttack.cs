@@ -15,6 +15,7 @@ public abstract class ActiveAttack : Attack
 
     public List<List<Vector3>> validWanderLocations { get; protected set; } = new List<List<Vector3>>();
     public float wanderRange = 25;
+    protected float baseWanderRange = 25;
 
     public ActiveAttack(Enemy owner)
     {

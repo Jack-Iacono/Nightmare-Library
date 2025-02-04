@@ -6,17 +6,18 @@ using UnityEngine.AI;
 
 public class aa_Rush : ActiveAttack
 {
-    private float reachGoalPause = 5;
-    private float atNodePause = 0.1f;
-    private float rushSpeed = 150;
+    private float baseReachGoalPauseMin = 5;
+    private float baseReachGoalPauseMax = 5;
+    private float baseAtNodePause = 0.1f;
+    private float baseRushSpeed = 150;
 
     public List<EnemyNavNode> path { get; private set; } = new List<EnemyNavNode>();
     private EnemyNavNode currentGoal;
     private EnemyNavNode previousGoal;
 
     // These methods allow the enemy to update the values for attacks during level up
-    private TaskWait atNodePauseNode;
-    private TaskRushTarget rushTargetNode;
+    private TaskWait n_AtNodePause;
+    private TaskRushTarget n_RushTarget;
 
     public aa_Rush(Enemy owner) : base(owner)
     {
@@ -24,14 +25,16 @@ public class aa_Rush : ActiveAttack
         toolTip = "I couldn't even tell you if I wanted to";
     }
 
-    public override void Initialize() 
+    public override void Initialize(int level = 1) 
     {
+        base.Initialize(level);
+
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
         GetNewPath();
 
         // References stored so that they can have values changed later
-        atNodePauseNode = new TaskWait(this, reachGoalPause, 0);
-        rushTargetNode = new TaskRushTarget(this, owner.navAgent, atNodePause, rushSpeed);
+        n_AtNodePause = new TaskWait(this, baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_RushTarget = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -44,8 +47,8 @@ public class aa_Rush : ActiveAttack
             }),
             new Sequence(new List<Node>
             {
-                rushTargetNode,
-                atNodePauseNode,
+                n_RushTarget,
+                n_AtNodePause,
                 new TaskRushGetNewPath(this)
             }),
         });
@@ -84,9 +87,7 @@ public class aa_Rush : ActiveAttack
     {
         base.OnLevelChange(level);
 
-        atNodePauseNode.waitTime = Mathf.Clamp(reachGoalPause - (level * 0.5f), 0, 1000000);
-
-        rushTargetNode.nodeWaitTime = atNodePause;
-        rushTargetNode.speed = rushSpeed * level;
+        n_AtNodePause.OnLevelChange(baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_RushTarget.OnLevelChange(baseAtNodePause, baseRushSpeed * level);
     }
 }

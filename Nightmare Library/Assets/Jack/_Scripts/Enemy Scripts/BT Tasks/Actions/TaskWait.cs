@@ -5,9 +5,9 @@ public class TaskWait : Node
 {
     protected ActiveAttack owner;
 
-    public float waitTime;
     protected float waitTimer { get; private set; }
-    protected float waitDiff { get; private set; }
+    protected float waitMin { get; private set; }
+    protected float waitMax { get; private set; }
     
     /// <summary>
     /// When the timer will restart, 0 = On Reset, 1 = On End
@@ -21,10 +21,17 @@ public class TaskWait : Node
     /// <param name="waitDiff">The average deviation from the average time</param>
     /// <param name="timeChange">The amount that this value should change with the Enemy's level</param>
     /// <param name="resetType">When the timer will restart, 0 = On Reset, 1 = On End</param>
-    public TaskWait(ActiveAttack owner, float waitTime, float waitDiff = 0, int resetType = 0)
+    public TaskWait(ActiveAttack owner, float waitMin, float waitMax, int resetType = 0)
     {
-        this.waitTime = waitTime;
-        this.waitDiff = waitDiff;
+        this.waitMin = waitMin;
+        this.waitMax = waitMax;
+        this.resetType = resetType;
+        this.owner = owner;
+    }
+    public TaskWait(ActiveAttack owner, float wait, int resetType = 0)
+    {
+        waitMin = wait;
+        waitMax = wait;
         this.resetType = resetType;
         this.owner = owner;
     }
@@ -57,7 +64,7 @@ public class TaskWait : Node
                 else
                 {
                     // Gets a random time within the given contraints
-                    waitTimer = Random.Range(waitTime + waitDiff / 2, waitTime - waitDiff / 2);
+                    waitTimer = Random.Range(waitMin, waitMax);
 
                     OnStart();
 
@@ -98,5 +105,11 @@ public class TaskWait : Node
         base.OnResetNode();
         if(resetType == 0)
             ResetTimer();
+    }
+
+    public void OnLevelChange(float waitMax, float waitMin)
+    {
+        this.waitMin = waitMin;
+        this.waitMax = waitMax;
     }
 }

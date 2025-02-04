@@ -77,6 +77,9 @@ public class CheckPlayerInSight : Node
                         if (hit.collider.transform == player)
                         {
                             SetPlayerPosition(player);
+
+                            status = Status.SUCCESS;
+                            return status;
                         }
                     }
                 }

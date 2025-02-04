@@ -12,8 +12,10 @@ public class pa_Idols : PassiveAttack
     private List<IdolController> idolObjects = new List<IdolController>();
     protected int activeIdolObjects = 0;
 
-    private float spawnTimeAvg = 4;
-    private float spawnTimeDev = 1;
+    private const float baseSpawnTimeMin = 5;
+    private const float baseSpawnTimeMax = 7;
+    private float spawnTimeMin = baseSpawnTimeMin;
+    private float spawnTimeMax = baseSpawnTimeMax;  
     private float spawnTimer = 0;
 
     public delegate void OnIdolCountChangeDelegate(int idolCount);
@@ -25,12 +27,12 @@ public class pa_Idols : PassiveAttack
         toolTip = "It spawns stuff somewhere, not sure that letting them stay around is a good idea";
     }
 
-    public override void Initialize()
+    public override void Initialize(int level = 1)
     {
         base.Initialize();
 
         idolObjects = IdolController.GetAllIdols();
-        spawnTimer = UnityEngine.Random.Range(spawnTimeAvg - spawnTimeDev, spawnTimeAvg + spawnTimeDev);
+        spawnTimer = UnityEngine.Random.Range(spawnTimeMin, spawnTimeMax);
     }
 
     public override void Update(float dt)
@@ -46,11 +48,12 @@ public class pa_Idols : PassiveAttack
                 else
                 {
                     SpawnIdol();
-                    spawnTimer = UnityEngine.Random.Range(spawnTimeAvg - spawnTimeDev, spawnTimeAvg + spawnTimeDev);
+                    spawnTimer = UnityEngine.Random.Range(spawnTimeMin, spawnTimeMax);
                 }
             }
             else
             {
+                currentIdolCount = -1000;
                 AttackPlayer();
             }
         }
@@ -91,7 +94,7 @@ public class pa_Idols : PassiveAttack
             player.ReceiveAttack();
         }
 
-        spawnTimer = UnityEngine.Random.Range(spawnTimeAvg - spawnTimeDev, spawnTimeAvg + spawnTimeDev);
+        spawnTimer = UnityEngine.Random.Range(baseSpawnTimeMin - baseSpawnTimeMax, baseSpawnTimeMin + baseSpawnTimeMax);
         ClearIdols();
     }
 
@@ -99,5 +102,13 @@ public class pa_Idols : PassiveAttack
     {
         currentIdolCount = 0;
         base.OnDestroy();
+    }
+
+    protected override void OnLevelChange(int level)
+    {
+        base.OnLevelChange(level);
+
+        spawnTimeMax = baseSpawnTimeMax / level;
+        spawnTimeMin = baseSpawnTimeMin / level;
     }
 }

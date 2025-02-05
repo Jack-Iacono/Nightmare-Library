@@ -222,7 +222,6 @@ public class GameControllerNetwork : NetworkBehaviour
 
     #endregion
 
-
     public override void OnDestroy()
     {
         // Should never not be this, but just better to check

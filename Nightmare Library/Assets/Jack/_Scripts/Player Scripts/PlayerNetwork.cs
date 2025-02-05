@@ -34,6 +34,7 @@ public class PlayerNetwork : NetworkBehaviour
 
         playerCont = GetComponent<PlayerController>();
         playerCont.OnPlayerAttacked += OnPlayerAttacked;
+
     }
 
     public override void OnNetworkSpawn()
@@ -64,6 +65,8 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (IsOwner)
         {
+            // May need to update on client as well, not sure yet
+            VoiceChatController.UpdatePlayerPosition(gameObject);
             TransmitContinuousState();
         }
         else
@@ -95,8 +98,11 @@ public class PlayerNetwork : NetworkBehaviour
     [ClientRpc]
     private void OnPlayerAttackedClientRpc()
     {
-        if(!IsServer)
+        if (!IsServer)
+        {
             playerCont.Kill(IsOwner);
+            VoiceChatController.JoinChannel("test", VoiceChatController.ChatType.GROUP);
+        }
     }
     #endregion
 

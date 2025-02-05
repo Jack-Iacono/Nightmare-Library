@@ -98,6 +98,9 @@ public class NetworkConnectionController : NetworkBehaviour
             }
             
             await CheckConnectionStart();
+
+            // This logs the user into the voice chat associated with that room
+            VoiceChatController.JoinChannel(joinCode);
         }
     }
 
@@ -138,6 +141,7 @@ public class NetworkConnectionController : NetworkBehaviour
     {
         instance.StopAllCoroutines();
 
+        await VoiceChatController.LeaveChannel();
         await StopLobby();
         StopNetworkManager();
 

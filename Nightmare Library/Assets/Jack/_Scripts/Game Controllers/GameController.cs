@@ -85,11 +85,6 @@ public class GameController : MonoBehaviour
             else
                 EndGame();
         }
-
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            EndGame();
-        }
     }
 
     private void OnPlayerKilled(PlayerController player)

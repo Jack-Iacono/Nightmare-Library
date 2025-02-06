@@ -50,6 +50,7 @@ public class AuthenticationController : MonoBehaviour
                 playerInfo = AuthenticationService.Instance.PlayerInfo;
 
                 await VivoxService.Instance.InitializeAsync();
+                await VoiceChatController.Login();
             }
             else
             {

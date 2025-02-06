@@ -7,8 +7,11 @@ using UnityEngine;
 
 public static class VoiceChatController
 {
+
     private static string currentVoiceChannel = string.Empty;
     public enum ChatType { ECHO, GROUP, POSITIONAL };
+
+    private static bool hasJoinedChannel = false;
 
     public static async Task Login()
     {
@@ -22,12 +25,17 @@ public static class VoiceChatController
         await VivoxService.Instance.LogoutAsync();
     }
 
-    public static async void JoinChannel(string voiceChannel, ChatType chatType = ChatType.GROUP)
+    public static async void JoinChannel(string vcIdentifier, ChatType chatType = ChatType.GROUP)
     {
+        // Ensures that no values can be changed while not in a channel
+        hasJoinedChannel = false;
+
         if (currentVoiceChannel != null && VivoxService.Instance.ActiveChannels.Keys.Contains(currentVoiceChannel))
             await LeaveChannel();
 
-        currentVoiceChannel = voiceChannel;
+        // Combines the current room with the join code
+        currentVoiceChannel = NetworkConnectionController.joinCode + vcIdentifier;
+        Debug.Log("Joining " + chatType.ToString() + " Channel: " + currentVoiceChannel);
 
         switch (chatType)
         {
@@ -46,15 +54,20 @@ public static class VoiceChatController
                 break;
         }
 
+        // Allow channel related actions to occur
+        hasJoinedChannel = true;
     }
     public static async Task LeaveChannel()
     {
         if(VivoxService.Instance.ActiveChannels.Keys.Contains(currentVoiceChannel))
             await VivoxService.Instance.LeaveChannelAsync(currentVoiceChannel);
+
+        Debug.Log("Leaving Voice Channel: " + currentVoiceChannel.ToString());
     }
 
     public static void UpdatePlayerPosition(GameObject player)
     {
-        VivoxService.Instance.Set3DPosition(player, currentVoiceChannel);
+        if(hasJoinedChannel)
+            VivoxService.Instance.Set3DPosition(player, currentVoiceChannel);
     }
 }

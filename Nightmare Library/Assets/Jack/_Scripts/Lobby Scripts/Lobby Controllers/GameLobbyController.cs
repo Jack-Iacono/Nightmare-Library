@@ -5,11 +5,6 @@ using UnityEngine;
 
 public class GameLobbyController : LobbyController
 {
-    protected override void Awake()
-    {
-        base.Awake();
-    }
-
     // Start is called before the first frame update
     protected override void Start()
     {
@@ -19,6 +14,7 @@ public class GameLobbyController : LobbyController
             ServerEntryAction();
         else
             ClientEntryAction();
+
     }
 
     public override void OnNetworkSpawn()
@@ -34,5 +30,11 @@ public class GameLobbyController : LobbyController
     protected override void ClientEntryAction()
     {
         base.ClientEntryAction();
+    }
+
+    protected override void ConnectVoiceChat()
+    {
+        Debug.Log("Connecting");
+        VoiceChatController.JoinChannel("Alive", VoiceChatController.ChatType.POSITIONAL);
     }
 }

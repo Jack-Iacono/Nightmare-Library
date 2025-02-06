@@ -83,10 +83,17 @@ public abstract class LobbyController : NetworkBehaviour
     protected virtual void ServerEntryAction()
     {
         OnLobbyEnter?.Invoke(NetworkManager.LocalClientId, true);
+        ConnectVoiceChat();
     }
     protected virtual void ClientEntryAction()
     {
         OnLobbyEnter?.Invoke(NetworkManager.LocalClientId, false);
+        ConnectVoiceChat();
+    }
+
+    protected virtual void ConnectVoiceChat()
+    {
+
     }
 
     #endregion

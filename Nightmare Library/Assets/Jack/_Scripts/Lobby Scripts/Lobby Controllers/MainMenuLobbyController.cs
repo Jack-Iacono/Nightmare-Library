@@ -15,6 +15,11 @@ public class MainMenuLobbyController : LobbyController
             await NetworkConnectionController.StopConnection();
         }
 
+        if (NetworkManager.Singleton.IsServer)
+            ServerEntryAction();
+        else
+            ClientEntryAction();
+
         TextEditor te = new TextEditor();
         te.text = NetworkConnectionController.joinCode;
         te.SelectAll();
@@ -49,6 +54,16 @@ public class MainMenuLobbyController : LobbyController
             Debug.LogWarning("Connection Failure");
             await NetworkConnectionController.StopConnection();
         }
+
+        if (NetworkManager.Singleton.IsServer)
+            ServerEntryAction();
+        else
+            ClientEntryAction();
     }
 
+    protected override void ConnectVoiceChat()
+    {
+        Debug.Log("Connected to Chat");
+        VoiceChatController.JoinChannel("Alive", VoiceChatController.ChatType.GROUP);
+    }
 }

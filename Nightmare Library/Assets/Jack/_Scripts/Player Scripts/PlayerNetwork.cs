@@ -101,7 +101,7 @@ public class PlayerNetwork : NetworkBehaviour
         if (!IsServer)
         {
             playerCont.Kill(IsOwner);
-            VoiceChatController.JoinChannel("test", VoiceChatController.ChatType.GROUP);
+            VoiceChatController.JoinChannel("Dead", VoiceChatController.ChatType.GROUP);
         }
     }
     #endregion

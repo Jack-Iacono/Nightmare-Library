@@ -89,7 +89,9 @@ public class pa_Idols : PassiveAttack
 
     protected void AttackPlayer()
     {
-        foreach (PlayerController player in DeskController.playersAtDesk)
+        // This ensures that the list cannot be changed once this method starts
+        List<PlayerController> playerList = new List<PlayerController>(DeskController.playersAtDesk);
+        foreach (PlayerController player in playerList)
         {
             player.ReceiveAttack();
         }

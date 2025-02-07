@@ -138,6 +138,7 @@ public class NetworkConnectionController : NetworkBehaviour
     {
         instance.StopAllCoroutines();
 
+        await VoiceChatController.LeaveChannel();
         await StopLobby();
         StopNetworkManager();
 

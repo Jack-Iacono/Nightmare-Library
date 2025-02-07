@@ -7,7 +7,10 @@ public class Interactable : MonoBehaviour
 {
     // Used for quick interactable look up
     public static Dictionary<GameObject, Interactable> interactables { get; private set; } = new Dictionary<GameObject, Interactable>();
-    public Transform trans { get; private set; }
+    public Transform trans { get; protected set; }
+
+    [SerializeField]
+    private GameObject gameobjectOverride = null;
 
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
@@ -36,10 +39,10 @@ public class Interactable : MonoBehaviour
     public bool precisePlacement = false;
 
     // Contains the mesh renderer as well as the default mesh
-    private Dictionary<MeshRenderer, Material> renderMaterialList = new Dictionary<MeshRenderer, Material>();
+    protected Dictionary<MeshRenderer, Material> renderMaterialList = new Dictionary<MeshRenderer, Material>();
 
-    private List<Collider> colliders = new List<Collider>();
-    private Vector3 mainColliderSize = Vector3.zero;
+    protected List<Collider> colliders = new List<Collider>();
+    protected Vector3 mainColliderSize = Vector3.zero;
 
     [NonSerialized]
     public bool hasRigidBody = false;
@@ -56,7 +59,7 @@ public class Interactable : MonoBehaviour
     [SerializeField]
     public bool allowEnemyFlicker = false;
 
-    public delegate void OnClickDelegate(bool fromNetwork = false);
+    public delegate void OnClickDelegate(Interactable interactable, bool fromNetwork = false);
     public event OnClickDelegate OnClick;
     public delegate void OnPickupDelegate(bool fromNetwork = false);
     public event OnPickupDelegate OnPickup;
@@ -66,7 +69,7 @@ public class Interactable : MonoBehaviour
     public event OnThrowDelegate OnThrow;
 
     public delegate void OnAllEnabledDelegate(bool enabled);
-    public event OnAllEnabledDelegate OnAllEnabled;
+    public event OnAllEnabledDelegate OnSetPhysical;
 
     public delegate void OnEnemyInteractHystericsDelegate(bool fromNetwork = false);
     public event OnEnemyInteractHystericsDelegate OnEnemyInteractHysterics;
@@ -89,61 +92,58 @@ public class Interactable : MonoBehaviour
 
     protected virtual void Awake()
     {
-        interactables.Add(gameObject, this);
+        // Add this object to the dictionary for easy referncing from other scripts via the gameObject
+        if (gameobjectOverride == null)
+            interactables.Add(gameObject, this);
+        else
+            interactables.Add(gameobjectOverride, this);
 
-        foreach(MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
+        // Find the renderers present on this object for use with placement
+        foreach (MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
         {
             renderMaterialList.Add(r, r.material);
         }
 
+        // Find all the colliders associated with this object
         foreach(Collider col in GetComponentsInChildren<Collider>())
         {
             colliders.Add(col);
         }
-        mainColliderSize = colliders[0].bounds.size;
+
+        if (colliders.Count > 0)
+            mainColliderSize = colliders[0].bounds.size;
+        else
+            mainColliderSize = Vector3.zero;
 
         hasRigidBody = TryGetComponent(out rb);
         trans = transform;
     }
 
+    /// <summary>
+    /// Called by the player interaction controller, notifies this interactable about a change in the hover state
+    /// </summary>
+    /// <param name="onOff">True: The interactable is being hovered over || False: The interactable has stopped being hovered over</param>
+    public virtual void Hover(bool onOff) { }
+
     public virtual void Click(bool fromNetwork = false)
     {
-        OnClick?.Invoke(fromNetwork);
+        OnClick?.Invoke(this, fromNetwork);
     }
-    public virtual void Pickup(bool fromNetwork = false)
+    public virtual GameObject Pickup(bool fromNetwork = false)
     {
-        if (allowPlayerPickup)
-        {
-            // Decyphers between local pickup and pickup via notification
-            if (!fromNetwork)
-            {
-                if (InventoryController.Instance.AddItem(gameObject))
-                {
-                    EnableColliders(false);
-                    EnableMesh(false);
+        SetPhysical(false);
 
-                    if (hasRigidBody)
-                        rb.isKinematic = true;
+        if (hasRigidBody)
+            rb.isKinematic = true;
 
-                    OnPickup?.Invoke(fromNetwork);
-                }
-            }
-            else
-            {
-                EnableColliders(false);
-                EnableMesh(false);
+        OnPickup?.Invoke(fromNetwork);
 
-                if (hasRigidBody)
-                    rb.isKinematic = true;
-
-                OnPickup?.Invoke(fromNetwork);
-            }
-        }
+        return gameObject;
     }
 
     public virtual void Place(bool fromNetwork = false)
     {
-        EnableAll(true);
+        SetPhysical(true);
 
         if (fixPlacement && hasRigidBody)
             rb.isKinematic = true;
@@ -161,7 +161,7 @@ public class Interactable : MonoBehaviour
     public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
     {
         trans.position = pos;
-        EnableAll(true);
+        SetPhysical(true);
 
         if (hasRigidBody)
         {
@@ -209,16 +209,17 @@ public class Interactable : MonoBehaviour
         isFlickering = false;
     }
 
-    public void EnableAll(bool b)
+    public void SetPhysical(bool b)
     {
         EnableColliders(b);
         EnableMesh(b);
+        gameObject.SetActive(b);
+
         if (b)
             ResetMeshMaterial();
 
-        OnAllEnabled?.Invoke(b);
+        OnSetPhysical?.Invoke(b);
     }
-
     public void EnableColliders(bool b)
     {
         foreach(Collider c in colliders)

@@ -1,12 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using Unity.Netcode;
-using Unity.VisualScripting;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class PlayerController : MonoBehaviour
 {
@@ -110,6 +106,11 @@ public class PlayerController : MonoBehaviour
                 else
                     isTrapped = false;
             }
+        }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            ReceiveAttack();
         }
     }
     private void FixedUpdate()

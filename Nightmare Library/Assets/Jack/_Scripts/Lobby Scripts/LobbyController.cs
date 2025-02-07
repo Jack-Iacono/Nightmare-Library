@@ -27,14 +27,21 @@ public abstract class LobbyController : NetworkBehaviour
     {
         if (instance != null)
             Destroy(instance);
-        
+
         instance = this;
     }
 
     protected virtual void Start()
     {
-        if(NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.connectedToLobby)
+        {
             RegisterCallbacks();
+
+            if (NetworkManager.Singleton.IsServer)
+                ServerEntryAction();
+            else
+                ClientEntryAction();
+        }
     }
 
     #region Connection Methods
@@ -83,10 +90,17 @@ public abstract class LobbyController : NetworkBehaviour
     protected virtual void ServerEntryAction()
     {
         OnLobbyEnter?.Invoke(NetworkManager.LocalClientId, true);
+        ConnectVoiceChat();
     }
     protected virtual void ClientEntryAction()
     {
         OnLobbyEnter?.Invoke(NetworkManager.LocalClientId, false);
+        ConnectVoiceChat();
+    }
+
+    protected virtual void ConnectVoiceChat()
+    {
+
     }
 
     #endregion

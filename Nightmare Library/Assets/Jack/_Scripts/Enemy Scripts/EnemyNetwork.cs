@@ -55,13 +55,13 @@ public class EnemyNetwork : NetworkBehaviour
     {
         if (IsServer)
         {
-            OnInitializeClientRpc(parent.presets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
+            OnInitializeClientRpc(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
         }
     }
     [ClientRpc]
     private void OnInitializeClientRpc(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
     {
-        parent.enemyType = parent.presets[typeIndex];
+        parent.enemyType = GameController.instance.enemyPresets[typeIndex];
         parent.aAttack = (EnemyPreset.aAttackEnum)activeAttackIndex;
         parent.pAttack = (EnemyPreset.pAttackEnum)passiveAttackIndex;
     }
@@ -105,8 +105,7 @@ public class EnemyNetwork : NetworkBehaviour
         {
             var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
-            print.transform.position = pos;
-            print.GetComponent<FootprintController>().Activate();
+            print.GetComponent<FootprintController>().Place(pos, Quaternion.identity);
             print.SetActive(true);
         }
     }
@@ -116,8 +115,7 @@ public class EnemyNetwork : NetworkBehaviour
         {
             var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
-            print.transform.position = pos;
-            print.GetComponent<TrapController>().Activate();
+            print.GetComponent<TrapController>().Place(pos, print.transform.rotation);
             print.SetActive(true);
         }
     }

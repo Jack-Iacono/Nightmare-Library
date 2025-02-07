@@ -4,12 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public abstract class ActiveAttack : BehaviorTree.Tree
+public abstract class ActiveAttack : Attack
 {
-    public string name;
-    public string toolTip;
-
-    protected Enemy owner;
+    protected BehaviorTree.Tree tree;
 
     // These variables are used among almost all attacks
     public Transform currentTargetDynamic { get; protected set; } = null;
@@ -18,10 +15,19 @@ public abstract class ActiveAttack : BehaviorTree.Tree
 
     public List<List<Vector3>> validWanderLocations { get; protected set; } = new List<List<Vector3>>();
     public float wanderRange = 25;
+    protected float baseWanderRange = 25;
 
     public ActiveAttack(Enemy owner)
     {
         this.owner = owner;
+        GameController.OnLevelChange += OnLevelChange;
+        currentLevel = startingLevel;
+        tree = new BehaviorTree.Tree();
+    }
+
+    public override void Update(float dt)
+    {
+        tree.UpdateTree(dt);
     }
 
     public void SetCurrentTarget(Transform t)
@@ -64,10 +70,10 @@ public abstract class ActiveAttack : BehaviorTree.Tree
                 RaycastHit hit;
 
                 // Check to see if the ray hit the ground
-                if 
+                if
                     (
-                    Physics.Raycast(ray, out hit, 100, envLayers) && 
-                    hit.collider.gameObject.layer != 13 && 
+                    Physics.Raycast(ray, out hit, 100, envLayers) &&
+                    hit.collider.gameObject.layer != 13 &&
                     hit.normal == Vector3.up &&
                     !Physics.CheckBox(hit.point + Vector3.up * 2, Vector3.one, Quaternion.identity, envLayers)
                     )
@@ -79,10 +85,5 @@ public abstract class ActiveAttack : BehaviorTree.Tree
                 }
             }
         }
-    }
-
-    public virtual void OnDestroy()
-    {
-
     }
 }

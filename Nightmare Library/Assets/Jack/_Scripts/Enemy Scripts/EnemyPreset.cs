@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static Enemy;
 
@@ -27,6 +28,9 @@ public class EnemyPreset : ScriptableObject
     }
     public aAttackEnum GetRandomActiveAttack(aAttackEnum[] exclude)
     {
+        if(exclude.Length == 0)
+            return GetRandomActiveAttack();
+
         List<aAttackEnum> temp = new List<aAttackEnum>(activeAttacks);
         for (int i = 0; i < exclude.Length; i++)
         {
@@ -37,7 +41,10 @@ public class EnemyPreset : ScriptableObject
         if (temp.Count > 0)
             return temp[UnityEngine.Random.Range(0, temp.Count)];
         else
+        {
+            Debug.LogWarning("Enemy Active Attack Assignment Error for " + enemyName + ": No Valid Attacks");
             return aAttackEnum.NULL;
+        }
     }
 
     public pAttackEnum GetRandomPassiveAttack()
@@ -46,6 +53,9 @@ public class EnemyPreset : ScriptableObject
     }
     public pAttackEnum GetRandomPassiveAttack(pAttackEnum[] exclude)
     {
+        if (exclude.Length == 0)
+            return GetRandomPassiveAttack();
+
         List<pAttackEnum> temp = new List<pAttackEnum>(passiveAttacks);
         for (int i = 0; i < exclude.Length; i++)
         {
@@ -56,7 +66,10 @@ public class EnemyPreset : ScriptableObject
         if (temp.Count > 0)
             return temp[UnityEngine.Random.Range(0, temp.Count)];
         else
+        {
+            Debug.LogWarning("Enemy Passive Attack Assignment Error for " + enemyName + ": No Valid Attacks");
             return pAttackEnum.NULL;
+        }
     }
 
     public ActiveAttack GetActiveAttack(aAttackEnum attack, Enemy e)
@@ -126,4 +139,15 @@ public class EnemyPreset : ScriptableObject
 
         return list;
     }
+
+    public bool CheckEvidence(List<EvidenceEnum> list)
+    {
+        foreach (EvidenceEnum e in list)
+        {
+            if(!evidence.Contains(e))
+                return false;
+        }
+        return true;
+    }
+
 }

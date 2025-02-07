@@ -12,7 +12,7 @@ public class PlayerInteractionController : MonoBehaviour
     private PlayerController playerCont;
 
     [SerializeField]
-    private float interactDistance = 2f;
+    private float interactDistance = 4f;
     [SerializeField]
     private LayerMask interactLayers;
 
@@ -45,6 +45,9 @@ public class PlayerInteractionController : MonoBehaviour
     public bool canSeeItem { get; private set; }
     public delegate void OnItemSightChangeDelegate(int interactionType);
     public static event OnItemSightChangeDelegate onItemSightChange;
+
+    private Interactable currentSeenItem;
+    private int currentSightType = -1;
 
     // Start is called before the first frame update
     void Start()
@@ -101,14 +104,32 @@ public class PlayerInteractionController : MonoBehaviour
             raycastHit = true;
             if (interactables.ContainsKey(hit.collider.gameObject))
             {
+                // Assign the default type to "null"
                 int type = -1;
-                if (interactables[hit.collider.gameObject].allowPlayerClick)
+                // Store the interaactable that is currently being viewed
+                Interactable itemInView = interactables[hit.collider.gameObject];
+
+                // Check to see which interaction can happen for the viewed item
+                if (itemInView.allowPlayerClick)
                     type = 0;
-                else if (interactables[hit.collider.gameObject].allowPlayerPickup)
+                else if (itemInView.allowPlayerPickup)
                     type = 1;
 
-                if (!canSeeItem)
+                // Send message to items that are being hovered or are being un-hovered
+                if(itemInView != currentSeenItem)
+                {
+                    if (currentSeenItem != null)
+                        currentSeenItem.Hover(false);
+                    itemInView.Hover(true);
+                    currentSeenItem = itemInView;
+                }
+                    
+                if (!canSeeItem || currentSightType != type)
+                {
                     onItemSightChange?.Invoke(type);
+                    currentSightType = type;
+                }
+
                 canSeeItem = true;
             }
             else
@@ -116,6 +137,12 @@ public class PlayerInteractionController : MonoBehaviour
                 if (canSeeItem)
                     onItemSightChange?.Invoke(-1);
                 canSeeItem = false;
+
+                if (currentSeenItem != null)
+                {
+                    currentSeenItem.Hover(false);
+                    currentSeenItem = null;
+                }
             }
         }
         else
@@ -123,6 +150,12 @@ public class PlayerInteractionController : MonoBehaviour
             if (canSeeItem)
                 onItemSightChange?.Invoke(-1);
             canSeeItem = false;
+
+            if(currentSeenItem != null)
+            {
+                currentSeenItem.Hover(false);
+                currentSeenItem = null;
+            }
         }
 
         if (!actionBuffering && isActive)
@@ -151,6 +184,9 @@ public class PlayerInteractionController : MonoBehaviour
                 {
                     if (isPlaceStart || (isPlacePressed && !isPlacingItem))
                     {
+                        // Working like this as it will not be networked this way
+                        currentHeldItem.gameObject.SetActive(true);
+                        currentHeldItem.EnableColliders(false);
                         currentHeldItem.SetMeshMaterial(clearPlacementMaterial);
                         currentHeldItem.EnableMesh(true);
 
@@ -221,6 +257,8 @@ public class PlayerInteractionController : MonoBehaviour
                         }
                         else
                         {
+                            // Working like this as it will not be networked this way
+                            currentHeldItem.gameObject.SetActive(false);
                             currentHeldItem.EnableMesh(false);
                         }
 
@@ -232,10 +270,12 @@ public class PlayerInteractionController : MonoBehaviour
                 // Check for interactions that aren't placing or throwing
                 if (canSeeItem)
                 {
-                    if(isClick)
+                    if(isClick && interactables[hit.collider.gameObject].allowPlayerClick)
                         interactables[hit.collider.gameObject].Click();
-                    else if (isPickup && InventoryController.Instance.HasOpenSlot())
-                        interactables[hit.collider.gameObject].Pickup();
+                    else if (isPickup && interactables[hit.collider.gameObject].allowPlayerPickup && InventoryController.Instance.HasOpenSlot())
+                    {
+                        InventoryController.Instance.AddItem(interactables[hit.collider.gameObject].Pickup());
+                    }
 
                     actionBuffering = true;
                 }

@@ -10,20 +10,25 @@ public class pa_Temps : PassiveAttack
     protected const int tempTickAvg = 3;
     protected const int tempTickDev = 2;
 
-    private const float tickTimeAvg = 4;
-    private const float tickTimeDev = 1;
+    private const float baseTickTimeMin = 1;
+    private const float baseTickTimeMax = 4;
+    private float tickTimeMin = baseTickTimeMin;
+    private float tickTimeMax = baseTickTimeMax;
     private float tickTimer = 0;
 
     public pa_Temps(Enemy owner) : base(owner)
     {
+        name = "Temperature";
+        toolTip = "Wear a coat, but only if it's cold";
+
         // Gets a random movement for the temp
         upOrDown = Random.Range(0,2) == 0 ? true : false;
     }
 
-    public override void Initialize()
+    public override void Initialize(int level = 1)
     {
         base.Initialize();
-        tickTimer = Random.Range(tickTimeAvg - tickTimeDev, tickTimeAvg + tickTimeDev);
+        tickTimer = Random.Range(tickTimeMin - tickTimeMax, tickTimeMin + tickTimeMax);
     }
 
     public override void Update(float dt)
@@ -47,7 +52,7 @@ public class pa_Temps : PassiveAttack
                         AttackPlayer();
                 }
 
-                tickTimer = Random.Range(tickTimeAvg - tickTimeDev, tickTimeAvg + tickTimeDev);
+                tickTimer = Random.Range(tickTimeMin, tickTimeMax);
             }
         }
     }
@@ -59,7 +64,7 @@ public class pa_Temps : PassiveAttack
             player.ReceiveAttack();
         }
 
-        tickTimer = UnityEngine.Random.Range(tickTimeAvg - tickTimeDev, tickTimeAvg + tickTimeDev);
+        tickTimer = UnityEngine.Random.Range(tickTimeMin - tickTimeMax, tickTimeMin + tickTimeMax);
         TempController.ResetTemp();
     }
 
@@ -67,5 +72,13 @@ public class pa_Temps : PassiveAttack
     {
         TempController.currentTemp = 0;
         base.OnDestroy();
+    }
+
+    protected override void OnLevelChange(int level)
+    {
+        base.OnLevelChange(level);
+
+        tickTimeMin = baseTickTimeMin;
+        tickTimeMax = baseTickTimeMax;
     }
 }

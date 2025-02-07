@@ -1,9 +1,9 @@
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
+using Unity.Services.Vivox;
 using UnityEngine;
 
 #if UNITY_EDITOR
@@ -48,6 +48,9 @@ public class AuthenticationController : MonoBehaviour
             {
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
                 playerInfo = AuthenticationService.Instance.PlayerInfo;
+
+                await VivoxService.Instance.InitializeAsync();
+                await VoiceChatController.Login();
             }
             else
             {
@@ -83,6 +86,9 @@ public class AuthenticationController : MonoBehaviour
             signedIn = false;
             OnSignInStatusChanged?.Invoke(false);
 
+            // Log the user out of the voice chat service
+            VoiceChatController.Logout();
+
             return true;
         }
         catch (Exception e)
@@ -110,4 +116,6 @@ public class AuthenticationController : MonoBehaviour
         // Signs the player out if the application is quit
         SignOut();
     }
+
+    
 }

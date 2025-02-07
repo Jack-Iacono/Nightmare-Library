@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using static UnityEditor.PlayerSettings;
-using static UnityEngine.Rendering.DebugUI.Table;
 
 public class MonitorCameraController : Interactable
 {
@@ -22,10 +20,10 @@ public class MonitorCameraController : Interactable
         cam.targetTexture = renderTexture;
     }
 
-    public override void Pickup(bool fromNetwork = false)
+    public override GameObject Pickup(bool fromNetwork = false)
     {
         SetBroadcasting(false);
-        base.Pickup(fromNetwork);
+        return base.Pickup(fromNetwork);
     }
     public override void Place(bool fromNetwork = false)
     {

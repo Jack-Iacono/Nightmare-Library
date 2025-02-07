@@ -1,10 +1,7 @@
-using Newtonsoft.Json.Bson;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
-using Unity.VisualScripting;
-using UnityEditor.Build.Content;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerController))]
@@ -37,6 +34,7 @@ public class PlayerNetwork : NetworkBehaviour
 
         playerCont = GetComponent<PlayerController>();
         playerCont.OnPlayerAttacked += OnPlayerAttacked;
+
     }
 
     public override void OnNetworkSpawn()
@@ -67,6 +65,8 @@ public class PlayerNetwork : NetworkBehaviour
     {
         if (IsOwner)
         {
+            // May need to update on client as well, not sure yet
+            VoiceChatController.UpdatePlayerPosition(gameObject);
             TransmitContinuousState();
         }
         else
@@ -94,12 +94,25 @@ public class PlayerNetwork : NetworkBehaviour
     {
         playerCont.Kill(IsOwner);
         OnPlayerAttackedClientRpc();
+
+        if (IsOwner) 
+        {
+            VoiceChatController.JoinChannel("Dead", VoiceChatController.ChatType.POSITIONAL);
+        }
+
     }
     [ClientRpc]
     private void OnPlayerAttackedClientRpc()
     {
-        if(!IsServer)
+        if (!IsServer)
+        {
             playerCont.Kill(IsOwner);
+
+            if (IsOwner)
+            {
+                VoiceChatController.JoinChannel("Dead", VoiceChatController.ChatType.POSITIONAL);
+            }
+        }
     }
     #endregion
 

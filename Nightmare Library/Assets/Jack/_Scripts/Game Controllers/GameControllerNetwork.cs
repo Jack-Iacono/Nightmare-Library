@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -157,11 +156,14 @@ public class GameControllerNetwork : NetworkBehaviour
                 spawnedPrefabs.Add(pPrefab);
             }
 
-            GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
-            ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
+            for (int i = 0; i < GameController.enemyCount; i++)
+            {
+                GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+                ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
 
-            spawnedPrefabs.Add(ePrefab);
-
+                spawnedPrefabs.Add(ePrefab);
+            }
+            
             hasSpawned = true;
         }
     }
@@ -219,7 +221,6 @@ public class GameControllerNetwork : NetworkBehaviour
     }
 
     #endregion
-
 
     public override void OnDestroy()
     {

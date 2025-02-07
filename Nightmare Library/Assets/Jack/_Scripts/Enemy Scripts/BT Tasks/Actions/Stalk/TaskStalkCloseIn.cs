@@ -28,4 +28,10 @@ public class TaskStalkCloseIn : Node
         status = Status.RUNNING;
         return status;
     }
+
+    public void OnLevelChange(float speed, float accerleration)
+    {
+        this.speed = speed;
+        this.acceleration = accerleration;
+    }
 }

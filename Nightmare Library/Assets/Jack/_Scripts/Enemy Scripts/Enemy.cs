@@ -2,10 +2,16 @@ using System;
 using UnityEngine;
 using UnityEngine.AI;
 using System.Collections.Generic;
+using Unity.Services.Authentication;
+
+using static EnemyPreset;
 
 public class Enemy : MonoBehaviour
 {
     public static List<Enemy> enemyInstances = new List<Enemy>();
+    protected static List<EnemyPreset> inUsePresets = new List<EnemyPreset>();
+    protected static List<aAttackEnum> inUseActiveAttacks = new List<aAttackEnum>();
+    protected static List<pAttackEnum> inUsePassiveAttacks = new List<pAttackEnum>();
 
     [Header("Enemy Characteristics")]
     [SerializeField]
@@ -24,7 +30,6 @@ public class Enemy : MonoBehaviour
     public ObjectPool objPool = new ObjectPool();
 
     [Header("Attack Variables")]
-    public List<EnemyPreset> presets = new List<EnemyPreset>();
     [NonSerialized]
     public EnemyPreset enemyType;
 
@@ -88,14 +93,22 @@ public class Enemy : MonoBehaviour
 
         navAgent.Warp(spawnLocation);
 
-        // Gets the enemy preset that this will follow
-        enemyType = presets[UnityEngine.Random.Range(0, presets.Count)];
+        // Gets the enemy preset that this will follow, does not pick one which is already in use
+        List<EnemyPreset> validPresets = new List<EnemyPreset>(GameController.instance.enemyPresets);
+        foreach(EnemyPreset preset in inUsePresets)
+        {
+            validPresets.Remove(preset);
+        }
+        enemyType = validPresets[UnityEngine.Random.Range(0, validPresets.Count)];
+        inUsePresets.Add(enemyType);
 
         // Chooses a random active and passive attack from the preset
-        aAttack = enemyType.GetRandomActiveAttack();
-        pAttack = enemyType.GetRandomPassiveAttack();
+        aAttack = enemyType.GetRandomActiveAttack(inUseActiveAttacks.ToArray());
+        pAttack = enemyType.GetRandomPassiveAttack(inUsePassiveAttacks.ToArray());
 
-        Debug.Log("Active Attack: " + aAttack.ToString() + "\nPassive Attack: " + pAttack.ToString());
+        // Add these attacks to a list that ensures that other enemies don't use the same attacks, not that this would cause problems tho
+        inUseActiveAttacks.Add(aAttack);
+        inUsePassiveAttacks.Add(pAttack);
 
         // Gets the attack script for each chosen attack
         activeAttackTree = enemyType.GetActiveAttack(aAttack, this);
@@ -103,9 +116,9 @@ public class Enemy : MonoBehaviour
 
         // Initializes the attacks
         if(activeAttackTree != null)
-            activeAttackTree.Initialize();
+            activeAttackTree.Initialize(4);
         if(passiveAttackTree != null)
-            passiveAttackTree.Initialize();
+            passiveAttackTree.Initialize(4);
 
         // Gets the evidence from the enemy preset
         evidence = enemyType.GetEvidence(this);
@@ -129,7 +142,7 @@ public class Enemy : MonoBehaviour
         float dt = Time.deltaTime;
 
         if(activeAttackTree != null )
-            activeAttackTree.UpdateTree(dt);
+            activeAttackTree.Update(dt);
         if(passiveAttackTree != null )
             passiveAttackTree.Update(dt);
 
@@ -176,8 +189,7 @@ public class Enemy : MonoBehaviour
         {
             var print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
-            print.GetComponent<FootprintController>().Activate();
-            print.transform.position = hit.point;
+            print.GetComponent<FootprintController>().Place(hit.point, Quaternion.identity);
             print.SetActive(true);
         }
     }
@@ -193,10 +205,9 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            var print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
+            GameObject print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
-            print.GetComponent<TrapController>().Activate();
-            print.transform.position = hit.point;
+            Interactable.interactables[print].Place(hit.point, Quaternion.identity);
             print.SetActive(true);
         }
 
@@ -249,15 +260,12 @@ public class Enemy : MonoBehaviour
 
     public override string ToString()
     {
-        string temp = String.Empty;
-        temp += "Active Attack: " + aAttack.ToString();
-        temp += "\nPassive Attack: " + pAttack.ToString();
-        temp += "\nEvidence: ";
+        string s = $"{enemyType.enemyName}\nActive Attack: {aAttack.ToString()}\nPassive Attack: {pAttack.ToString()}\nEvidence: ";
         foreach(EnemyPreset.EvidenceEnum e in enemyType.evidence)
         {
-            temp += e.ToString() + ", ";
+            s += e.ToString() + ", ";
         }
-        return temp;
+        return s;
     }
 
     private void OnDestroy()
@@ -266,6 +274,10 @@ public class Enemy : MonoBehaviour
             activeAttackTree.OnDestroy();
         if(passiveAttackTree != null)
             passiveAttackTree.OnDestroy();
+
+        inUsePresets.Clear();
+        inUseActiveAttacks.Clear();
+        inUsePassiveAttacks.Clear();
 
         enemyInstances.Remove(this);
         GameController.OnGamePause -= OnGamePause;

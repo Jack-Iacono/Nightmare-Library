@@ -1,17 +1,15 @@
-using Newtonsoft.Json.Bson;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Android;
+
+using NetVar;
 
 [RequireComponent(typeof(Interactable))]
 public class InteractableNetwork : NetworkBehaviour
 {
     protected Interactable parent;
-    
 
     private bool canUpdateRigidbody = false;
     protected bool ownInteraction = false;
@@ -22,15 +20,16 @@ public class InteractableNetwork : NetworkBehaviour
     protected const float transformThreshold = 0.5f;
     private const float interpolationStrength = 0.6f;
 
+    private int rectifyFrequency = 60;
+    private int rectifyFrame = 0;
+
     private int updateTransformFrequency = 1;
-    private int staticRectifyFrequency = 60;
 
     private bool wasUpdating = false;
     private int currentUpdateFrame = 0;
-    private int currentRectifyFrame = 0;
 
     private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>(); 
-    private NetworkVariable<bool> allEnabled = new NetworkVariable<bool>();
+    private NetworkVariable<bool> isPhysical = new NetworkVariable<bool>();
 
     protected virtual void Awake()
     {
@@ -48,7 +47,7 @@ public class InteractableNetwork : NetworkBehaviour
         previousPosition = transform.position;
 
         if (IsServer)
-            allEnabled.Value = true;
+            isPhysical.Value = true;
         else
             ConsumeEnabledData(true, true);
     }
@@ -73,20 +72,20 @@ public class InteractableNetwork : NetworkBehaviour
         if(parent.allowEnemyFlicker)
             parent.OnEnemyInteractFlicker += OnEnemyInteractFlicker;
 
-        parent.OnAllEnabled += OnAllEnabled;
-
+        parent.OnSetPhysical += OnAllEnabled;
         canUpdateRigidbody = parent.hasRigidBody;
 
         if (!IsOwner)
         {
             transformData.OnValueChanged += ConsumeTransformData;
-            allEnabled.OnValueChanged += ConsumeEnabledData;
+            isPhysical.OnValueChanged += ConsumeEnabledData;
 
             ConsumeTransformData(transformData.Value, transformData.Value);
         }
         else
         {
             TransmitTransformData();
+            OnAllEnabled(parent.isPhysical);
         }
     }
 
@@ -95,7 +94,7 @@ public class InteractableNetwork : NetworkBehaviour
         // Check to make sure the network is running to avoid calls going out without being connected and that this is on the server/owner
         if (NetworkConnectionController.IsRunning)
         {
-            if (IsOwner && canUpdateRigidbody && allEnabled.Value)
+            if (IsOwner && canUpdateRigidbody && isPhysical.Value)
             {
                 // ensures the update only runs every few frames
                 if (currentUpdateFrame >= updateTransformFrequency)
@@ -126,12 +125,22 @@ public class InteractableNetwork : NetworkBehaviour
                     currentUpdateFrame++;
                 }
             }
+            else if (!IsOwner && parent.hasRigidBody && parent.rb.velocity == Vector3.zero)
+            {
+                if (rectifyFrame < rectifyFrequency)
+                    rectifyFrame++;
+                else
+                {
+                    //RectifyTransform();
+                    rectifyFrame = 0;
+                }
+            }
         }
     }
 
     private void ConsumeEnabledData(bool previousValue, bool newValue)
     {
-        parent.EnableAll(newValue);
+        parent.SetPhysical(newValue);
     }
 
     #region Transform
@@ -174,6 +183,8 @@ public class InteractableNetwork : NetworkBehaviour
                     parent.rb.velocity = transformData.Value.Velocity;
                 }
             }
+
+            rectifyFrame = 0;
         }
     }
 
@@ -194,8 +205,6 @@ public class InteractableNetwork : NetworkBehaviour
                 parent.rb.velocity = transformData.Value.Velocity;
             }
         }
-
-        currentRectifyFrame = 0;
     }
     [ClientRpc]
     private void RectifyTransformClientRpc()
@@ -207,7 +216,7 @@ public class InteractableNetwork : NetworkBehaviour
     #endregion
 
     #region Click
-    protected virtual void OnClick(bool fromNetwork = false)
+    protected virtual void OnClick(Interactable interactable, bool fromNetwork = false)
     {
         if (!fromNetwork)
         {
@@ -232,7 +241,7 @@ public class InteractableNetwork : NetworkBehaviour
 
     #region Pickup
 
-    protected virtual void OnPickup(bool fromNetwork)
+    protected virtual void OnPickup(bool fromNetwork = false)
     {
         if (!fromNetwork)
         {
@@ -265,9 +274,9 @@ public class InteractableNetwork : NetworkBehaviour
         {
             if (IsOwner)
             {
-                PlaceClientRpc(NetworkManager.LocalClientId);
-                allEnabled.Value = true;
                 TransmitTransformData();
+                isPhysical.Value = true;
+                PlaceClientRpc(new TransformData(parent.trans.position, parent.trans.rotation), NetworkManager.LocalClientId);
             }
             else
                 TransmitPlaceServerRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation));
@@ -278,16 +287,16 @@ public class InteractableNetwork : NetworkBehaviour
     {
         parent.Place(data.Position, data.Rotation, true);
 
-        PlaceClientRpc(sender);
+        PlaceClientRpc(data, sender);
 
         TransmitTransformData();
-        allEnabled.Value = true;
+        isPhysical.Value = true;
     }
     [ClientRpc]
-    protected virtual void PlaceClientRpc(ulong sender)
+    protected virtual void PlaceClientRpc(TransformData data, ulong sender)
     {
         if (!IsServer && NetworkManager.LocalClientId != sender)
-            parent.Place(true);
+            parent.Place(data.Position, data.Rotation, true);
     }
     #endregion
 
@@ -360,122 +369,6 @@ public class InteractableNetwork : NetworkBehaviour
     private void OnAllEnabled(bool enabled)
     {
         if (IsServer)
-            allEnabled.Value = enabled;
-    }
-
-    protected struct TransformData : INetworkSerializable
-    {
-        private float xPos, yPos, zPos;
-        private float xRot, yRot, zRot;
-
-        internal Vector3 Position
-        {
-            get => new Vector3(xPos, yPos, zPos);
-            set
-            {
-                xPos = value.x;
-                yPos = value.y;
-                zPos = value.z;
-            }
-        }
-        internal Quaternion Rotation
-        {
-            get => Quaternion.Euler(xRot, yRot, zRot);
-            set
-            {
-                xRot = value.eulerAngles.x;
-                yRot = value.eulerAngles.y;
-                zRot = value.eulerAngles.z;
-            }
-        }
-
-        public TransformData(Vector3 pos, Quaternion rot)
-        {
-            xPos = pos.x;
-            yPos = pos.y;
-            zPos = pos.z;
-
-            xRot = rot.eulerAngles.x;
-            yRot = rot.eulerAngles.y;
-            zRot = rot.eulerAngles.z;
-        }
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref xPos);
-            serializer.SerializeValue(ref yPos);
-            serializer.SerializeValue(ref zPos);
-
-            serializer.SerializeValue(ref xRot);
-            serializer.SerializeValue(ref yRot);
-            serializer.SerializeValue(ref zRot);
-        }
-    }
-    protected struct TransformDataRB : INetworkSerializable
-    {
-        private float xPos, yPos, zPos;
-        private float xRot, yRot, zRot;
-        private float xVel, yVel, zVel;
-
-        internal Vector3 Position
-        {
-            get => new Vector3(xPos, yPos, zPos);
-            set
-            {
-                xPos = value.x;
-                yPos = value.y;
-                zPos = value.z;
-            }
-        }
-        internal Quaternion Rotation
-        {
-            get => Quaternion.Euler(xRot, yRot, zRot);
-            set
-            {
-                xRot = value.eulerAngles.x;
-                yRot = value.eulerAngles.y;
-                zRot = value.eulerAngles.z;
-            }
-        }
-        internal Vector3 Velocity
-        {
-            get => new Vector3(xVel, yVel, zVel);
-            set
-            {
-                xVel = value.x;
-                yVel = value.y;
-                zVel = value.z;
-            }
-        }
-
-        public TransformDataRB(Vector3 pos, Quaternion rot, Vector3 vel)
-        {
-            xPos = pos.x;
-            yPos = pos.y;
-            zPos = pos.z;
-
-            xRot = rot.x;
-            yRot = rot.y;
-            zRot = rot.z;
-
-            xVel = vel.x;
-            yVel = vel.y;
-            zVel = vel.z;
-        }
-
-        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-        {
-            serializer.SerializeValue(ref xPos);
-            serializer.SerializeValue(ref yPos);
-            serializer.SerializeValue(ref zPos);
-
-            serializer.SerializeValue(ref xRot);
-            serializer.SerializeValue(ref yRot);
-            serializer.SerializeValue(ref zRot);
-            
-            serializer.SerializeValue(ref xVel);
-            serializer.SerializeValue(ref yVel);
-            serializer.SerializeValue(ref zVel);
-        }
+            isPhysical.Value = enabled;
     }
 }

@@ -22,13 +22,15 @@ public class InventoryController : MonoBehaviour
         if(Instance != null)
             Destroy(Instance.gameObject);
         Instance = this;
-    }
-    private void Start()
-    {
-        for(int i = 0; i < inventorySize; i++)
+
+        for (int i = 0; i < inventorySize; i++)
         {
             inventoryItems[i] = new InventoryItem();
         }
+    }
+    private void Start()
+    {
+        onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
     }
 
     private void Update()

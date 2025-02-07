@@ -10,7 +10,17 @@ public class GameController : MonoBehaviour
 
     public static bool gamePaused = false;
 
-    public float gameTimer = 480;
+    public const float gameTime = 50;
+    public float gameTimer { get; set; } = gameTime;
+
+    private const int totalLevels = 5;
+    private int gameTimeLevel = 1;
+    public delegate void OnLevelChangeDelegate(int theshold);
+    public static OnLevelChangeDelegate OnLevelChange;
+
+    public List<EnemyPreset> enemyPresets = new List<EnemyPreset>();
+    public const int enemyCount = 1;
+    private static List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(enemyCount);
 
     // Local Events
     public static event EventHandler<bool> OnGamePause;
@@ -34,6 +44,10 @@ public class GameController : MonoBehaviour
             Destroy(this);
 
         PlayerController.OnPlayerKilled += OnPlayerKilled;
+        for (int i = 0; i < enemyCount; i++)
+        {
+            enemyGuesses.Add(null);
+        }
     }
     private void Start()
     {
@@ -45,7 +59,10 @@ public class GameController : MonoBehaviour
     private void SpawnPrefabs()
     {
         PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
-        PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+        for(int i = 0; i < enemyCount; i++)
+        {
+            PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+        }
     }
 
 
@@ -55,14 +72,18 @@ public class GameController : MonoBehaviour
         if (!gamePaused)
         {
             if (gameTimer > 0)
+            {
                 gameTimer -= Time.deltaTime;
+
+                // Tells the other scripts that the game level is increasing, this makes the game more difficult
+                if (gameTime - gameTimer > gameTimeLevel * (gameTime / totalLevels))
+                {
+                    gameTimeLevel++;
+                    OnLevelChange?.Invoke(gameTimeLevel);
+                }
+            }
             else
                 EndGame();
-        }
-
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            EndGame();
         }
     }
 
@@ -84,6 +105,12 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public static void MakeGuess(int index, EnemyPreset preset)
+    {
+        
+        enemyGuesses[index] = preset;
+    }
+
     public void EndGame()
     {
         if(NetworkConnectionController.HasAuthority)
@@ -92,8 +119,16 @@ public class GameController : MonoBehaviour
             OnGameEnd?.Invoke();
         }
 
+        for(int i = 0; i < enemyCount; i++)
+        {
+            if(enemyGuesses[i] != null && Enemy.enemyInstances[i].enemyType == enemyGuesses[i])
+                Debug.Log("Guess " + i + " is correct");
+            else
+                Debug.Log("Guess " + i + " is wrong");
+        }
+
         // Load the end screen
-        UIController.instance.ChangeToScreen(1);
+        UIController.mainInstance.ChangeToScreen(1);
     }
     public static void ReturnToMenu()
     {

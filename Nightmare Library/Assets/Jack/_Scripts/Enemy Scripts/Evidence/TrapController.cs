@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TrapController : MonoBehaviour
+public class TrapController : Interactable
 {
     private float trapDuration = 5;
 
@@ -12,9 +12,6 @@ public class TrapController : MonoBehaviour
 
     private bool isRunning;
     private float currentLifeTimer;
-
-    public event EventHandler<bool> OnTrapSpawn;
-    public event EventHandler<bool> OnTrapDespawn;
 
     private void Start()
     {
@@ -33,36 +30,36 @@ public class TrapController : MonoBehaviour
             }
             else
             {
-                Deactivate();
+                Pickup();
             }
         }
     }
 
-    public void Activate(bool fromNetwork = false)
+    public override void Place(bool fromNetwork = false)
     {
         currentLifeTimer = UnityEngine.Random.Range(avgDuration - dev, avgDuration + dev); isRunning = true;
-
-        OnTrapSpawn?.Invoke(this, fromNetwork);
+        gameObject.SetActive(true);
+        isRunning = true;
+        base.Place(fromNetwork);
     }
-    public void Deactivate(bool fromNetwork = false)
+    public override GameObject Pickup(bool fromNetwork = false)
     {
         isRunning = false;
         gameObject.SetActive(false);
-
-        OnTrapDespawn?.Invoke(this, fromNetwork);
+        return base.Pickup(fromNetwork);
     }
 
     // OPTIMIZE
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Player")
+        if(PlayerController.playerInstances.ContainsKey(other.gameObject))
         {
-            PlayerController p = other.GetComponent<PlayerController>();
+            PlayerController p = PlayerController.playerInstances[other.gameObject];
 
-            if(p != null && p == PlayerController.ownerInstance)
+            if(p == PlayerController.ownerInstance)
             {
                 other.GetComponent<PlayerController>().Trap(trapDuration);
-                Deactivate();
+                Pickup();
             }
         }
     }

@@ -26,6 +26,7 @@ public class gui_HUDScreenController : ScreenController
         InventoryController.Instance.onHeldItemChanged += OnInventoryHeldItemChanged;
         PlayerInteractionController.onItemSightChange += OnItemSightChanged;
 
+        inventoryText.text = "Empty";
         reticle.sprite = normalReticle;
     }
 
@@ -39,8 +40,16 @@ public class gui_HUDScreenController : ScreenController
     {
         string timeString = string.Empty;
 
+        int hour = Mathf.FloorToInt(time / 3600);
+        time -= hour * 3600;
         int min = Mathf.FloorToInt(time / 60);
-        int sec = (int)(time % 60);
+        time -= min * 60;
+        int sec = (int)time;
+
+        if (hour < 10)
+            timeString += "0" + hour + ":";
+        else
+            timeString += hour.ToString() + ":";
 
         if (min < 10)
             timeString += "0" + min + ":";

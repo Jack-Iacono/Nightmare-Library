@@ -5,18 +5,6 @@ using UnityEngine;
 
 public class GameLobbyController : LobbyController
 {
-    // Start is called before the first frame update
-    protected override void Start()
-    {
-        base.Start();  
-
-        if (NetworkManager.Singleton.IsServer)
-            ServerEntryAction();
-        else
-            ClientEntryAction();
-
-    }
-
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -34,7 +22,6 @@ public class GameLobbyController : LobbyController
 
     protected override void ConnectVoiceChat()
     {
-        Debug.Log("Connecting");
         VoiceChatController.JoinChannel("Alive", VoiceChatController.ChatType.POSITIONAL);
     }
 }

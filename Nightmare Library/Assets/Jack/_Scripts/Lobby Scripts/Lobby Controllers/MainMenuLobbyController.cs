@@ -63,7 +63,6 @@ public class MainMenuLobbyController : LobbyController
 
     protected override void ConnectVoiceChat()
     {
-        Debug.Log("Connected to Chat");
-        VoiceChatController.JoinChannel("Alive", VoiceChatController.ChatType.GROUP);
+        VoiceChatController.JoinChannel("Menu", VoiceChatController.ChatType.GROUP);
     }
 }

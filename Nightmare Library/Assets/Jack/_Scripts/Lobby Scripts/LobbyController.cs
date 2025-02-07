@@ -33,8 +33,15 @@ public abstract class LobbyController : NetworkBehaviour
 
     protected virtual void Start()
     {
-        if(NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.connectedToLobby)
+        {
             RegisterCallbacks();
+
+            if (NetworkManager.Singleton.IsServer)
+                ServerEntryAction();
+            else
+                ClientEntryAction();
+        }
     }
 
     #region Connection Methods

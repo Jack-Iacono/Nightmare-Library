@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class pa_Idols : PassiveAttack
 {
-    protected int maxIdolCount = 7;
+    protected int maxIdolCount = 3;
     protected static int currentIdolCount = 0;
 
     private List<IdolController> idolObjects = new List<IdolController>();
@@ -53,7 +53,6 @@ public class pa_Idols : PassiveAttack
             }
             else
             {
-                currentIdolCount = -1000;
                 AttackPlayer();
             }
         }

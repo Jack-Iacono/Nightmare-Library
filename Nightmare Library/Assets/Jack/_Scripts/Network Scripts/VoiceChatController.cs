@@ -12,6 +12,7 @@ public static class VoiceChatController
     public enum ChatType { ECHO, GROUP, POSITIONAL };
 
     private static bool hasJoinedChannel = false;
+    private static ChatType currentChatType = ChatType.GROUP;
 
     public static async Task Login()
     {
@@ -29,6 +30,7 @@ public static class VoiceChatController
     {
         // Ensures that no values can be changed while not in a channel
         hasJoinedChannel = false;
+        currentChatType = chatType;
 
         if (currentVoiceChannel != null && VivoxService.Instance.ActiveChannels.Keys.Contains(currentVoiceChannel))
             await LeaveChannel();
@@ -49,7 +51,7 @@ public static class VoiceChatController
                 break;
             case ChatType.POSITIONAL:
                 // Used to have positional audio? Not sure yet, will investigate
-                Channel3DProperties prop = new Channel3DProperties();
+                Channel3DProperties prop = new Channel3DProperties(15, 10, 0.5f, AudioFadeModel.LinearByDistance);
                 await VivoxService.Instance.JoinPositionalChannelAsync(currentVoiceChannel, ChatCapability.AudioOnly, prop);
                 break;
         }
@@ -67,7 +69,7 @@ public static class VoiceChatController
 
     public static void UpdatePlayerPosition(GameObject player)
     {
-        if(hasJoinedChannel)
+        if(currentChatType == ChatType.POSITIONAL && hasJoinedChannel)
             VivoxService.Instance.Set3DPosition(player, currentVoiceChannel);
     }
 }

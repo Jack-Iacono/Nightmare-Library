@@ -11,11 +11,12 @@ public class SceneController : MonoBehaviour
 
     public static Scene loadedScene;
 
-    public enum m_Scene { MAIN_MENU, GAME };
+    public enum m_Scene { MAIN_MENU, GAME, PREGAME };
     public readonly static Dictionary<m_Scene, string> scenes = new Dictionary<m_Scene, string>
         {
             { m_Scene.MAIN_MENU, "j_Menu" },
-            { m_Scene.GAME, "j_Game" }
+            { m_Scene.GAME, "j_Game" },
+            { m_Scene.PREGAME, "j_PreGame" }
         };
 
     public static event EventHandler<string> OnChangeScene;

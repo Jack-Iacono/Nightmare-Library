@@ -497,6 +497,12 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 1608302593
       objectReference: {fileID: 0}
+    - target: {fileID: 1929684839864467471, guid: b47e740cb3261a1409bb6af0d6120aec,
+        type: 3}
+      propertyPath: m_NavMeshData
+      value: 
+      objectReference: {fileID: 23800000, guid: 46cce64a83ac45d48a730cfa0992f893,
+        type: 2}
     - target: {fileID: 2400966839104636242, guid: b47e740cb3261a1409bb6af0d6120aec,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -591,6 +597,21 @@ PrefabInstance:
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 2009445975
+      objectReference: {fileID: 0}
+    - target: {fileID: 6001206627184523039, guid: b47e740cb3261a1409bb6af0d6120aec,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 1877988714
+      objectReference: {fileID: 0}
+    - target: {fileID: 6497613537035206118, guid: b47e740cb3261a1409bb6af0d6120aec,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3288605704
+      objectReference: {fileID: 0}
+    - target: {fileID: 6589877000473249837, guid: b47e740cb3261a1409bb6af0d6120aec,
+        type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 3314130975
       objectReference: {fileID: 0}
     - target: {fileID: 7156914072130427272, guid: b47e740cb3261a1409bb6af0d6120aec,
         type: 3}

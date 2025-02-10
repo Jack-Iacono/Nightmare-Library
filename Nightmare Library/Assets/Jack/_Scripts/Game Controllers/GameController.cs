@@ -51,20 +51,8 @@ public class GameController : MonoBehaviour
     }
     private void Start()
     {
-        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
-            SpawnPrefabs();
         PauseGame(false);
     }
-
-    private void SpawnPrefabs()
-    {
-        PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
-        for(int i = 0; i < enemyCount; i++)
-        {
-            PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
-        }
-    }
-
 
     // Update is called once per frame
     void Update()

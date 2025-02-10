@@ -15,11 +15,6 @@ public class GameControllerNetwork : NetworkBehaviour
     private NetworkVariable<ContinuousData> contState;
     public static NetworkVariable<bool> gamePaused;
 
-    public List<GameObject> spawnedPrefabs = new List<GameObject>();
-
-    private int connectedPlayers = 0;
-    private bool hasSpawned = false;
-
     private void Awake()
     {
         if (!NetworkConnectionController.connectedToLobby)
@@ -34,7 +29,6 @@ public class GameControllerNetwork : NetworkBehaviour
             Destroy(this);
 
         GameController.OnNetworkGamePause += OnParentPause;
-        LobbyController.OnLobbyEnter += OnLobbyEnter;
 
         var permission = NetworkVariableWritePermission.Owner;
 
@@ -114,72 +108,6 @@ public class GameControllerNetwork : NetworkBehaviour
 
     #endregion
 
-    #region Connecting to Game
-
-    private void OnLobbyEnter(ulong clientId, bool isServer)
-    {
-        if (NetworkManager.Singleton.IsServer)
-            ServerConnected();
-        else
-            ClientConnected();
-    }
-
-    private void ServerConnected()
-    {
-        connectedPlayers++;
-        CheckAllConnected();
-    }
-    private void ClientConnected()
-    {
-        ClientConnectedServerRpc(NetworkManager.LocalClientId);
-    }
-    [ServerRpc(RequireOwnership = false)]
-    private void ClientConnectedServerRpc(ulong clientId)
-    {
-        connectedPlayers++;
-        if (!hasSpawned)
-            CheckAllConnected();
-        else
-            SpawnPlayer(clientId);
-    }
-
-    private void CheckAllConnected()
-    {
-        // Wait until all players are connected and then load the prefabs
-        if(connectedPlayers == NetworkManager.ConnectedClients.Count)
-        {
-            foreach(ulong id in NetworkManager.ConnectedClients.Keys)
-            {
-                GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, id);
-                pPrefab.name = "Player " + id;
-
-                spawnedPrefabs.Add(pPrefab);
-            }
-
-            for (int i = 0; i < GameController.enemyCount; i++)
-            {
-                GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
-                ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
-
-                spawnedPrefabs.Add(ePrefab);
-            }
-            
-            hasSpawned = true;
-        }
-    }
-
-    // Used for delayed player entry, this should kill them upon spawning in
-    private void SpawnPlayer(ulong clientId)
-    {
-        GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, clientId);
-        pPrefab.name = "Player " + clientId;
-
-        spawnedPrefabs.Add(pPrefab);
-
-        pPrefab.GetComponent<PlayerController>().ReceiveAttack();
-    }
-    #endregion
-
     #region Continuous Data
 
     private void TransmitContinuousState()
@@ -231,6 +159,5 @@ public class GameControllerNetwork : NetworkBehaviour
         GameController.OnNetworkGamePause -= OnParentPause;
         GameController.OnGameEnd -= OnGameEnd;
         GameController.OnReturnToMenu -= OnReturnToMenu;
-        LobbyController.OnLobbyEnter -= OnLobbyEnter;
     }
 }

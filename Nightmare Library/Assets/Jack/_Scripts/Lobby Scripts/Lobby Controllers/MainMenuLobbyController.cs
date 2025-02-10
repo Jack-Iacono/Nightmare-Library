@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class MainMenuLobbyController : LobbyController
 {
-    public async void Connect()
+    public async void PlayOnlineCreate()
     {
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.CREATE;
 
@@ -15,32 +15,14 @@ public class MainMenuLobbyController : LobbyController
             await NetworkConnectionController.StopConnection();
         }
 
-        if (NetworkManager.Singleton.IsServer)
-            ServerEntryAction();
-        else
-            ClientEntryAction();
-
+        // TEMPORARY , copies the join code for me to test stuff
         TextEditor te = new TextEditor();
         te.text = NetworkConnectionController.joinCode;
         te.SelectAll();
         te.Copy();
-    }
 
-    public override async void LeaveLobby()
-    {
-        await DisconnectFromLobby();
-        UIController.mainInstance.ChangeToScreen(0);
-    }
-
-    public void PlayOnlineCreate()
-    {
         GameController.isNetworkGame = true;
-        SceneController.LoadScene(SceneController.m_Scene.GAME);
-    }
-    public void PlayOffline()
-    {
-        GameController.isNetworkGame = false;
-        SceneController.LoadScene(SceneController.m_Scene.GAME);
+        SceneController.LoadScene(SceneController.m_Scene.PREGAME);
     }
     public async void PlayOnlineJoin(string joinCode)
     {
@@ -54,15 +36,16 @@ public class MainMenuLobbyController : LobbyController
             Debug.LogWarning("Connection Failure");
             await NetworkConnectionController.StopConnection();
         }
-
-        if (NetworkManager.Singleton.IsServer)
-            ServerEntryAction();
-        else
-            ClientEntryAction();
+    }
+    public void PlayOffline()
+    {
+        GameController.isNetworkGame = false;
+        SceneController.LoadScene(SceneController.m_Scene.PREGAME);
     }
 
-    protected override void ConnectVoiceChat()
+    public override async void LeaveLobby()
     {
-        VoiceChatController.JoinChannel("Menu", VoiceChatController.ChatType.GROUP);
+        await DisconnectFromLobby();
+        UIController.mainInstance.ChangeToScreen(0);
     }
 }

@@ -33,6 +33,9 @@ public class GameController : MonoBehaviour
     public delegate void OnGameEndDelegate();
     public static event OnGameEndDelegate OnGameEnd;
 
+    public delegate void OnPlayerKilledDelegate(PlayerController player);
+    public static event OnPlayerKilledDelegate OnPlayerKilled;
+
     private void Awake()
     {
         if (instance == null)
@@ -40,7 +43,6 @@ public class GameController : MonoBehaviour
         else
             Destroy(this);
 
-        PlayerController.OnPlayerKilled += OnPlayerKilled;
         for (int i = 0; i < enemyCount; i++)
         {
             enemyGuesses.Add(null);
@@ -72,8 +74,10 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void OnPlayerKilled(PlayerController player)
+    public static void NotifyPlayerKilled(PlayerController player)
     {
+        OnPlayerKilled?.Invoke(player);
+
         bool allPlayersDead = true;
         foreach(PlayerController p in PlayerController.playerInstances.Values)
         {
@@ -95,7 +99,7 @@ public class GameController : MonoBehaviour
         enemyGuesses[index] = preset;
     }
 
-    public void EndGame()
+    public static void EndGame()
     {
         if(NetworkConnectionController.HasAuthority)
         {
@@ -112,7 +116,6 @@ public class GameController : MonoBehaviour
 
         // Load the end screen
         UIController.mainInstance.ChangeToScreen(1);
-
         ((GameLobbyController)LobbyController.instance).ReturnToPreGame();
     }
 
@@ -129,8 +132,6 @@ public class GameController : MonoBehaviour
     {
         if (instance == this)
             instance = null;
-
-        PlayerController.OnPlayerKilled -= OnPlayerKilled;
     }
 
 }

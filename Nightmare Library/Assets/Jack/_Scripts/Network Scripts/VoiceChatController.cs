@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Unity.Netcode;
 using Unity.Services.Vivox;
 using UnityEngine;
 
 public static class VoiceChatController
 {
-
     private static string currentVoiceChannel = string.Empty;
     public enum ChatType { ECHO, GROUP, POSITIONAL };
 
@@ -18,7 +19,7 @@ public static class VoiceChatController
     {
         LoginOptions options = new LoginOptions();
         options.DisplayName = "Temp User";
-        options.EnableTTS = true;
+        options.PlayerId = AuthenticationController.playerInfo.Id;
         await VivoxService.Instance.LoginAsync(options);
     }
     public static async void Logout()
@@ -58,6 +59,8 @@ public static class VoiceChatController
 
         // Allow channel related actions to occur
         hasJoinedChannel = true;
+
+        
     }
     public static async Task LeaveChannel()
     {
@@ -71,5 +74,22 @@ public static class VoiceChatController
     {
         if(currentChatType == ChatType.POSITIONAL && hasJoinedChannel)
             VivoxService.Instance.Set3DPosition(player, currentVoiceChannel);
+    }
+    public static void MutePlayer(ulong networkID, bool mute)
+    {
+        ReadOnlyCollection<VivoxParticipant> participants = VivoxService.Instance.ActiveChannels[currentVoiceChannel];
+        foreach (VivoxParticipant participant in participants)
+        {
+            Debug.Log("Muting " + networkID + ": " + mute);
+
+            if (participant.PlayerId == LobbyController.playerList.Value.GetPlayerInfo(networkID).id)
+            {
+                if (mute)
+                    participant.MutePlayerLocally();
+                else
+                    participant.UnmutePlayerLocally();
+            }
+
+        }
     }
 }

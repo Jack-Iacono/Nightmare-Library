@@ -34,6 +34,8 @@ public class GameControllerNetwork : NetworkBehaviour
 
         contState = new NetworkVariable<ContinuousData>(writePerm: permission);
         gamePaused = new NetworkVariable<bool>(writePerm: permission);
+
+        GameController.OnPlayerKilled += OnPlayerKilled;
     }
 
     public override void OnNetworkSpawn()
@@ -78,6 +80,24 @@ public class GameControllerNetwork : NetworkBehaviour
             parent.PauseGame(b);
     }
 
+    private void OnPlayerKilled(PlayerController player)
+    {
+        if(IsOwner)
+            OnPlayerKilledClientRpc(player.GetComponent<PlayerNetwork>().OwnerClientId);
+    }
+    [ClientRpc]
+    private void OnPlayerKilledClientRpc(ulong id)
+    {
+        if(id != NetworkManager.LocalClientId)
+        {
+            PlayerController p = PlayerController.playerInstances[PlayerNetwork.ownerInstance.gameObject];
+            if(p.isAlive)
+                VoiceChatController.MutePlayer(id, true);
+            else
+                VoiceChatController.MutePlayer(id, false);
+        }
+    }
+
     #region Game Ending
 
     private void OnGameEnd()
@@ -90,7 +110,7 @@ public class GameControllerNetwork : NetworkBehaviour
     {
         if (!NetworkManager.IsServer)
         {
-            parent.EndGame();
+            GameController.EndGame();
         }
     }
 
@@ -146,5 +166,6 @@ public class GameControllerNetwork : NetworkBehaviour
 
         GameController.OnNetworkGamePause -= OnParentPause;
         GameController.OnGameEnd -= OnGameEnd;
+        GameController.OnPlayerKilled -= OnPlayerKilled;
     }
 }

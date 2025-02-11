@@ -94,12 +94,6 @@ public class PlayerNetwork : NetworkBehaviour
     {
         playerCont.Kill(IsOwner);
         OnPlayerAttackedClientRpc();
-
-        if (IsOwner) 
-        {
-            VoiceChatController.JoinChannel("Dead", VoiceChatController.ChatType.POSITIONAL);
-        }
-
     }
     [ClientRpc]
     private void OnPlayerAttackedClientRpc()
@@ -107,11 +101,6 @@ public class PlayerNetwork : NetworkBehaviour
         if (!IsServer)
         {
             playerCont.Kill(IsOwner);
-
-            if (IsOwner)
-            {
-                VoiceChatController.JoinChannel("Dead", VoiceChatController.ChatType.POSITIONAL);
-            }
         }
     }
     #endregion

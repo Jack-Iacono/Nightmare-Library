@@ -228,13 +228,13 @@ public class PlayerController : MonoBehaviour
         gameObject.layer = ghostLayer;
         charCont.excludeLayers = playerLayer | 1 << 15;
 
-        OnPlayerKilled?.Invoke(this);
-
         interactionCont.enabled = false;
         interactionCont.DropItems();
 
         if(becomeGhost)
             camCont.SetGhost(false);
+
+        GameController.NotifyPlayerKilled(this);
     }
 
     public void Trap(float duration)

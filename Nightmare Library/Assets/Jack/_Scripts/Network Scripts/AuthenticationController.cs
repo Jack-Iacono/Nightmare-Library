@@ -99,7 +99,7 @@ public class AuthenticationController : MonoBehaviour
         return false;
     }
 
-    private async void Start()
+    private void Start()
     {
         if (instance == null)
             instance = this;

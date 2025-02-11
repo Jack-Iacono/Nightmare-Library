@@ -107,9 +107,6 @@ public class AuthenticationController : MonoBehaviour
             Destroy(this);
 
         DontDestroyOnLoad(this);
-
-        // Change this later to link to steam
-        await SignInAnonymously();
     }
     private void OnApplicationQuit()
     {

@@ -23,7 +23,7 @@ public class gui_HUDScreenController : ScreenController
 
     private void Start()
     {
-        InventoryController.Instance.onHeldItemChanged += OnInventoryHeldItemChanged;
+        InventoryController.instance.onHeldItemChanged += OnInventoryHeldItemChanged;
         PlayerInteractionController.onItemSightChange += OnItemSightChanged;
 
         inventoryText.text = "Empty";

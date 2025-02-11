@@ -61,7 +61,7 @@ public static class VoiceChatController
     }
     public static async Task LeaveChannel()
     {
-        if(VivoxService.Instance.ActiveChannels.Keys.Contains(currentVoiceChannel))
+        if(VivoxService.Instance != null && VivoxService.Instance.ActiveChannels.Keys.Contains(currentVoiceChannel))
             await VivoxService.Instance.LeaveChannelAsync(currentVoiceChannel);
 
         Debug.Log("Leaving Voice Channel: " + currentVoiceChannel.ToString());

@@ -33,9 +33,6 @@ public class GameController : MonoBehaviour
     public delegate void OnGameEndDelegate();
     public static event OnGameEndDelegate OnGameEnd;
 
-    public delegate void OnReturnToMenuDelegate();
-    public static event OnReturnToMenuDelegate OnReturnToMenu;
-
     private void Awake()
     {
         if (instance == null)
@@ -95,7 +92,6 @@ public class GameController : MonoBehaviour
 
     public static void MakeGuess(int index, EnemyPreset preset)
     {
-        
         enemyGuesses[index] = preset;
     }
 
@@ -103,7 +99,6 @@ public class GameController : MonoBehaviour
     {
         if(NetworkConnectionController.HasAuthority)
         {
-            PauseGame(true);
             OnGameEnd?.Invoke();
         }
 
@@ -117,17 +112,8 @@ public class GameController : MonoBehaviour
 
         // Load the end screen
         UIController.mainInstance.ChangeToScreen(1);
-    }
-    public static void ReturnToMenu()
-    {
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
-        {
-            OnReturnToMenu?.Invoke();
-        }
-        else
-        {
-            SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
-        }
+
+        ((GameLobbyController)LobbyController.instance).ReturnToPreGame();
     }
 
     public void PauseGame(bool b)

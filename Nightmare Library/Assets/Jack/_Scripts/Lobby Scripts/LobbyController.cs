@@ -12,8 +12,6 @@ public abstract class LobbyController : NetworkBehaviour
     public static LobbyController instance { get; protected set; }
     public static List<MonoBehaviour> observers = new List<MonoBehaviour>();
 
-    protected List<GameObject> spawnedPrefabs = new List<GameObject>();
-
     public const int MAX_PLAYERS = 12;
     public const int MIN_PLAYERS = 2;
 

@@ -44,7 +44,6 @@ public class moui_CameraScreenNetwork : NetworkBehaviour
 
     private void OnParentIndexChange(int index)
     {
-        Debug.Log("Changing Screen");
         cameraIndex.Value = index;
     }
     private void OnCameraIndexChange(int previousValue, int newValue)

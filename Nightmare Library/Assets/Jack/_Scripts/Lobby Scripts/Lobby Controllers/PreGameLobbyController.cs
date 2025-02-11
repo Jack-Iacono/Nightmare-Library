@@ -35,6 +35,12 @@ public class PreGameLobbyController : LobbyController
         VoiceChatController.JoinChannel("Fortnite", VoiceChatController.ChatType.POSITIONAL);
     }
 
+    public void StartGame()
+    {
+        PrefabHandlerNetwork.Instance.DespawnPrefabs();
+        SceneController.LoadScene(SceneController.m_Scene.GAME);
+    }
+
     #region Spawning
 
     [ServerRpc(RequireOwnership = false)]
@@ -46,16 +52,17 @@ public class PreGameLobbyController : LobbyController
     private void SpawnPlayer()
     {
         GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
-
-        spawnedPrefabs.Add(pPrefab);
     }
     private void SpawnPlayer(ulong id)
     {
         GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, id);
-        pPrefab.name = "Player " + id;
-
-        spawnedPrefabs.Add(pPrefab);
+        pPrefab.name = "PreGamePlayer " + id;
     }
 
     #endregion
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+    }
 }

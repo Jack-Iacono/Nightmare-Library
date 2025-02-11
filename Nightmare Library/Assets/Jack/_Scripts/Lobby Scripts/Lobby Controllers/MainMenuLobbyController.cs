@@ -7,6 +7,8 @@ public class MainMenuLobbyController : LobbyController
 {
     public async void PlayOnlineCreate()
     {
+        await AuthenticationController.SignInAnonymously();
+
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.CREATE;
 
         if (!await StartConnection())
@@ -15,18 +17,14 @@ public class MainMenuLobbyController : LobbyController
             await NetworkConnectionController.StopConnection();
         }
 
-        // TEMPORARY , copies the join code for me to test stuff
-        TextEditor te = new TextEditor();
-        te.text = NetworkConnectionController.joinCode;
-        te.SelectAll();
-        te.Copy();
-
         GameController.isNetworkGame = true;
         SceneController.LoadScene(SceneController.m_Scene.PREGAME);
     }
     public async void PlayOnlineJoin(string joinCode)
     {
         GameController.isNetworkGame = true;
+
+        await AuthenticationController.SignInAnonymously();
 
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.JOIN;
         NetworkConnectionController.joinCode = joinCode;

@@ -161,7 +161,7 @@ public class PlayerInteractionController : MonoBehaviour
         if (!actionBuffering && isActive)
         {
             // Get the currently held item, if there is one, from the Inventory controller
-            InventoryItem temp = InventoryController.Instance.GetCurrentItem();
+            InventoryItem temp = InventoryController.instance.GetCurrentItem();
             if (!temp.IsEmpty())
                 currentHeldItem = interactables[temp.realObject];
 
@@ -171,7 +171,7 @@ public class PlayerInteractionController : MonoBehaviour
                 // TEMPORARY
                 // Not sure where to throw from or what velocity to have
                 currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
-                InventoryController.Instance.RemoveCurrentItem();
+                InventoryController.instance.RemoveCurrentItem();
                 currentHeldItem = null;
                 actionBuffering = true;
             }
@@ -249,7 +249,7 @@ public class PlayerInteractionController : MonoBehaviour
                             if (currentHeldItem.placementTypes.Contains(type))
                             {
                                 currentHeldItem.Place();
-                                InventoryController.Instance.RemoveCurrentItem();
+                                InventoryController.instance.RemoveCurrentItem();
                             }
 
                             currentHeldItem = null;
@@ -272,9 +272,9 @@ public class PlayerInteractionController : MonoBehaviour
                 {
                     if(isClick && interactables[hit.collider.gameObject].allowPlayerClick)
                         interactables[hit.collider.gameObject].Click();
-                    else if (isPickup && interactables[hit.collider.gameObject].allowPlayerPickup && InventoryController.Instance.HasOpenSlot())
+                    else if (isPickup && interactables[hit.collider.gameObject].allowPlayerPickup && InventoryController.instance.HasOpenSlot())
                     {
-                        InventoryController.Instance.AddItem(interactables[hit.collider.gameObject].Pickup());
+                        InventoryController.instance.AddItem(interactables[hit.collider.gameObject].Pickup());
                     }
 
                     actionBuffering = true;
@@ -293,7 +293,7 @@ public class PlayerInteractionController : MonoBehaviour
 
     public void DropItems()
     {
-        InventoryItem[] items = InventoryController.Instance.GetInventoryItems();
+        InventoryItem[] items = InventoryController.instance.GetInventoryItems();
         for(int i = 0; i < items.Length; i++)
         {
             InventoryItem item = items[i];
@@ -305,7 +305,7 @@ public class PlayerInteractionController : MonoBehaviour
                 interactables[item.realObject].Place(transform.position + new Vector3(0, i, 0), transform.rotation);
             }
         }
-        InventoryController.Instance.ClearInventory();
+        InventoryController.instance.ClearInventory();
     }
 
     private void SetObjectTransform(PlacementType type, RaycastHit hit)

@@ -50,7 +50,6 @@ public class GameControllerNetwork : NetworkBehaviour
         else
         {
             GameController.OnGameEnd += OnGameEnd;
-            GameController.OnReturnToMenu += OnReturnToMenu;
         }
     }
 
@@ -93,17 +92,6 @@ public class GameControllerNetwork : NetworkBehaviour
         {
             parent.EndGame();
         }
-    }
-
-    private void OnReturnToMenu()
-    {
-        // Unload Spawned Objects
-        PrefabHandlerNetwork.Instance.DespawnPrefabs();
-
-        GameController.OnReturnToMenu -= OnReturnToMenu;
-        GameController.OnGameEnd -= OnGameEnd;
-
-        SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
     }
 
     #endregion
@@ -158,6 +146,5 @@ public class GameControllerNetwork : NetworkBehaviour
 
         GameController.OnNetworkGamePause -= OnParentPause;
         GameController.OnGameEnd -= OnGameEnd;
-        GameController.OnReturnToMenu -= OnReturnToMenu;
     }
 }

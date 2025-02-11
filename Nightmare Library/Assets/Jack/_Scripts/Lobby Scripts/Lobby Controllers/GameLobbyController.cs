@@ -27,7 +27,6 @@ public class GameLobbyController : LobbyController
         connectedPlayers++;
         CheckAllConnected();
     }
-    
     protected override void ClientEntryAction()
     {
         base.ClientEntryAction();
@@ -38,6 +37,13 @@ public class GameLobbyController : LobbyController
     protected override void ConnectVoiceChat()
     {
         VoiceChatController.JoinChannel("Alive", VoiceChatController.ChatType.POSITIONAL);
+    }
+
+    public void ReturnToPreGame()
+    {
+        // Unload Spawned Objects
+        PrefabHandlerNetwork.Instance.DespawnPrefabs();
+        SceneController.LoadScene(SceneController.m_Scene.PREGAME);
     }
 
     #region Spawning
@@ -61,16 +67,12 @@ public class GameLobbyController : LobbyController
             {
                 GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, id);
                 pPrefab.name = "Player " + id;
-
-                spawnedPrefabs.Add(pPrefab);
             }
 
             for (int i = 0; i < GameController.enemyCount; i++)
             {
                 GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
                 ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
-
-                spawnedPrefabs.Add(ePrefab);
             }
 
             hasSpawned = true;
@@ -82,8 +84,6 @@ public class GameLobbyController : LobbyController
     {
         GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, clientId);
         pPrefab.name = "Player " + clientId;
-
-        spawnedPrefabs.Add(pPrefab);
 
         pPrefab.GetComponent<PlayerController>().ReceiveAttack();
     }

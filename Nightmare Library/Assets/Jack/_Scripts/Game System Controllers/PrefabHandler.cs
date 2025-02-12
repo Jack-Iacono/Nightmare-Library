@@ -24,7 +24,11 @@ public class PrefabHandler : MonoBehaviour
     private void Awake()
     {
         if(Instance != null)
+        {
+            Destroy(Instance.network);
             Destroy(Instance);
+        }
+            
         Instance = this;
     }
 
@@ -61,5 +65,11 @@ public class PrefabHandler : MonoBehaviour
     public void SetNetwork(PrefabHandlerNetwork network)
     {
         this.network = network;
+    }
+
+    private void OnDestroy()
+    {
+        if(Instance == this)
+            Instance = null;
     }
 }

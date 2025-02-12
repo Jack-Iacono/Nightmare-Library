@@ -10,7 +10,7 @@ using UnityEngine.UI;
 using static Button3D;
 using static EnemyPreset;
 
-public class moui_EvidenceScreenController : ScreenController
+public class gmui_EvidenceScreenController : ScreenController
 {
     [SerializeField]
     private List<Button3D> presetButtons = new List<Button3D>();

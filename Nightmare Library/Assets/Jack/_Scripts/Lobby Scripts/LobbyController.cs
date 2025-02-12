@@ -12,8 +12,8 @@ public abstract class LobbyController : NetworkBehaviour
     public static LobbyController instance { get; protected set; }
     public static List<MonoBehaviour> observers = new List<MonoBehaviour>();
 
-    public const int MAX_PLAYERS = 12;
-    public const int MIN_PLAYERS = 2;
+    public const int MAX_PLAYERS = 4;
+    public const int MIN_PLAYERS = 1;
 
     public delegate void LobbyEnterDelegate(ulong clientId, bool isServer);
     public static event LobbyEnterDelegate OnLobbyEnter;

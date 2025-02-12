@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class moui_CameraScreenController : ScreenController
+public class gmui_CameraScreenController : ScreenController
 {
     [Header("Monitor Variabels")]
     [SerializeField]

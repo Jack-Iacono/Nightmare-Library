@@ -10,7 +10,7 @@ public class GameController : MonoBehaviour
 
     public static bool gamePaused = false;
 
-    public const float gameTime = 50;
+    public const float gameTime = 20;
     public float gameTimer { get; set; } = gameTime;
 
     private const int totalLevels = 5;
@@ -20,7 +20,8 @@ public class GameController : MonoBehaviour
 
     public List<EnemyPreset> enemyPresets = new List<EnemyPreset>();
     public const int enemyCount = 1;
-    private static List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(enemyCount);
+
+    public static RoundResults roundResults;
 
     // Local Events
     public static event EventHandler<bool> OnGamePause;
@@ -43,10 +44,7 @@ public class GameController : MonoBehaviour
         else
             Destroy(this);
 
-        for (int i = 0; i < enemyCount; i++)
-        {
-            enemyGuesses.Add(null);
-        }
+        roundResults = new RoundResults(enemyCount);
     }
     private void Start()
     {
@@ -96,7 +94,7 @@ public class GameController : MonoBehaviour
 
     public static void MakeGuess(int index, EnemyPreset preset)
     {
-        enemyGuesses[index] = preset;
+        roundResults.SetGuess(index, preset);
     }
 
     public static void EndGame()
@@ -106,16 +104,8 @@ public class GameController : MonoBehaviour
             OnGameEnd?.Invoke();
         }
 
-        for(int i = 0; i < enemyCount; i++)
-        {
-            if(enemyGuesses[i] != null && Enemy.enemyInstances[i].enemyType == enemyGuesses[i])
-                Debug.Log("Guess " + i + " is correct");
-            else
-                Debug.Log("Guess " + i + " is wrong");
-        }
+        roundResults.SetPresentEnemies(Enemy.enemyInstances);
 
-        // Load the end screen
-        UIController.mainInstance.ChangeToScreen(1);
         ((GameLobbyController)LobbyController.instance).ReturnToPreGame();
     }
 
@@ -134,4 +124,33 @@ public class GameController : MonoBehaviour
             instance = null;
     }
 
+    public class RoundResults
+    {
+        public List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(enemyCount);
+        public List<EnemyPreset> presentEnemies = new List<EnemyPreset>(enemyCount);
+
+        public RoundResults(int enemyCount)
+        {
+            for (int i = 0; i < enemyCount; i++)
+            {
+                enemyGuesses.Add(null);
+                presentEnemies.Add(null);
+            }
+        }
+
+        public void SetGuess(int i, EnemyPreset e)
+        {
+            enemyGuesses[i] = e;    
+        }
+        public void SetPresentEnemies(List<Enemy> list)
+        {
+            for(int i = 0; i < list.Count; i++)
+            {
+                if (presentEnemies.Count > i)
+                    presentEnemies[i] = list[i].enemyType;
+                else
+                    presentEnemies.Add(list[i].enemyType);
+            }
+        }
+    }
 }

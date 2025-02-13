@@ -45,12 +45,15 @@ public class PrefabHandlerNetwork : NetworkBehaviour
     }
     public void DespawnPrefabs()
     {
-        foreach(NetworkObject obj in spawnedObjects)
+        if (NetworkManager.IsServer)
         {
-            if(obj != null && obj.IsSpawned)
-                obj.Despawn();
+            foreach (NetworkObject obj in spawnedObjects)
+            {
+                if (obj != null && obj.IsSpawned)
+                    obj.Despawn();
+            }
         }
-
+        
         spawnedObjects.Clear();
     }
 

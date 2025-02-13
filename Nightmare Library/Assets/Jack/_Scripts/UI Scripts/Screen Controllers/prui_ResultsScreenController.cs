@@ -22,25 +22,13 @@ public class prui_ResultsScreenController : ScreenController
         {
             List<EnemyPreset> presets = GameController.roundResults.presentEnemies;
             List<EnemyPreset> guesses = GameController.roundResults.enemyGuesses;
-            List<EnemyPreset> usedPresets = new List<EnemyPreset>();
 
-            for(int i = 0; i < guesses.Count; i++)
+            for(int i = 0; i < presets.Count; i++)
             {
-                
-                if (presets.Contains(guesses[i]))
-                {
-                    if (usedPresets.Contains(guesses[i]))
-                        guessResults[i].text = guesses[i].enemyName + ": Nice Try, I'm not paying you for this one";
-                    else
-                        guessResults[i].text = guesses[i].enemyName + ": Accepted";
-                }
+                if (guesses.Contains(presets[i]))
+                    guessResults[i].text = presets[i].enemyName + ": Detected";
                 else
-                {
-                    if (usedPresets.Contains(guesses[i]))
-                        guessResults[i].text = guesses[i].enemyName + ": Why would you guess this twice dumbass";
-                    else
-                        guessResults[i].text = guesses[i].enemyName + ": Rejected";
-                }
+                    guessResults[i].text = presets[i].enemyName + ": Not Detected";
             }
         }
         else

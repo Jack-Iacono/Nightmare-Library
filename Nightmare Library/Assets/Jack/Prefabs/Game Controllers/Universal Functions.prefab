@@ -1,0 +1,139 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3257430371133698127
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4396617629476131479}
+  - component: {fileID: 4475538241714868911}
+  - component: {fileID: 1130992851967975794}
+  - component: {fileID: 8691475150876414070}
+  - component: {fileID: 3563164948738852297}
+  - component: {fileID: 9201799052545353948}
+  m_Layer: 0
+  m_Name: Universal Functions
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4396617629476131479
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3257430371133698127}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -9.9589205, y: -0.9989491, z: 2.0506837}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4475538241714868911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3257430371133698127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83b2bea92fa683a44ba1374332da525b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1130992851967975794
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3257430371133698127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d949dc9757e1b24bbf953e21a54dbea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  p_Player: {fileID: 8304355550611021137, guid: cd83bc9e5856e324085ffec44549aa1e,
+    type: 3}
+  e_Enemy: {fileID: 1289455882946623128, guid: 3693b8fad534778459dd9dbae0fd1532, type: 3}
+  e_EvidenceFootprint: {fileID: 462350817080059154, guid: 59f37b89cd452be47915e99718acc448,
+    type: 3}
+  e_EvidenceTrap: {fileID: 2561657698923950872, guid: 8c12e05da9c71f545a58f5d6168b4deb,
+    type: 3}
+  e_WardenSensor: {fileID: 1362234469720430081, guid: da59f9d391b9838429c78acabb4b40e3,
+    type: 3}
+  e_ScreechHead: {fileID: 668094590302005263, guid: 6f1fdc0bb82b72d4bba623b80a66f8c0,
+    type: 3}
+  a_AudioSource: {fileID: 4782423263898580498, guid: fde7960ebc8ffaf44bf1509ea2bd8578,
+    type: 3}
+--- !u!114 &8691475150876414070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3257430371133698127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 723087163
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &3563164948738852297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3257430371133698127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21e95a2f723b581488a8b36be538d4c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sounds:
+  - name: e_MUSIC_LOVER
+    sounds:
+    - {fileID: 11400000, guid: 86f0b39cc13aa03409beedb5d9e4dce0, type: 2}
+  - name: e_STALK_CLOSE_IN
+    sounds:
+    - {fileID: 11400000, guid: 86f0b39cc13aa03409beedb5d9e4dce0, type: 2}
+  - name: e_SCREECH_APPEAR
+    sounds:
+    - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
+    - {fileID: 11400000, guid: e864b2317c21861478438f942dec6452, type: 2}
+  - name: e_WARDEN_SENSOR_STEP
+    sounds:
+    - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
+  - name: e_STALK_APPEAR
+    sounds:
+    - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
+  - name: p_JUMP
+    sounds:
+    - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
+--- !u!114 &9201799052545353948
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3257430371133698127}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eff7930199e23843a4b4db131bb1b55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -73,6 +73,8 @@ public class ObjectPool
         {
             pooledObjects.Add(pool.name, new List<GameObject> { addedObject });
         }
+
+        Debug.Log(pooledObjects[pool.name].Count);
     } 
 
     public GameObject GetObject(GameObject g)
@@ -92,8 +94,13 @@ public class ObjectPool
         return pooledObjects[g.name];
     }
 
+    public int ObjectCount(GameObject g)
+    {
+        return pooledObjects[g.name].Count;
+    }
+
     public void ClearPool()
-    {   
+    {
         pooledObjects.Clear(); 
     }
 }

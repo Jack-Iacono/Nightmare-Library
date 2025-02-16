@@ -12,7 +12,7 @@ public class TaskRushGetNewPath : Node
 
     public override Status Check(float dt)
     {
-        owner.GetNewPath();
+        owner.RefreshPath();
 
         status = Status.SUCCESS;
         return status;

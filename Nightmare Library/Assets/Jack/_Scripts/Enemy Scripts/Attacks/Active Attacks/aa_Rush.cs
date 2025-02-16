@@ -14,10 +14,13 @@ public class aa_Rush : ActiveAttack
     public List<EnemyNavNode> path { get; private set; } = new List<EnemyNavNode>();
     private EnemyNavNode currentGoal;
     private EnemyNavNode previousGoal;
+    private EnemyNavNode nextGoal = null;
 
     // These methods allow the enemy to update the values for attacks during level up
     private TaskWait n_AtNodePause;
     private TaskRushTarget n_RushTarget;
+
+    private List<EnemyNavNode> visitedNodes = new List<EnemyNavNode>();
 
     public aa_Rush(Enemy owner) : base(owner)
     {
@@ -30,7 +33,7 @@ public class aa_Rush : ActiveAttack
         base.Initialize(level);
 
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
-        GetNewPath();
+        RefreshPath();
 
         // References stored so that they can have values changed later
         n_AtNodePause = new TaskWait(this, baseReachGoalPauseMin, baseReachGoalPauseMax);
@@ -58,7 +61,6 @@ public class aa_Rush : ActiveAttack
 
     public EnemyNavNode GetNextNode()
     {
-        
         if(path.Count > 0)
         {
             EnemyNavNode node = path[0];
@@ -67,13 +69,19 @@ public class aa_Rush : ActiveAttack
         }
         return null;
     }
-    public void GetNewPath()
+    public void RefreshPath()
     {
         if (currentGoal == null)
-            currentGoal = EnemyNavGraph.GetClosestNavPoint(owner.transform.position);
+        {
+            currentGoal = EnemyNavGraph.GetRandomNavPoint();
+            previousGoal = EnemyNavGraph.GetFarthestNavPoint(currentGoal.position);
 
-        previousGoal = currentGoal;
-        currentGoal = EnemyNavGraph.GetRandomNavPoint();
+            nextGoal = previousGoal.GetRandomNeighbor(visitedNodes);
+        }
+        else
+        {
+            GetNextPath();
+        }
 
         path = EnemyNavGraph.GetPathToPoint(previousGoal, currentGoal);
 
@@ -83,11 +91,37 @@ public class aa_Rush : ActiveAttack
         }
     }
 
+    private void GetNextPath()
+    {
+        visitedNodes.Add(currentGoal);
+        currentGoal.nodeStatus = 1;
+
+        previousGoal = currentGoal;
+        currentGoal = nextGoal;
+
+        currentGoal.nodeStatus = 0;
+
+        EnemyNavNode tempNode = previousGoal.GetRandomNeighbor(visitedNodes);
+
+        // If valid node was found, continue with that, if not, start again
+        if (tempNode != null)
+            nextGoal = tempNode;
+        else
+        {
+            foreach(EnemyNavNode node in visitedNodes)
+            {
+                node.nodeStatus = -1;
+            }
+            visitedNodes.Clear();
+            nextGoal = previousGoal.GetRandomNeighbor(visitedNodes);
+        }
+    }
+
     protected override void OnLevelChange(int level)
     {
         base.OnLevelChange(level);
 
         n_AtNodePause.OnLevelChange(baseReachGoalPauseMin, baseReachGoalPauseMax);
-        n_RushTarget.OnLevelChange(baseAtNodePause, baseRushSpeed * level);
+        n_RushTarget.OnLevelChange(baseAtNodePause, baseRushSpeed);
     }
 }

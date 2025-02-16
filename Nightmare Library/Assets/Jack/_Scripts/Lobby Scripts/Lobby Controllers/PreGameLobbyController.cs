@@ -38,6 +38,7 @@ public class PreGameLobbyController : LobbyController
     public void StartGame()
     {
         PrefabHandlerNetwork.Instance.DespawnPrefabs();
+        SceneController.UnloadScene(SceneController.m_Scene.PREGAME);
         SceneController.LoadScene(SceneController.m_Scene.GAME);
     }
 

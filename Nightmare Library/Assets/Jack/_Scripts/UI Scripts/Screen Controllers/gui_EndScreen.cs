@@ -10,15 +10,6 @@ public class gui_EndScreen : ScreenController
 
     public override void ShowScreen()
     {
-        base.ShowScreen();
-
-        string endText = "";
-        foreach(Enemy e in Enemy.enemyInstances)
-        {
-            endText += e.ToString();
-        }
-        endGameText.text = endText;
         
-        Cursor.lockState = CursorLockMode.Confined;
     }
 }

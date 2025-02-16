@@ -5,13 +5,16 @@ using System.Collections.Generic;
 using Unity.Services.Authentication;
 
 using static EnemyPreset;
+using static UnityEngine.UI.GridLayoutGroup;
 
 public class Enemy : MonoBehaviour
 {
-    public static List<Enemy> enemyInstances = new List<Enemy>();
+    public static Dictionary<GameObject, Enemy> enemyInstances = new Dictionary<GameObject, Enemy>();
     protected static List<EnemyPreset> inUsePresets = new List<EnemyPreset>();
     protected static List<aAttackEnum> inUseActiveAttacks = new List<aAttackEnum>();
     protected static List<pAttackEnum> inUsePassiveAttacks = new List<pAttackEnum>();
+
+    public static int layerMask = -1;
 
     [Header("Enemy Characteristics")]
     [SerializeField]
@@ -74,8 +77,11 @@ public class Enemy : MonoBehaviour
 
     private void Awake()
     {
-        if(!enemyInstances.Contains(this))
-            enemyInstances.Add(this);
+        if(!enemyInstances.ContainsKey(gameObject))
+            enemyInstances.Add(gameObject, this);
+
+        if(layerMask == -1)
+            layerMask = gameObject.layer;
     }
 
     private void Start()
@@ -90,6 +96,7 @@ public class Enemy : MonoBehaviour
         audioSrc = GetComponent<AudioSource>();
 
         GameController.OnGamePause += OnGamePause;
+        AudioSourceController.OnProject += OnAudioSourceDetect;
 
         navAgent.Warp(spawnLocation);
 
@@ -158,6 +165,9 @@ public class Enemy : MonoBehaviour
         if(!navAgent)
             navAgent = GetComponent<NavMeshAgent>();
         navAgent.enabled = b;
+
+        // Unregister this event as it won't be used by an inactive enemy
+        AudioSourceController.OnProject -= OnAudioSourceDetect;
     }
 
     public void PlaySound(string soundName)
@@ -243,6 +253,18 @@ public class Enemy : MonoBehaviour
             OnLightFlicker?.Invoke(this, EventArgs.Empty);
     }
 
+    private void OnAudioSourceDetect(Vector3 pos, float radius)
+    {
+        if (Vector3.SqrMagnitude(transform.position - pos) < radius * radius)
+        {
+            if(activeAttackTree != null)
+                activeAttackTree.DetectSound();
+            if(passiveAttackTree != null)
+                passiveAttackTree.DetectSound();
+            Debug.Log("Sound Detected");
+        }
+    }
+
     public ActiveAttack GetActiveAttack()
     {
         return activeAttackTree;
@@ -279,7 +301,7 @@ public class Enemy : MonoBehaviour
         inUseActiveAttacks.Clear();
         inUsePassiveAttacks.Clear();
 
-        enemyInstances.Remove(this);
+        enemyInstances.Remove(gameObject);
         GameController.OnGamePause -= OnGamePause;
     }
 }

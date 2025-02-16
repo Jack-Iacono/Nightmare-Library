@@ -50,6 +50,7 @@ public class EnemyNetwork : NetworkBehaviour
             parent.OnSpawnFootprint += OnSpawnFootprint;
             parent.OnSpawnTrap += OnSpawnTrap;
         }
+            
     }
     private void OnInitialize()
     {

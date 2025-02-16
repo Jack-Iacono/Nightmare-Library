@@ -6,6 +6,8 @@ public class PreGameUIController : UIController
 {
     [Header("Monitor Variabels")]
     public GameObject viewBlocker;
+    [SerializeField]
+    private GameObject cameraAnchor;
 
     public float visibleRadius = 7.5f;
     private float playerCheckTime = 0.25f;
@@ -45,5 +47,10 @@ public class PreGameUIController : UIController
     {
         bool inRange = Physics.OverlapSphere(transform.position, visibleRadius, playerMask).Length > 0;
         viewBlocker.SetActive(!inRange);
+    }
+
+    public void PressStartButton()
+    {
+        ((GameLobbyController)LobbyController.instance).GoToGame();
     }
 }

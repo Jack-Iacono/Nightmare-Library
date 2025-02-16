@@ -10,7 +10,7 @@ public class GameController : MonoBehaviour
 
     public static bool gamePaused = false;
 
-    public const float gameTime = 20;
+    public const float gameTime = 1000;
     public float gameTimer { get; set; } = gameTime;
 
     private const int totalLevels = 5;
@@ -49,6 +49,12 @@ public class GameController : MonoBehaviour
     private void Start()
     {
         PauseGame(false);
+
+        for (int i = 0; i < GameController.enemyCount; i++)
+        {
+            GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+            ePrefab.name = "Basic Enemy";
+        }
     }
 
     // Update is called once per frame
@@ -106,7 +112,7 @@ public class GameController : MonoBehaviour
 
         roundResults.SetPresentEnemies(Enemy.enemyInstances);
 
-        ((GameLobbyController)LobbyController.instance).ReturnToPreGame();
+        ((GameLobbyController)LobbyController.instance).GoToPreGame();
     }
 
     public void PauseGame(bool b)
@@ -142,14 +148,15 @@ public class GameController : MonoBehaviour
         {
             enemyGuesses[i] = e;    
         }
-        public void SetPresentEnemies(List<Enemy> list)
+        public void SetPresentEnemies(Dictionary<GameObject, Enemy> enemies)
         {
-            for(int i = 0; i < list.Count; i++)
+            List<Enemy> e = new List<Enemy>(enemies.Values);
+            for(int i = 0; i < e.Count; i++)
             {
                 if (presentEnemies.Count > i)
-                    presentEnemies[i] = list[i].enemyType;
+                    presentEnemies[i] = e[i].enemyType;
                 else
-                    presentEnemies.Add(list[i].enemyType);
+                    presentEnemies.Add(e[i].enemyType);
             }
         }
     }

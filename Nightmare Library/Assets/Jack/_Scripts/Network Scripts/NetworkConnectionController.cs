@@ -196,6 +196,11 @@ public class NetworkConnectionController : NetworkBehaviour
 
             OnJoinCodeChanged?.Invoke(instance, joinCode);
 
+            TextEditor te = new TextEditor();
+            te.text = NetworkConnectionController.joinCode;
+            te.SelectAll();
+            te.Copy();
+
             return true;
         }
         catch (Exception e)

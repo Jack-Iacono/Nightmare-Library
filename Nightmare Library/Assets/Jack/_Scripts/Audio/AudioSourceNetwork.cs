@@ -30,6 +30,13 @@ public class AudioSourceNetwork : NetworkBehaviour
         }
     }
 
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        if (!IsOwner)
+            parent.checkListeners = false;
+    }
+
     public override void OnDestroy()
     {
         AudioManager.OnPoolObjects -= OnPoolObject;
@@ -41,7 +48,6 @@ public class AudioSourceNetwork : NetworkBehaviour
     {
         isPooledObject.Value = true;
     }
-
     private void OnPoolObject()
     {
         if (isPooledObject.Value)
@@ -55,6 +61,7 @@ public class AudioSourceNetwork : NetworkBehaviour
             data = AudioManager.audioReference[sound];
         else
             data = new Vector2(-1,-1);
+
         Vector3 movePos = !move ? Vector3.negativeInfinity : transform.position;
 
         if (IsServer)

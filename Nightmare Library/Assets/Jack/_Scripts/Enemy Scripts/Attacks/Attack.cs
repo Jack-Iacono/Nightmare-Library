@@ -21,6 +21,10 @@ public abstract class Attack
 
     public abstract void Update(float dt);
 
+    public virtual void DetectSound()
+    {
+
+    }
     protected virtual void OnLevelChange(int level)
     {
         currentLevel = startingLevel + level - 1;

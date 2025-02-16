@@ -19,6 +19,11 @@ public class AudioSourceController : MonoBehaviour
     public delegate void OnPlayDelegate(AudioData sound = null, bool move = false);
     public event OnPlayDelegate OnPlay;
 
+    public delegate void OnProjectDelegate(Vector3 pos, float radius = 10);
+    public static event OnProjectDelegate OnProject;
+
+    public bool checkListeners = true;
+
     private void Awake()
     {
         sourceAccess.Add(gameObject, this);
@@ -62,29 +67,23 @@ public class AudioSourceController : MonoBehaviour
         audioSource.Play();
         BeginPlayTimer();
 
+        // Only sends this out if on the server, moderated by the AudioSourceNetwork
+        if (checkListeners)
+            OnProject?.Invoke(trans.position);
+
+        // Send all data to ensure correct sound is played
         if (!fromNetwork)
-            OnPlay?.Invoke();
+            OnPlay?.Invoke(audioData, true);
     }
     public void PlaySound(AudioData sound, bool fromNetwork = false)
     {
-        gameObject.SetActive(true);
         SetAudioSourceData(sound);
-        audioSource.Play();
-        BeginPlayTimer();
-
-        if (!fromNetwork)
-            OnPlay?.Invoke(sound);
+        PlaySound(fromNetwork);
     }
     public void PlaySound(AudioData sound, Vector3 pos, bool fromNetwork = false)
     {
-        gameObject.SetActive(true);
         trans.position = pos;
-        SetAudioSourceData(sound);
-        audioSource.Play();
-        BeginPlayTimer();
-
-        if (!fromNetwork)
-            OnPlay?.Invoke(sound, true);
+        PlaySound(sound, fromNetwork);
     }
 
     public void PlaySoundOffline()
@@ -95,18 +94,13 @@ public class AudioSourceController : MonoBehaviour
     }
     public void PlaySoundOffline(AudioData sound)
     {
-        gameObject.SetActive(true);
         SetAudioSourceData(sound);
-        audioSource.Play();
-        BeginPlayTimer();
+        PlaySoundOffline();
     }
     public void PlaySoundOffline(AudioData sound, Vector3 pos)
     {
-        gameObject.SetActive(true);
         trans.position = pos;
-        SetAudioSourceData(sound);
-        audioSource.Play();
-        BeginPlayTimer();
+        PlaySoundOffline(sound);
     }
 
     private void BeginPlayTimer()

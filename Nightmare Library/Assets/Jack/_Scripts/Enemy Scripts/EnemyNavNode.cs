@@ -11,7 +11,11 @@ public class EnemyNavNode : MonoBehaviour
     [SerializeField]
     private List<EnemyNavNode> neighborOverrides = new List<EnemyNavNode>();
 
-    private LayerMask pointLayers = 1 << 12 | 1 << 9;
+    // May need to re-add 1 << 12 | 
+    private LayerMask pointLayers = 1 << 9;
+
+    // TESTING ONLY
+    public int nodeStatus = -1;
 
     private void Awake()
     {
@@ -33,13 +37,15 @@ public class EnemyNavNode : MonoBehaviour
         Ray ray = new Ray(position, (p.position - position).normalized);
         float dist = Vector3.Distance(p.position, position);
 
+        RaycastHit hit;
+
         // If nothing is blocking this path, add the node to the neighbors list
-        if (!Physics.Raycast(ray, dist, pointLayers))
+        if (!Physics.Raycast(ray, out hit, dist, pointLayers))
         {
             neighbors.Add(p, dist);
 
             // Visualizes the paths
-            // Debug.DrawRay(ray.origin, ray.direction * dist, Color.black, 10);
+            //Debug.DrawRay(ray.origin, ray.direction * dist, Color.green, 10);
         }
     }
     public void RayToNode(EnemyNavNode node)
@@ -48,8 +54,43 @@ public class EnemyNavNode : MonoBehaviour
         Debug.DrawRay(ray.origin, ray.direction * Vector3.Distance(node.position, position), Color.black, 2f);
     }
 
+    public EnemyNavNode GetRandomNeighbor(List<EnemyNavNode> exclude)
+    {
+        List<EnemyNavNode> valid = new List<EnemyNavNode>();
+
+        foreach(EnemyNavNode node in neighbors.Keys)
+        {
+            if (!exclude.Contains(node))
+                valid.Add(node);
+        }
+
+        if (valid.Count > 0)
+            return valid[Random.Range(0, valid.Count)];
+        else
+            return null;
+    }
+
     private void OnDestroy()
     {
         EnemyNavGraph.Remove(this);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if(nodeStatus != -1)
+        {
+            switch (nodeStatus)
+            {
+                case 0:
+                    Gizmos.color = Color.red;
+                    break;
+                case 1:
+                    Gizmos.color= Color.green;
+                    break;
+
+            }
+
+            Gizmos.DrawSphere(transform.position + Vector3.up * 4, 2f);
+        }
     }
 }

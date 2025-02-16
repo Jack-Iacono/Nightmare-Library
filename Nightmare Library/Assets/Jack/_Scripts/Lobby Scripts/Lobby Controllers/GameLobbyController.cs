@@ -19,15 +19,15 @@ public class GameLobbyController : LobbyController
     {
         base.EntryAction();
 
-        SpawnOfflinePrefabs();
+        SpawnPlayer();
     }
     protected override void ServerEntryAction()
     {
         base.ServerEntryAction();
 
-        connectedPlayers++;
-        CheckAllConnected();
+        SpawnPlayer(NetworkManager.LocalClientId);
     }
+
     protected override void ClientEntryAction()
     {
         base.ClientEntryAction();
@@ -37,14 +37,19 @@ public class GameLobbyController : LobbyController
 
     protected override void ConnectVoiceChat()
     {
-        VoiceChatController.JoinChannel("Alive", VoiceChatController.ChatType.POSITIONAL);
+        VoiceChatController.JoinChannel("Fortnite", VoiceChatController.ChatType.POSITIONAL);
     }
 
-    public void ReturnToPreGame()
+    public void GoToGame()
     {
-        // Unload Spawned Objects
         PrefabHandlerNetwork.Instance.DespawnPrefabs();
-        SceneController.LoadScene(SceneController.m_Scene.PREGAME);
+        SceneController.UnloadScene(SceneController.m_Scene.PREGAME);
+        SceneController.LoadScene(SceneController.m_Scene.GAME_SYS);
+        SceneController.LoadScene(SceneController.m_Scene.GAME);
+    }
+    public void GoToPreGame()
+    {
+
     }
 
     #region Spawning
@@ -52,50 +57,17 @@ public class GameLobbyController : LobbyController
     [ServerRpc(RequireOwnership = false)]
     private void ClientConnectedServerRpc(ulong clientId)
     {
-        connectedPlayers++;
-        if (!hasSpawned)
-            CheckAllConnected();
-        else
-            SpawnLatePlayers(clientId);
+        SpawnPlayer(clientId);
     }
 
-    private void CheckAllConnected()
+    private void SpawnPlayer()
     {
-        // Wait until all players are connected and then load the prefabs
-        if (connectedPlayers == NetworkManager.ConnectedClients.Count)
-        {
-            foreach (ulong id in NetworkManager.ConnectedClients.Keys)
-            {
-                GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, id);
-                pPrefab.name = "Player " + id;
-            }
-
-            for (int i = 0; i < GameController.enemyCount; i++)
-            {
-                GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
-                ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
-            }
-
-            hasSpawned = true;
-        }
+        GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
     }
-
-    // Used for delayed player entry, this should kill them upon spawning in
-    private void SpawnLatePlayers(ulong clientId)
+    private void SpawnPlayer(ulong id)
     {
-        GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, clientId);
-        pPrefab.name = "Player " + clientId;
-
-        pPrefab.GetComponent<PlayerController>().ReceiveAttack();
-    }
-
-    private void SpawnOfflinePrefabs()
-    {
-        PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
-        for (int i = 0; i < GameController.enemyCount; i++)
-        {
-            PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
-        }
+        GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, id);
+        pPrefab.name = "PreGamePlayer " + id;
     }
 
     #endregion

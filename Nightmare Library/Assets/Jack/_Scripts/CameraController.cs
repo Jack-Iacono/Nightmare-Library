@@ -28,6 +28,14 @@ public class CameraController : MonoBehaviour
     private float xRotation = 0;
     private float yRotation = 0;
 
+    private Vector3 normalPosition = Vector3.zero;
+
+    private void Awake()
+    {
+        // Sets the normal position that the camera should be in
+        normalPosition = transform.position;
+    }
+
     // Start is called before the first frame update
     void Start()
     {

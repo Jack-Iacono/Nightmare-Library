@@ -202,6 +202,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborOverrides: []
+  nodeStatus: -1
 --- !u!1 &2203004127555209752
 GameObject:
   m_ObjectHideFlags: 0
@@ -368,7 +369,7 @@ GameObject:
   - component: {fileID: 6294051410919685054}
   - component: {fileID: 4097860987646677319}
   m_Layer: 9
-  m_Name: Wall (4)
+  m_Name: Inside Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -473,7 +474,7 @@ GameObject:
   - component: {fileID: 3104894378192536383}
   - component: {fileID: 5507055986809791897}
   m_Layer: 9
-  m_Name: Wall (6)
+  m_Name: Inside Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -662,6 +663,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborOverrides: []
+  nodeStatus: -1
 --- !u!1 &3381949818520697280
 GameObject:
   m_ObjectHideFlags: 0
@@ -973,6 +975,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborOverrides: []
+  nodeStatus: -1
 --- !u!1 &5128174051744873980
 GameObject:
   m_ObjectHideFlags: 0
@@ -1070,6 +1073,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborOverrides: []
+  nodeStatus: -1
 --- !u!1 &5335925858443880101
 GameObject:
   m_ObjectHideFlags: 0
@@ -1167,6 +1171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborOverrides: []
+  nodeStatus: -1
 --- !u!1 &5575764834585826136
 GameObject:
   m_ObjectHideFlags: 0
@@ -1180,7 +1185,7 @@ GameObject:
   - component: {fileID: 3967890587055719458}
   - component: {fileID: 8303465342485302678}
   m_Layer: 9
-  m_Name: Wall (5)
+  m_Name: Inside Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1369,6 +1374,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborOverrides: []
+  nodeStatus: -1
 --- !u!1 &5985680715249566139
 GameObject:
   m_ObjectHideFlags: 0
@@ -1382,7 +1388,7 @@ GameObject:
   - component: {fileID: 7609687137080387160}
   - component: {fileID: 4755800403998081495}
   m_Layer: 9
-  m_Name: Wall (7)
+  m_Name: Inside Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1759,6 +1765,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborOverrides: []
+  nodeStatus: -1
 --- !u!1 &6694204335364007364
 GameObject:
   m_ObjectHideFlags: 0
@@ -1856,6 +1863,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborOverrides: []
+  nodeStatus: -1
 --- !u!1 &6832573303083004588
 GameObject:
   m_ObjectHideFlags: 0
@@ -1953,6 +1961,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   neighborOverrides: []
+  nodeStatus: -1
 --- !u!1 &7817760234139848345
 GameObject:
   m_ObjectHideFlags: 0
@@ -2070,7 +2079,7 @@ GameObject:
   - component: {fileID: 4247799973608863392}
   - component: {fileID: 1813211317465819924}
   - component: {fileID: 227536449556283969}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}

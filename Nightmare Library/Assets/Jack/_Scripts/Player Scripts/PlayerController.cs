@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     [Tooltip("Negative values will pull player downward, Positive value will push them up")]
     private float gravity = -0.98f;
+    private bool canMove = true;
 
     [Header("Acceleration Variables", order = 2)]
     [SerializeField]
@@ -150,6 +151,7 @@ public class PlayerController : MonoBehaviour
         {
             if (currentInput.y != 0)
             {
+                //AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP), transform.position);
                 currentMove.y = jumpHeight;
             }
 
@@ -259,6 +261,11 @@ public class PlayerController : MonoBehaviour
     {
         enabled = !b;
         camCont.enabled = !b;
+    }
+
+    public void SetMove(bool b)
+    {
+        canMove = b;
     }
 
     [Serializable]

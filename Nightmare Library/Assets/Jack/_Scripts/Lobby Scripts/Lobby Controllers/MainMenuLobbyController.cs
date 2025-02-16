@@ -18,6 +18,8 @@ public class MainMenuLobbyController : LobbyController
         }
 
         GameController.isNetworkGame = true;
+
+        SceneController.UnloadScene(SceneController.m_Scene.MAIN_MENU);
         SceneController.LoadScene(SceneController.m_Scene.PREGAME);
     }
     public async void PlayOnlineJoin(string joinCode)
@@ -38,7 +40,9 @@ public class MainMenuLobbyController : LobbyController
     public void PlayOffline()
     {
         GameController.isNetworkGame = false;
+        SceneController.UnloadScene(SceneController.m_Scene.MAIN_MENU);
         SceneController.LoadScene(SceneController.m_Scene.PREGAME);
+        SceneController.LoadScene(SceneController.m_Scene.UNIVERSAL);
     }
 
     public override async void LeaveLobby()

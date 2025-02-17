@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -45,14 +46,19 @@ public class GameController : MonoBehaviour
             Destroy(this);
 
         roundResults = new RoundResults(enemyCount);
+        SceneController.OnMapLoaded += OnMapLoaded;
     }
+
     private void Start()
     {
         PauseGame(false);
-
+    }
+    private void OnMapLoaded(string mapName)
+    {
         for (int i = 0; i < GameController.enemyCount; i++)
         {
-            GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+            Debug.Log("Spawning Enemy " + i);
+            GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
             ePrefab.name = "Basic Enemy";
         }
     }
@@ -75,6 +81,11 @@ public class GameController : MonoBehaviour
             }
             else
                 EndGame();
+        }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            EndGame();
         }
     }
 
@@ -128,6 +139,8 @@ public class GameController : MonoBehaviour
     {
         if (instance == this)
             instance = null;
+
+        SceneController.OnMapLoaded -= OnMapLoaded;
     }
 
     public class RoundResults

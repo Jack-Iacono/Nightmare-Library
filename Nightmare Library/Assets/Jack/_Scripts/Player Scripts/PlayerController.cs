@@ -108,11 +108,6 @@ public class PlayerController : MonoBehaviour
                     isTrapped = false;
             }
         }
-
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            ReceiveAttack();
-        }
     }
     private void FixedUpdate()
     {

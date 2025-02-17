@@ -4,20 +4,22 @@ using System.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using System;
+using System.Linq;
 
 public class SceneController : MonoBehaviour
 {
     public static SceneController instance { get; private set; }
 
     public enum m_Scene { MAIN_MENU, GAME, PREGAME, UNIVERSAL, GAME_SYS };
-    public readonly static Dictionary<m_Scene, string> scenes = new Dictionary<m_Scene, string>
+    public readonly static Dictionary<m_Scene, SceneData> scenes = new Dictionary<m_Scene, SceneData>
         {
-            { m_Scene.MAIN_MENU, "j_Menu" },
-            { m_Scene.GAME, "j_Game" },
-            { m_Scene.PREGAME, "j_PreGame" },
-            { m_Scene.UNIVERSAL, "scn_UniversalGameFunction" },
-            { m_Scene.GAME_SYS, "scn_GameSystems" }
+            { m_Scene.MAIN_MENU, new SceneData("j_Menu", SceneData.Type.MAP) },
+            { m_Scene.GAME, new SceneData("j_Game", SceneData.Type.MAP) },
+            { m_Scene.PREGAME, new SceneData("j_Pregame", SceneData.Type.MAP) },
+            { m_Scene.UNIVERSAL, new SceneData("scn_UniversalGameFunction", SceneData.Type.UTIL) },
+            { m_Scene.GAME_SYS, new SceneData("scn_GameSystems", SceneData.Type.UTIL) }
         };
+    private static List<string> mapScenes = new List<string>();
 
     public delegate void OnAsyncLoadDelegate(string scene);
     public static event OnAsyncLoadDelegate OnAsyncLoad;
@@ -25,36 +27,49 @@ public class SceneController : MonoBehaviour
     public delegate void OnAsyncUnloadDelegate(string scene);
     public static event OnAsyncUnloadDelegate OnAsyncUnload;
 
+    public delegate void OnMapLoadedDelegate(string mapName);
+    public static event OnMapLoadedDelegate OnMapLoaded;
+    public static Scene loadedMap;
+
     private void Awake()
     {
         if(instance == null)
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += OnSceneLoad;
-            SceneManager.sceneUnloaded += OnSceneUnload;
+
+            SceneManager.sceneLoaded += OnSceneLoaded;
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
+
+            foreach(SceneData s in scenes.Values)
+            {
+                if(s.type == SceneData.Type.MAP)
+                    mapScenes.Add(s.name);
+            }
         }
         else
             Destroy(this);
     }
+
     private void Start()
     {
         LoadScene(m_Scene.MAIN_MENU);
     }
 
-    private void OnSceneLoad(Scene s, LoadSceneMode loadMode)
+    private void OnSceneLoaded(Scene s, LoadSceneMode loadMode)
     {
         //Debug.Log($"Scene {s.name} loaded");
         SceneManager.SetActiveScene(s);
+        CheckMapLoaded();
     }
-    private void OnSceneUnload(Scene s)
+    private void OnSceneUnloaded(Scene s)
     {
         //Debug.Log($"Scene {s.name} unloaded");
     }
 
     public static void UnloadScene(m_Scene scene, bool offlineOverride = false)
     {
-        UnloadScene(scenes[scene], offlineOverride);
+        UnloadScene(scenes[scene].name, offlineOverride);
     }
     public static void UnloadScene(string scene, bool offlineOverride = false)
     {
@@ -70,7 +85,7 @@ public class SceneController : MonoBehaviour
 
     public static void LoadScene(m_Scene scene, bool offlineOverride = false)
     {
-        LoadScene(scenes[scene], offlineOverride);
+        LoadScene(scenes[scene].name, offlineOverride);
     }
     public static void LoadScene(string scene, bool offlineOverride = false)
     {
@@ -84,9 +99,45 @@ public class SceneController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Checks to see if there is a map scene currently loaded
+    /// </summary>
+    private void CheckMapLoaded()
+    {
+        // Run through the scenes that are known by the SceneManager
+        for(int i = 0; i < SceneManager.sceneCount; i++)
+        {
+            // Check if there is any map loaded, and if there is, send event
+            if (mapScenes.Contains(SceneManager.GetSceneAt(i).name) && SceneManager.GetSceneAt(i).isLoaded)
+            {
+                loadedMap = SceneManager.GetSceneAt(i);
+                OnMapLoaded?.Invoke(loadedMap.name);
+                break;
+            }
+        }
+    }
+    public static void SetMapActive()
+    {
+        SceneManager.SetActiveScene(loadedMap);
+    }
+
     private void OnDestroy()
     {
-        SceneManager.sceneLoaded -= OnSceneLoad;
-        SceneManager.sceneUnloaded -= OnSceneUnload;   
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;   
+    }
+
+    public class SceneData
+    {
+        public string name;
+        
+        public enum Type { MAP, UTIL }
+        public Type type;
+
+        public SceneData(string name, Type type)
+        {
+            this.name = name;
+            this.type = type;
+        }
     }
 }

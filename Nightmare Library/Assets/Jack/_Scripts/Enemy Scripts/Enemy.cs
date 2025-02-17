@@ -86,10 +86,6 @@ public class Enemy : MonoBehaviour
 
     private void Start()
     {
-        Initialize();
-    }
-    public virtual void Initialize()
-    {
         navAgent = GetComponent<NavMeshAgent>();
         navAgent.speed = moveSpeed;
 
@@ -102,7 +98,7 @@ public class Enemy : MonoBehaviour
 
         // Gets the enemy preset that this will follow, does not pick one which is already in use
         List<EnemyPreset> validPresets = new List<EnemyPreset>(GameController.instance.enemyPresets);
-        foreach(EnemyPreset preset in inUsePresets)
+        foreach (EnemyPreset preset in inUsePresets)
         {
             validPresets.Remove(preset);
         }
@@ -122,9 +118,9 @@ public class Enemy : MonoBehaviour
         passiveAttackTree = enemyType.GetPassiveAttack(pAttack, this);
 
         // Initializes the attacks
-        if(activeAttackTree != null)
+        if (activeAttackTree != null)
             activeAttackTree.Initialize(4);
-        if(passiveAttackTree != null)
+        if (passiveAttackTree != null)
             passiveAttackTree.Initialize(4);
 
         // Gets the evidence from the enemy preset
@@ -261,7 +257,6 @@ public class Enemy : MonoBehaviour
                 activeAttackTree.DetectSound();
             if(passiveAttackTree != null)
                 passiveAttackTree.DetectSound();
-            Debug.Log("Sound Detected");
         }
     }
 
@@ -303,5 +298,7 @@ public class Enemy : MonoBehaviour
 
         enemyInstances.Remove(gameObject);
         GameController.OnGamePause -= OnGamePause;
+
+        inUsePresets.Clear();
     }
 }

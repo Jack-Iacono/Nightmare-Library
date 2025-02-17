@@ -24,15 +24,20 @@ public class GameLobbyController : LobbyController
     protected override void ServerEntryAction()
     {
         base.ServerEntryAction();
-
         SpawnPlayer(NetworkManager.LocalClientId);
     }
 
     protected override void ClientEntryAction()
     {
         base.ClientEntryAction();
+        //ClientConnectedServerRpc(NetworkManager.LocalClientId);
+    }
+    protected override void OnClientConnected(ulong obj)
+    {
+        base.OnClientConnected(obj);
 
-        ClientConnectedServerRpc(NetworkManager.LocalClientId);
+        if(NetworkManager.IsServer)
+            SpawnPlayer(obj);
     }
 
     protected override void ConnectVoiceChat()
@@ -49,7 +54,9 @@ public class GameLobbyController : LobbyController
     }
     public void GoToPreGame()
     {
-
+        SceneController.UnloadScene(SceneController.m_Scene.GAME_SYS);
+        SceneController.UnloadScene(SceneController.m_Scene.GAME);
+        SceneController.LoadScene(SceneController.m_Scene.PREGAME);
     }
 
     #region Spawning
@@ -59,7 +66,6 @@ public class GameLobbyController : LobbyController
     {
         SpawnPlayer(clientId);
     }
-
     private void SpawnPlayer()
     {
         GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);

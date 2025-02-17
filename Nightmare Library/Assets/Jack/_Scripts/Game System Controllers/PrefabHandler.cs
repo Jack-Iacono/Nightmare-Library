@@ -62,6 +62,16 @@ public class PrefabHandler : MonoBehaviour
         return Instantiate(obj, pos, rot);
     }
 
+    public void CleanupGameObject(GameObject obj)
+    {
+        if(network != null)
+            network.DespawnPrefab(obj);
+    }
+    public void DestroyGameObject(GameObject obj)
+    {
+        Destroy(obj);
+    }
+
     public void SetNetwork(PrefabHandlerNetwork network)
     {
         this.network = network;

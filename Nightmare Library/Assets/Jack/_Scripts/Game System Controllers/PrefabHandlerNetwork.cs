@@ -56,7 +56,24 @@ public class PrefabHandlerNetwork : NetworkBehaviour
         
         spawnedObjects.Clear();
     }
+    public void DespawnPrefab(GameObject g)
+    {
+        if (NetworkManager.IsServer)
+        {
+            NetworkObject obj;
+            if (g.TryGetComponent<NetworkObject>(out obj))
+            {
+                if (obj != null)
+                    obj.Despawn();
+            }
+        }
+    }
 
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+        spawnedObjects.Clear();
+    }
     public override void OnNetworkSpawn()
     {
         parent.SetNetwork(this);

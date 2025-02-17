@@ -94,12 +94,12 @@ public class aa_Rush : ActiveAttack
     private void GetNextPath()
     {
         visitedNodes.Add(currentGoal);
-        currentGoal.nodeStatus = 1;
+        currentGoal.nodeStatus = 2;
 
         previousGoal = currentGoal;
         currentGoal = nextGoal;
 
-        currentGoal.nodeStatus = 0;
+        currentGoal.nodeStatus = 1;
 
         EnemyNavNode tempNode = previousGoal.GetRandomNeighbor(visitedNodes);
 
@@ -110,7 +110,7 @@ public class aa_Rush : ActiveAttack
         {
             foreach(EnemyNavNode node in visitedNodes)
             {
-                node.nodeStatus = -1;
+                node.nodeStatus = 0;
             }
             visitedNodes.Clear();
             nextGoal = previousGoal.GetRandomNeighbor(visitedNodes);

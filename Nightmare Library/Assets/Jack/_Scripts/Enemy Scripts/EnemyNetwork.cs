@@ -50,6 +50,10 @@ public class EnemyNetwork : NetworkBehaviour
             parent.OnSpawnFootprint += OnSpawnFootprint;
             parent.OnSpawnTrap += OnSpawnTrap;
         }
+        else
+        {
+            parent.navAgent.enabled = false;
+        }
             
     }
     private void OnInitialize()

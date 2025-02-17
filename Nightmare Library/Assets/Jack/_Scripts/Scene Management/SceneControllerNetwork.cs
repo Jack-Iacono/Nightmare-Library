@@ -97,7 +97,6 @@ public class SceneControllerNetwork : NetworkBehaviour
         // Check if you are running the server and if the scene to be loaded is not null
         if (IsServer && !string.IsNullOrEmpty(s))
         {
-            
             eventInProgress = true;
 
             OnSceneLoad?.Invoke(this, SceneManager.GetSceneByName(s));
@@ -150,6 +149,14 @@ public class SceneControllerNetwork : NetworkBehaviour
         }
         else
             eventInProgress = false;
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        SceneController.OnAsyncLoad -= OnLoadScene;
+        SceneController.OnAsyncUnload -= OnUnloadScene;
     }
 
     private class BufferItem

@@ -15,7 +15,7 @@ public class EnemyNavNode : MonoBehaviour
     private LayerMask pointLayers = 1 << 9;
 
     // TESTING ONLY
-    public int nodeStatus = -1;
+    public int nodeStatus { get; set; } = -1;
 
     private void Awake()
     {
@@ -77,20 +77,19 @@ public class EnemyNavNode : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if(nodeStatus != -1)
+        switch (nodeStatus)
         {
-            switch (nodeStatus)
-            {
-                case 0:
-                    Gizmos.color = Color.red;
-                    break;
-                case 1:
-                    Gizmos.color= Color.green;
-                    break;
-
-            }
-
-            Gizmos.DrawSphere(transform.position + Vector3.up * 4, 2f);
+            case 0:
+                Gizmos.color = Color.grey;
+                break;
+            case 1:
+                Gizmos.color = Color.red;
+                break;
+            case 2:
+                Gizmos.color = Color.green;
+                break;
         }
+
+        Gizmos.DrawSphere(transform.position, 2f);
     }
 }

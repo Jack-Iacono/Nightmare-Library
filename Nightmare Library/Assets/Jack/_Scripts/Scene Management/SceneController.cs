@@ -36,7 +36,6 @@ public class SceneController : MonoBehaviour
         if(instance == null)
         {
             instance = this;
-            DontDestroyOnLoad(gameObject);
 
             SceneManager.sceneLoaded += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
@@ -73,13 +72,16 @@ public class SceneController : MonoBehaviour
     }
     public static void UnloadScene(string scene, bool offlineOverride = false)
     {
-        if (offlineOverride || !NetworkConnectionController.connectedToLobby)
+        if (SceneManager.GetSceneByName(scene).isLoaded)
         {
-            SceneManager.UnloadSceneAsync(scene);
-        }
-        else
-        {
-            OnAsyncUnload?.Invoke(scene);
+            if (offlineOverride || !NetworkConnectionController.connectedToLobby)
+            {
+                SceneManager.UnloadSceneAsync(scene);
+            }
+            else
+            {
+                OnAsyncUnload?.Invoke(scene);
+            }
         }
     }
 

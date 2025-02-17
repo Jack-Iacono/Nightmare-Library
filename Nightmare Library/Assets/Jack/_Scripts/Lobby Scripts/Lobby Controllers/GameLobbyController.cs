@@ -7,9 +7,6 @@ using UnityEngine;
 
 public class GameLobbyController : LobbyController
 {
-    private int connectedPlayers = 0;
-    private bool hasSpawned = false;
-
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -47,7 +44,6 @@ public class GameLobbyController : LobbyController
 
     public void GoToGame()
     {
-        PrefabHandlerNetwork.Instance.DespawnPrefabs();
         SceneController.UnloadScene(SceneController.m_Scene.PREGAME);
         SceneController.LoadScene(SceneController.m_Scene.GAME_SYS);
         SceneController.LoadScene(SceneController.m_Scene.GAME);
@@ -73,7 +69,14 @@ public class GameLobbyController : LobbyController
     private void SpawnPlayer(ulong id)
     {
         GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, id);
-        pPrefab.name = "PreGamePlayer " + id;
+        pPrefab.name = "Player " + id;
+
+        if (GameController.gameStarted)
+        {
+            Debug.Log(id);
+            PlayerController.playerInstances[pPrefab].ReceiveAttack();
+        }
+            
     }
 
     #endregion

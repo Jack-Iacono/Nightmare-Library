@@ -292,13 +292,19 @@ public class Enemy : MonoBehaviour
         if(passiveAttackTree != null)
             passiveAttackTree.OnDestroy();
 
+        objPool.CleanupPool();
+
         inUsePresets.Clear();
         inUseActiveAttacks.Clear();
         inUsePassiveAttacks.Clear();
 
         enemyInstances.Remove(gameObject);
+
         GameController.OnGamePause -= OnGamePause;
+        AudioSourceController.OnProject -= OnAudioSourceDetect;
 
         inUsePresets.Clear();
+
+        PrefabHandler.Instance.CleanupGameObject(gameObject);
     }
 }

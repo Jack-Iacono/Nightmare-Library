@@ -57,6 +57,11 @@ public class pdui_MainScreenController : ScreenController
     {
         Dictionary<ulong, LobbyController.PlayerInfo> info = LobbyController.playerList.Value.GetDictionary();
 
+        for (int i = 0; i < playerNamesTexts.Count; i++)
+        {
+            playerNamesTexts[i].text = "";
+        }
+
         int index = 0;
         foreach(LobbyController.PlayerInfo playerInfo in info.Values)
         {

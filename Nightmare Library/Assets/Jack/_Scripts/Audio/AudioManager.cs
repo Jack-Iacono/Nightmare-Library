@@ -55,14 +55,16 @@ public class AudioManager : NetworkBehaviour
     private void Start()
     {
         audioSourceObject = PrefabHandler.Instance.a_AudioSource;
-        soundSourcePool.ClearPool();
 
-        if (!NetworkConnectionController.IsRunning || IsServer)
+        if (!NetworkConnectionController.connectedToLobby || NetworkManager.IsServer)
         {
             soundSourcePool.PoolObject(audioSourceObject, 20, false);
         }
         else
+        {
+            Debug.Log("Sending Pool REquest");
             OnPoolObjects?.Invoke();
+        }
     }
 
     /// <summary>
@@ -86,9 +88,11 @@ public class AudioManager : NetworkBehaviour
         return Instance.sounds[i].sounds[j];
     }
 
+
     public override void OnDestroy()
     {
         base.OnDestroy();
+        soundSourcePool.CleanupPool();
     }
 
 #if UNITY_EDITOR

@@ -10,6 +10,7 @@ public class GameController : MonoBehaviour
     public static GameController instance;
 
     public static bool gamePaused = false;
+    public static bool gameStarted = false;
 
     public const float gameTime = 1000;
     public float gameTimer { get; set; } = gameTime;
@@ -21,6 +22,7 @@ public class GameController : MonoBehaviour
 
     public List<EnemyPreset> enemyPresets = new List<EnemyPreset>();
     public const int enemyCount = 1;
+    private List<GameObject> spawnedEnemies = new List<GameObject>();
 
     public static RoundResults roundResults;
 
@@ -49,18 +51,19 @@ public class GameController : MonoBehaviour
         SceneController.OnMapLoaded += OnMapLoaded;
     }
 
-    private void Start()
-    {
-        PauseGame(false);
-    }
     private void OnMapLoaded(string mapName)
     {
-        for (int i = 0; i < GameController.enemyCount; i++)
+        if (NetworkConnectionController.HasAuthority)
         {
-            Debug.Log("Spawning Enemy " + i);
-            GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
-            ePrefab.name = "Basic Enemy";
+            for (int i = 0; i < GameController.enemyCount; i++)
+            {
+                GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+                ePrefab.name = "Basic Enemy";
+                spawnedEnemies.Add(ePrefab);
+            }
         }
+
+        gameStarted = true;
     }
 
     // Update is called once per frame
@@ -126,20 +129,17 @@ public class GameController : MonoBehaviour
         ((GameLobbyController)LobbyController.instance).GoToPreGame();
     }
 
-    public void PauseGame(bool b)
-    {
-        if (isNetworkGame && NetworkConnectionController.HasAuthority)
-            OnNetworkGamePause?.Invoke(this, b);
-
-        gamePaused = b;
-        OnGamePause?.Invoke(this, b);
-    }
-
     private void OnDestroy()
     {
         if (instance == this)
             instance = null;
 
+        foreach(GameObject g in spawnedEnemies)
+        {
+            Destroy(g);
+        }
+
+        gameStarted = false;
         SceneController.OnMapLoaded -= OnMapLoaded;
     }
 

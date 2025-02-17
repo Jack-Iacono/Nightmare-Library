@@ -28,7 +28,7 @@ public class GameControllerNetwork : NetworkBehaviour
         else
             Destroy(this);
 
-        GameController.OnNetworkGamePause += OnParentPause;
+        parent = GetComponent<GameController>();
 
         var permission = NetworkVariableWritePermission.Owner;
 
@@ -41,9 +41,6 @@ public class GameControllerNetwork : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-
-        parent = GetComponent<GameController>();
-
         // Changes the gameController data for all versions of this gameobject
         if (!IsOwner)
         {
@@ -67,17 +64,6 @@ public class GameControllerNetwork : NetworkBehaviour
         {
             LobbyController.instance.LeaveLobby();
         }
-    }
-
-    private void OnParentPause(object sender, bool e)
-    {
-        OnParentPauseClientRpc(e);
-    }
-    [ClientRpc]
-    private void OnParentPauseClientRpc(bool b)
-    {
-        if (NetworkConnectionController.IsRunning && !IsOwner)
-            parent.PauseGame(b);
     }
 
     private void OnPlayerKilled(PlayerController player)
@@ -164,7 +150,6 @@ public class GameControllerNetwork : NetworkBehaviour
         if (instance == this)
             instance = null;
 
-        GameController.OnNetworkGamePause -= OnParentPause;
         GameController.OnGameEnd -= OnGameEnd;
         GameController.OnPlayerKilled -= OnPlayerKilled;
     }

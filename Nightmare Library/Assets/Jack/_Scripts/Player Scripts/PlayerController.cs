@@ -73,11 +73,6 @@ public class PlayerController : MonoBehaviour
         charCont = GetComponent<CharacterController>();
         interactionCont = GetComponent<PlayerInteractionController>();
 
-        // TEMPORARY
-        charCont.enabled = false;
-        transform.position = new Vector3(-20, 1, 0);
-        charCont.enabled = true;
-
         for (int i = 0; i < meshMaterials.Count; i++)
         {
             meshMaterials[i].renderer.material = meshMaterials[i].normal;
@@ -86,7 +81,17 @@ public class PlayerController : MonoBehaviour
         if (!NetworkConnectionController.connectedToLobby)
             ownerInstance = this;
 
+        Debug.Log("Register");
+        MapDataController.OnSpawnPointRegister += OnSpawnPointRegister;
+
         playerLayerMask = gameObject.layer;
+    }
+
+    private void OnSpawnPointRegister()
+    {
+        charCont.enabled = false;
+        transform.position = MapDataController.Instance.playerSpawnPoint;
+        charCont.enabled = true;
     }
 
     // Update is called once per frame
@@ -193,6 +198,8 @@ public class PlayerController : MonoBehaviour
         //Takes itself out of the player array
         OnPlayerKilled?.Invoke(this);
         playerInstances.Remove(gameObject);
+
+        MapDataController.OnSpawnPointRegister -= OnSpawnPointRegister;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -212,7 +219,7 @@ public class PlayerController : MonoBehaviour
         }
         OnPlayerAttacked?.Invoke(this, EventArgs.Empty);
     }
-    public void Kill(bool becomeGhost)
+    public void Kill(bool becomeGhost = true)
     {
         isAlive = false;
 

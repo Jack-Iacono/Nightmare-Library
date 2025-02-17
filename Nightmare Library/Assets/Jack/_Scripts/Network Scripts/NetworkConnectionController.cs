@@ -48,7 +48,7 @@ public class NetworkConnectionController : NetworkBehaviour
     [SerializeField]
     public static bool HasAuthority
     {
-        get => NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient || NetworkManager.Singleton.IsServer;
+        get => !connectedToLobby || NetworkManager.Singleton.IsServer;
     }
     [SerializeField]
     public static bool IsRunning
@@ -246,8 +246,6 @@ public class NetworkConnectionController : NetworkBehaviour
             Destroy(gameObject);
 
         transport = FindObjectOfType<UnityTransport>();
-
-        DontDestroyOnLoad(this);
     }
     private void Update()
     {

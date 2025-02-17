@@ -105,8 +105,6 @@ public class AuthenticationController : MonoBehaviour
             instance = this;
         else
             Destroy(this);
-
-        DontDestroyOnLoad(this);
     }
     private void OnApplicationQuit()
     {

@@ -106,6 +106,12 @@ public class pa_Screech : PassiveAttack
     public override void OnDestroy()
     {
         base.OnDestroy();
+
+        foreach (ScreechHeadController h in headControllers.Keys)
+        {
+            PrefabHandler.Instance.CleanupGameObject(h.gameObject);
+            PrefabHandler.Instance.DestroyGameObject(h.gameObject);
+        }
     }
 
     protected override void OnLevelChange(int level)

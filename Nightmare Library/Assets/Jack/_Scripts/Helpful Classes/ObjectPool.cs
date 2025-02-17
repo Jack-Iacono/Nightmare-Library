@@ -73,8 +73,6 @@ public class ObjectPool
         {
             pooledObjects.Add(pool.name, new List<GameObject> { addedObject });
         }
-
-        Debug.Log(pooledObjects[pool.name].Count);
     } 
 
     public GameObject GetObject(GameObject g)
@@ -99,8 +97,22 @@ public class ObjectPool
         return pooledObjects[g.name].Count;
     }
 
-    public void ClearPool()
+    public void CleanupPool()
     {
-        pooledObjects.Clear(); 
+        // Despawn all objects if they need to be despawned
+        foreach(List<GameObject> list in pooledObjects.Values)
+        {
+            foreach (GameObject obj in list)
+            {
+                if(obj != null)
+                {
+                    PrefabHandler.Instance.CleanupGameObject(obj);
+                    PrefabHandler.Instance.DestroyGameObject(obj);
+                }
+                    
+            }
+        }
+
+        pooledObjects = new Dictionary<string, List<GameObject>>();
     }
 }

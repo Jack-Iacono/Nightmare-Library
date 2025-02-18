@@ -74,7 +74,7 @@ public class GameLobbyController : LobbyController
         if (GameController.gameStarted)
         {
             Debug.Log(id);
-            PlayerController.playerInstances[pPrefab].ReceiveAttack();
+            PlayerController.playerInstances[pPrefab].ChangeAliveState(false);
         }
             
     }

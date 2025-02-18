@@ -92,7 +92,7 @@ public class pa_Idols : PassiveAttack
         List<PlayerController> playerList = new List<PlayerController>(DeskController.playersAtDesk);
         foreach (PlayerController player in playerList)
         {
-            player.ReceiveAttack();
+            player.ChangeAliveState(false);
         }
 
         spawnTimer = UnityEngine.Random.Range(baseSpawnTimeMin - baseSpawnTimeMax, baseSpawnTimeMin + baseSpawnTimeMax);

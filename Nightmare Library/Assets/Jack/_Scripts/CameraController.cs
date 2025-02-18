@@ -85,8 +85,8 @@ public class CameraController : MonoBehaviour
     public void SetGhost(bool b)
     {
         // Switches the active camera, ghosts see different layers than players
-        normalCam.enabled = b;
-        ghostCam.enabled = !b;
+        normalCam.enabled = !b;
+        ghostCam.enabled = b;
     }
     public void SetEnabled(bool b)
     {

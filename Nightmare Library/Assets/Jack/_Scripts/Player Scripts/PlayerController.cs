@@ -6,8 +6,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public static PlayerController ownerInstance;
-
+    public static PlayerController mainPlayerInstance;
     public static Dictionary<GameObject, PlayerController> playerInstances = new Dictionary<GameObject, PlayerController>();
 
     public static LayerMask playerLayerMask;
@@ -59,9 +58,8 @@ public class PlayerController : MonoBehaviour
     private KeyCode keySprint = KeyCode.LeftShift;
     private bool isSprinting = false;
 
-    public event EventHandler OnPlayerAttacked;
-    public delegate void PlayerKilledDelegate(PlayerController player);
-    public static event PlayerKilledDelegate OnPlayerKilled;
+    public delegate void OnPlayerAliveChangedDelegate(PlayerController player, bool b);
+    public static event OnPlayerAliveChangedDelegate OnPlayerAliveChanged;
 
     private bool isTrapped = false;
     private float trapTimer = 0;
@@ -79,14 +77,13 @@ public class PlayerController : MonoBehaviour
         }
 
         if (!NetworkConnectionController.connectedToLobby)
-            ownerInstance = this;
+            mainPlayerInstance = this;
 
         Debug.Log("Register");
         MapDataController.OnSpawnPointRegister += OnSpawnPointRegister;
 
         playerLayerMask = gameObject.layer;
     }
-
     private void OnSpawnPointRegister()
     {
         charCont.enabled = false;
@@ -196,9 +193,8 @@ public class PlayerController : MonoBehaviour
     public void OnDestroy()
     {
         //Takes itself out of the player array
-        OnPlayerKilled?.Invoke(this);
+        OnPlayerAliveChanged?.Invoke(this, false);
         playerInstances.Remove(gameObject);
-
         MapDataController.OnSpawnPointRegister -= OnSpawnPointRegister;
     }
 
@@ -211,34 +207,48 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void ReceiveAttack()
+    public void ChangeAliveState(bool alive)
     {
-        if (!NetworkConnectionController.connectedToLobby)
+        isAlive = alive;
+
+        if(!alive)
         {
-            Kill(true);
-        }
-        OnPlayerAttacked?.Invoke(this, EventArgs.Empty);
-    }
-    public void Kill(bool becomeGhost = true)
-    {
-        isAlive = false;
+            // Kill
+            for (int i = 0; i < meshMaterials.Count; i++)
+            {
+                meshMaterials[i].renderer.material = meshMaterials[i].ghost;
+                meshMaterials[i].renderer.gameObject.layer = ghostLayer;
+            }
 
-        for (int i = 0; i < meshMaterials.Count; i++)
+            gameObject.layer = ghostLayer;
+
+            // Exectue only if this is the main player instance for this machine
+            if (mainPlayerInstance == this)
+            {
+                camCont.SetGhost(true);
+                interactionCont.enabled = false;
+                interactionCont.DropItems();
+            }
+        }
+        else
         {
-            meshMaterials[i].renderer.material = meshMaterials[i].ghost;
-            meshMaterials[i].renderer.gameObject.layer = ghostLayer;
+            // Resurrect
+            for (int i = 0; i < meshMaterials.Count; i++)
+            {
+                meshMaterials[i].renderer.material = meshMaterials[i].normal;
+                meshMaterials[i].renderer.gameObject.layer = playerLayer;
+            }
+
+            gameObject.layer = playerLayer;
+
+            if (mainPlayerInstance == this)
+            {
+                camCont.SetGhost(false);
+                interactionCont.enabled = true;
+            }
         }
 
-        gameObject.layer = ghostLayer;
-        charCont.excludeLayers = playerLayer | 1 << 15;
-
-        interactionCont.enabled = false;
-        interactionCont.DropItems();
-
-        if(becomeGhost)
-            camCont.SetGhost(false);
-
-        GameController.NotifyPlayerKilled(this);
+        OnPlayerAliveChanged?.Invoke(this, alive);
     }
 
     public void Trap(float duration)
@@ -256,7 +266,7 @@ public class PlayerController : MonoBehaviour
         if (b)
         {
             name = "My Player";
-            ownerInstance = this;
+            mainPlayerInstance = this;
         }
     }
     public void Lock(bool b)

@@ -118,9 +118,16 @@ public class SceneController : MonoBehaviour
             }
         }
     }
+
     public static void SetMapActive()
     {
-        SceneManager.SetActiveScene(loadedMap);
+        if(loadedMap.isLoaded)
+            SceneManager.SetActiveScene(loadedMap);
+    }
+    public static void SetSceneActive(m_Scene scene)
+    {
+        if(SceneManager.GetSceneByName(scenes[scene].name).isLoaded)
+            SceneManager.SetActiveScene(SceneManager.GetSceneByName(scenes[scene].name));
     }
 
     private void OnDestroy()

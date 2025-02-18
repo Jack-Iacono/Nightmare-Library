@@ -37,9 +37,6 @@ public class GameController : MonoBehaviour
     public delegate void OnGameEndDelegate();
     public static event OnGameEndDelegate OnGameEnd;
 
-    public delegate void OnPlayerKilledDelegate(PlayerController player);
-    public static event OnPlayerKilledDelegate OnPlayerKilled;
-
     private void Awake()
     {
         if (instance == null)
@@ -49,6 +46,8 @@ public class GameController : MonoBehaviour
 
         roundResults = new RoundResults(enemyCount);
         SceneController.OnMapLoaded += OnMapLoaded;
+
+        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 
     private void OnMapLoaded(string mapName)
@@ -92,12 +91,10 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public static void NotifyPlayerKilled(PlayerController player)
+    public void OnPlayerAliveChanged(PlayerController player, bool b)
     {
-        OnPlayerKilled?.Invoke(player);
-
         bool allPlayersDead = true;
-        foreach(PlayerController p in PlayerController.playerInstances.Values)
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
         {
             if (p.isAlive)
             {
@@ -139,8 +136,14 @@ public class GameController : MonoBehaviour
             Destroy(g);
         }
 
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
+        {
+            p.ChangeAliveState(true);
+        }
+
         gameStarted = false;
         SceneController.OnMapLoaded -= OnMapLoaded;
+        PlayerController.OnPlayerAliveChanged -= OnPlayerAliveChanged;
     }
 
     public class RoundResults

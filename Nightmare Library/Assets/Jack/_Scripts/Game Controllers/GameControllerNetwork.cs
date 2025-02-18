@@ -35,7 +35,7 @@ public class GameControllerNetwork : NetworkBehaviour
         contState = new NetworkVariable<ContinuousData>(writePerm: permission);
         gamePaused = new NetworkVariable<bool>(writePerm: permission);
 
-        GameController.OnPlayerKilled += OnPlayerKilled;
+        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 
     public override void OnNetworkSpawn()
@@ -66,21 +66,18 @@ public class GameControllerNetwork : NetworkBehaviour
         }
     }
 
-    private void OnPlayerKilled(PlayerController player)
+    private void OnPlayerAliveChanged(PlayerController player, bool b)
     {
-        if(IsOwner)
-            OnPlayerKilledClientRpc(player.GetComponent<PlayerNetwork>().OwnerClientId);
+        if(IsServer)
+            OnPlayerAliveChangedClientRpc(player.GetComponent<PlayerNetwork>().OwnerClientId, b);
     }
     [ClientRpc]
-    private void OnPlayerKilledClientRpc(ulong id)
+    private void OnPlayerAliveChangedClientRpc(ulong id, bool b)
     {
         if(id != NetworkManager.LocalClientId)
         {
-            PlayerController p = PlayerController.playerInstances[PlayerNetwork.ownerInstance.gameObject];
-            if(p.isAlive)
-                VoiceChatController.MutePlayer(id, true);
-            else
-                VoiceChatController.MutePlayer(id, false);
+            Debug.Log("Muting Player " + id + ": " + !b);
+            VoiceChatController.MutePlayer(id, !b);
         }
     }
 
@@ -151,6 +148,6 @@ public class GameControllerNetwork : NetworkBehaviour
             instance = null;
 
         GameController.OnGameEnd -= OnGameEnd;
-        GameController.OnPlayerKilled -= OnPlayerKilled;
+        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 }

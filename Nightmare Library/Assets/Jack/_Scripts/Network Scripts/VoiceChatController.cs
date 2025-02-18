@@ -21,10 +21,25 @@ public static class VoiceChatController
         options.DisplayName = "Temp User";
         options.PlayerId = AuthenticationController.playerInfo.Id;
         await VivoxService.Instance.LoginAsync(options);
+
+        VivoxService.Instance.ParticipantAddedToChannel += ParticipantAddedToChannel;
+        VivoxService.Instance.ParticipantRemovedFromChannel += ParticipantRemovedFromChannel;
     }
+
     public static async void Logout()
     {
         await VivoxService.Instance.LogoutAsync();
+    }
+
+    private static void ParticipantAddedToChannel(VivoxParticipant participant)
+    {
+        Debug.Log($"Participant {participant.PlayerId} Added");
+        Debug.Log(VivoxService.Instance.ActiveChannels[currentVoiceChannel].Count);
+    }
+    private static void ParticipantRemovedFromChannel(VivoxParticipant participant)
+    {
+        Debug.Log($"Participant {participant.PlayerId} Removed");
+        Debug.Log(VivoxService.Instance.ActiveChannels[currentVoiceChannel].Count);
     }
 
     public static async void JoinChannel(string vcIdentifier, ChatType chatType = ChatType.GROUP)
@@ -80,8 +95,6 @@ public static class VoiceChatController
         ReadOnlyCollection<VivoxParticipant> participants = VivoxService.Instance.ActiveChannels[currentVoiceChannel];
         foreach (VivoxParticipant participant in participants)
         {
-            Debug.Log("Muting " + networkID + ": " + mute);
-
             if (participant.PlayerId == LobbyController.playerList.Value.GetPlayerInfo(networkID).id)
             {
                 if (mute)
@@ -89,7 +102,6 @@ public static class VoiceChatController
                 else
                     participant.UnmutePlayerLocally();
             }
-
         }
     }
 }

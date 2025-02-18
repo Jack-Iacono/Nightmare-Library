@@ -16,7 +16,7 @@ public class DeskController : MonoBehaviour
             Destroy(instance);
 
         instance = this;
-        PlayerController.OnPlayerKilled += OnPlayerKilled;
+        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 
     // Start is called before the first frame update
@@ -42,7 +42,7 @@ public class DeskController : MonoBehaviour
         }
     }
 
-    private void OnPlayerKilled(PlayerController player)
+    private void OnPlayerAliveChanged(PlayerController player, bool b)
     {
         if (playersAtDesk.Contains(player))
         {
@@ -55,6 +55,6 @@ public class DeskController : MonoBehaviour
         if(instance == this)
             instance = null;
 
-        PlayerController.OnPlayerKilled -= OnPlayerKilled;
+        PlayerController.OnPlayerAliveChanged -= OnPlayerAliveChanged;
     }
 }

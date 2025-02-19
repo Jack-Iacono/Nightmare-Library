@@ -79,16 +79,15 @@ public class PlayerController : MonoBehaviour
         if (!NetworkConnectionController.connectedToLobby)
             mainPlayerInstance = this;
 
-        Debug.Log("Register");
-        MapDataController.OnSpawnPointRegister += OnSpawnPointRegister;
+        charCont.enabled = false;
+        transform.position = MapDataController.Instance.playerSpawnPoint;
+        charCont.enabled = true;
 
         playerLayerMask = gameObject.layer;
     }
     private void OnSpawnPointRegister()
     {
-        charCont.enabled = false;
-        transform.position = MapDataController.Instance.playerSpawnPoint;
-        charCont.enabled = true;
+        
     }
 
     // Update is called once per frame
@@ -195,7 +194,6 @@ public class PlayerController : MonoBehaviour
         //Takes itself out of the player array
         OnPlayerAliveChanged?.Invoke(this, false);
         playerInstances.Remove(gameObject);
-        MapDataController.OnSpawnPointRegister -= OnSpawnPointRegister;
     }
 
     private void OnTriggerEnter(Collider other)

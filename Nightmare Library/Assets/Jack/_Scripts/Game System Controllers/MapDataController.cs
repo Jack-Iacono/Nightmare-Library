@@ -8,17 +8,12 @@ public class MapDataController : MonoBehaviour
 
     public Vector3 playerSpawnPoint;
 
-
-    public delegate void OnSpawnPointRegisterDelegate();
-    public static OnSpawnPointRegisterDelegate OnSpawnPointRegister;
-
     private void Awake()
     {
         if(Instance != null)
             Destroy(Instance);
 
         Instance = this;
-        OnSpawnPointRegister?.Invoke();
     }
     private void OnDestroy()
     {

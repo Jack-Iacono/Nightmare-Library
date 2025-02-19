@@ -58,11 +58,11 @@ public class AudioManager : NetworkBehaviour
 
         if (!NetworkConnectionController.connectedToLobby || NetworkManager.IsServer)
         {
-            soundSourcePool.PoolObject(audioSourceObject, 20, false);
+            soundSourcePool.PoolObject(audioSourceObject, 20);
         }
         else
         {
-            Debug.Log("Sending Pool REquest");
+            Debug.Log("Sending Pool Request");
             OnPoolObjects?.Invoke();
         }
     }

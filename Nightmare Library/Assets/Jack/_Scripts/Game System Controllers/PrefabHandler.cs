@@ -32,9 +32,14 @@ public class PrefabHandler : MonoBehaviour
         Instance = this;
     }
 
-    public GameObject InstantiatePrefab(GameObject obj, Vector3 pos, Quaternion rot)
+    public GameObject InstantiatePrefab(GameObject obj, Vector3 pos, Quaternion rot, Transform p = null)
     {
-        GameObject g = Instantiate(obj, pos, rot);
+        GameObject g = null;
+
+        if(p != null)
+            g = Instantiate(obj, pos, rot, p);
+        else
+            g = Instantiate(obj, pos, rot);
 
         if (network != null)
             network.InstantiatePrefab(g);

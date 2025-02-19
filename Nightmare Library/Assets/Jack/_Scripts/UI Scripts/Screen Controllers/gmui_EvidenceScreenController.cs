@@ -28,12 +28,15 @@ public class gmui_EvidenceScreenController : ScreenController
     public override void Initialize(UIController parent)
     {
         base.Initialize(parent);
+    }
 
+    private void OnGameStart()
+    {
         List<EnemyPreset> presets = GameController.instance.enemyPresets;
         List<EvidenceEnum> evidenceEnums = Enum.GetValues(typeof(EvidenceEnum)).Cast<EvidenceEnum>().ToList(); ;
 
         // Add the spots for the various guesses
-        for(int i = 0; i < GameController.enemyCount; i++)
+        for (int i = 0; i < GameController.enemyCount; i++)
         {
             screenData.Add(new EvidenceScreenData());
         }
@@ -53,7 +56,7 @@ public class gmui_EvidenceScreenController : ScreenController
         }
 
         // Run through the evidence and set up the delegates on the buttons since Unity inspector can't do it
-        for(int i = 0; i < evidenceButtons.Count; i++)
+        for (int i = 0; i < evidenceButtons.Count; i++)
         {
             if (evidenceEnums.Count > i)
             {

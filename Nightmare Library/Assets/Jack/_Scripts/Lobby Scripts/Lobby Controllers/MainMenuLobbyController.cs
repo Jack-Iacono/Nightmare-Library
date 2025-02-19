@@ -21,8 +21,8 @@ public class MainMenuLobbyController : LobbyController
 
         SceneController.UnloadScene(SceneController.m_Scene.MAIN_MENU);
 
-        SceneController.LoadScene(SceneController.m_Scene.UNIVERSAL);
         SceneController.LoadScene(SceneController.m_Scene.PREGAME);
+        SceneController.LoadScene(SceneController.m_Scene.UNIVERSAL);
     }
     public async void PlayOnlineJoin(string joinCode)
     {
@@ -43,9 +43,9 @@ public class MainMenuLobbyController : LobbyController
     {
         GameController.isNetworkGame = false;
         SceneController.UnloadScene(SceneController.m_Scene.MAIN_MENU);
-        
-        SceneController.LoadScene(SceneController.m_Scene.UNIVERSAL);
+
         SceneController.LoadScene(SceneController.m_Scene.PREGAME);
+        SceneController.LoadScene(SceneController.m_Scene.UNIVERSAL);
     }
 
     public override async void LeaveLobby()

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
@@ -29,12 +30,7 @@ public class AudioSourceController : MonoBehaviour
         sourceAccess.Add(gameObject, this);
         audioSource = GetComponent<AudioSource>();
         trans = transform;
-    } 
-    private void OnDestroy()
-    {
-        sourceAccess.Remove(gameObject);
     }
-
     public void Initialize()
     {
         isPooled = true;
@@ -131,5 +127,10 @@ public class AudioSourceController : MonoBehaviour
         audioSource.maxDistance = sound.maxDistance;
         if(sound.rolloffMode == AudioRolloffMode.Custom)
             audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, sound.rollOffCurve);
+    }
+
+    private void OnDestroy()
+    {
+        sourceAccess.Remove(gameObject);
     }
 }

@@ -45,8 +45,8 @@ public class GameLobbyController : LobbyController
     public void GoToGame()
     {
         SceneController.UnloadScene(SceneController.m_Scene.PREGAME);
-        SceneController.LoadScene(SceneController.m_Scene.GAME_SYS);
         SceneController.LoadScene(SceneController.m_Scene.GAME);
+        SceneController.LoadScene(SceneController.m_Scene.GAME_SYS);
     }
     public void GoToPreGame()
     {

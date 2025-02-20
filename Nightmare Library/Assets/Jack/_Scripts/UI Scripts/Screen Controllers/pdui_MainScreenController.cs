@@ -55,23 +55,26 @@ public class pdui_MainScreenController : ScreenController
 
     private void OnPlayerListChange()
     {
-        Dictionary<ulong, LobbyController.PlayerInfo> info = LobbyController.playerList.Value.GetDictionary();
-
-        for (int i = 0; i < playerNamesTexts.Count; i++)
+        if(LobbyController.playerList.Value != null)
         {
-            playerNamesTexts[i].text = "";
-        }
+            Dictionary<ulong, LobbyController.PlayerInfo> info = LobbyController.playerList.Value.GetDictionary();
 
-        int index = 0;
-        foreach(LobbyController.PlayerInfo playerInfo in info.Values)
-        {
-            if (index < playerNamesTexts.Count)
+            for (int i = 0; i < playerNamesTexts.Count; i++)
             {
-                playerNamesTexts[index].text = playerInfo.username;
-                index++;
+                playerNamesTexts[i].text = "";
             }
-            else
-                break;
+
+            int index = 0;
+            foreach (LobbyController.PlayerInfo playerInfo in info.Values)
+            {
+                if (index < playerNamesTexts.Count)
+                {
+                    playerNamesTexts[index].text = playerInfo.username;
+                    index++;
+                }
+                else
+                    break;
+            }
         }
     }
     

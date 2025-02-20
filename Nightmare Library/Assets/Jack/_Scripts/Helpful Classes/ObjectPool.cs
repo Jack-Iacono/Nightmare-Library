@@ -29,7 +29,7 @@ public class ObjectPool
         // Adds the item to the dictionary
         pooledObjects.Add(gObject.name, list);
     }
-    public void PoolObject(GameObject gObject, int count, bool setActive = false)
+    public void PoolObject(GameObject gObject, int count)
     {
         GameObject p = new GameObject("Pooled Object: " + gObject.name);
 
@@ -39,7 +39,7 @@ public class ObjectPool
         // Populates the list with the right amount of gameobjects
         for (int i = 0; i < count; i++)
         {
-            var inst = InstantiateObject(gObject, p.transform, setActive);
+            var inst = InstantiateObject(gObject, p.transform, false);
             inst.name += " " + i;
             list.Add(inst);
         }

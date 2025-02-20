@@ -37,6 +37,9 @@ public class GameController : MonoBehaviour
     public delegate void OnGameEndDelegate();
     public static event OnGameEndDelegate OnGameEnd;
 
+    public delegate void OnGameInitializedDelegate();
+    public static OnGameEndDelegate OnGameInitialized;
+
     private void Awake()
     {
         if (instance == null)
@@ -48,6 +51,8 @@ public class GameController : MonoBehaviour
         SceneController.OnMapLoaded += OnMapLoaded;
 
         PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
+
+        OnGameInitialized?.Invoke();
     }
 
     private void OnMapLoaded(string mapName)

@@ -58,7 +58,9 @@ public class AudioManager : NetworkBehaviour
 
         if (!NetworkConnectionController.connectedToLobby || NetworkManager.IsServer)
         {
+            SceneController.SetSceneActive(SceneController.m_Scene.UNIVERSAL);
             soundSourcePool.PoolObject(audioSourceObject, 20);
+            SceneController.SetMapActive();
         }
         else
         {

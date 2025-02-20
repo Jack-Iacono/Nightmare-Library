@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Unity.Burst.CompilerServices;
 using Unity.Netcode;
 using UnityEngine;
@@ -14,8 +15,9 @@ public class EnemyNetwork : NetworkBehaviour
 
     public Enemy parent { get; private set; }
 
-    private NetworkVariable<PlayerContinuousNetworkData> contState;
-    private NetworkVariable<PlayerIntermittentNetworkData> intState;
+    private NetworkVariable<TransformData> contState = new NetworkVariable<TransformData>();
+    private NetworkVariable<EnemyTypeData> type = new NetworkVariable<EnemyTypeData>();
+
 
     private void Awake()
     {
@@ -24,11 +26,6 @@ public class EnemyNetwork : NetworkBehaviour
             Destroy(this);
             Destroy(GetComponent<NetworkObject>());
         }
-
-        // Can only be written to by server or owner
-        var permission = _serverAuth ? NetworkVariableWritePermission.Server : NetworkVariableWritePermission.Owner;
-        contState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);
-        intState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
 
         parent = GetComponent<Enemy>();
         parent.OnInitialize += OnInitialize;
@@ -60,12 +57,26 @@ public class EnemyNetwork : NetworkBehaviour
     {
         if (IsServer)
         {
-            OnInitializeClientRpc(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
+            //OnInitializeClientRpc(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
+            type.Value = new EnemyTypeData(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
         }
     }
     [ClientRpc]
     private void OnInitializeClientRpc(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
     {
+        Test(typeIndex, activeAttackIndex, passiveAttackIndex);
+    }
+    private async void Test(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
+    {
+        // Wait for the Gamecontroller Awake to run
+        while (true)
+        {
+            if (GameController.instance == null)
+                await Task.Delay(100);
+            else
+                break;
+        }
+
         parent.enemyType = GameController.instance.enemyPresets[typeIndex];
         parent.aAttack = (EnemyPreset.aAttackEnum)activeAttackIndex;
         parent.pAttack = (EnemyPreset.pAttackEnum)passiveAttackIndex;
@@ -81,13 +92,6 @@ public class EnemyNetwork : NetworkBehaviour
         else
         {
             ConsumeContinuousState();
-        }
-    }
-    public void UpdatePlayerIntermittentState()
-    {
-        if (IsOwner)
-        {
-            TransmitIntermittentState();
         }
     }
 
@@ -157,7 +161,7 @@ public class EnemyNetwork : NetworkBehaviour
     #region Server Data Transfers
     private void TransmitContinuousState()
     {
-        var state = new PlayerContinuousNetworkData
+        var state = new TransformData
         {
             Position = transform.position,
             Rotation = transform.rotation.eulerAngles
@@ -177,36 +181,11 @@ public class EnemyNetwork : NetworkBehaviour
             TransmitContinuousStateServerRpc(state);
         }
     }
-    private void TransmitIntermittentState()
-    {
-        var state = new PlayerIntermittentNetworkData();
-
-        if (IsServer || !_serverAuth)
-        {
-            intState.Value = state;
-        }
-        else
-        {
-            TransmitIntermittentStateServerRpc(state);
-        }
-
-        CallIntermittentDataServerRpc();
-    }
 
     [ServerRpc]
-    private void TransmitContinuousStateServerRpc(PlayerContinuousNetworkData state)
+    private void TransmitContinuousStateServerRpc(TransformData state)
     {
         contState.Value = state;
-    }
-    [ServerRpc]
-    private void TransmitIntermittentStateServerRpc(PlayerIntermittentNetworkData state)
-    {
-        intState.Value = state;
-    }
-    [ServerRpc]
-    private void CallIntermittentDataServerRpc()
-    {
-        ConsumeIntermittentStateClientRpc();
     }
 
     private void ConsumeContinuousState()
@@ -231,7 +210,7 @@ public class EnemyNetwork : NetworkBehaviour
 
     #region Data Types
 
-    private struct PlayerContinuousNetworkData : INetworkSerializable
+    private struct TransformData : INetworkSerializable
     {
         private float _x, _y, _z;
         private short _yRot;
@@ -261,18 +240,25 @@ public class EnemyNetwork : NetworkBehaviour
             serializer.SerializeValue(ref _yRot);
         }
     }
-    private struct PlayerIntermittentNetworkData : INetworkSerializable
-    {
-        public float health;
 
-        public PlayerIntermittentNetworkData(float health)
+    private class EnemyTypeData
+    {
+        public int typeIndex;
+        public int activeAttackIndex;
+        public int passiveAttackIndex;
+
+        public EnemyTypeData(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
         {
-            this.health = health;
+            this.typeIndex = typeIndex;
+            this.activeAttackIndex = activeAttackIndex;
+            this.passiveAttackIndex = passiveAttackIndex;
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            serializer.SerializeValue(ref health);
+            serializer.SerializeValue(ref typeIndex);
+            serializer.SerializeValue(ref activeAttackIndex);
+            serializer.SerializeValue(ref passiveAttackIndex);
         }
     }
 

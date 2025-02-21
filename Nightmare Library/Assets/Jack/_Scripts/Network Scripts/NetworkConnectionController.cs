@@ -13,6 +13,7 @@ using Unity.Netcode;
 
 // Used to get the Max Players
 using static LobbyController;
+using Unity.Services.Core;
 
 public class NetworkConnectionController : NetworkBehaviour
 {
@@ -62,6 +63,8 @@ public class NetworkConnectionController : NetworkBehaviour
 
         OnProcessActive?.Invoke(true);
 
+        await UnityServices.InitializeAsync();
+
         if(!NetworkManager.Singleton.IsConnectedClient && !NetworkManager.Singleton.IsServer)
         {
             switch (connectionType)
@@ -83,7 +86,7 @@ public class NetworkConnectionController : NetworkBehaviour
         connectedToLobby = connected;
         return connected;
     }
-    public static async Task StartConnection()
+    public static async Task StartNetworkManager()
     {
         if (!NetworkManager.Singleton.IsConnectedClient && !NetworkManager.Singleton.IsHost)
         {
@@ -247,13 +250,12 @@ public class NetworkConnectionController : NetworkBehaviour
 
         transport = FindObjectOfType<UnityTransport>();
     }
+
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            transport.SetHostRelayData(allocation.RelayServer.IpV4, (ushort)allocation.RelayServer.Port, allocation.AllocationIdBytes, new byte[64], allocation.ConnectionData);
-        }
+        Debug.Log(allocation.RelayServer.Port);
     }
+
     private async void OnApplicationQuit()
     {
         await StopConnection();

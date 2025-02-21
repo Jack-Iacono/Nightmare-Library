@@ -307,6 +307,16 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 756306895709819047, guid: 8acd08be816b8f644aec698944eb9765,
+        type: 3}
+      propertyPath: m_HeartbeatTimeoutMS
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 756306895709819047, guid: 8acd08be816b8f644aec698944eb9765,
+        type: 3}
+      propertyPath: ConnectionData.ServerListenAddress
+      value: 127.0.0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 1725657505366626692, guid: 8acd08be816b8f644aec698944eb9765,
         type: 3}
       propertyPath: m_LocalPosition.x

@@ -23,6 +23,8 @@ public class prui_ResultsScreenController : ScreenController
             List<EnemyPreset> presets = GameController.roundResults.presentEnemies;
             List<EnemyPreset> guesses = GameController.roundResults.enemyGuesses;
 
+            Debug.Log(presets.Count + " || " + guesses.Count);
+
             for(int i = 0; i < presets.Count; i++)
             {
                 if (guesses.Contains(presets[i]))

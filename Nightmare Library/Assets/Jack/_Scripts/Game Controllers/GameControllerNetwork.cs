@@ -147,7 +147,8 @@ public class GameControllerNetwork : NetworkBehaviour
         if (instance == this)
             instance = null;
 
-        VoiceChatController.UnMuteAll();
+        if(NetworkConnectionController.connectedToLobby)
+            VoiceChatController.UnMuteAll();
 
         GameController.OnGameEnd -= OnGameEnd;
         PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;

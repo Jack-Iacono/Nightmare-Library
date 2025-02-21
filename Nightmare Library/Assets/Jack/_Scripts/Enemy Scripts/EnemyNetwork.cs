@@ -26,9 +26,11 @@ public class EnemyNetwork : NetworkBehaviour
             Destroy(this);
             Destroy(GetComponent<NetworkObject>());
         }
-
-        parent = GetComponent<Enemy>();
-        parent.OnInitialize += OnInitialize;
+        else
+        {
+            parent = GetComponent<Enemy>();
+            parent.OnInitialize += OnInitialize;
+        }
     }
 
     public override void OnNetworkSpawn()
@@ -58,28 +60,30 @@ public class EnemyNetwork : NetworkBehaviour
         if (IsServer)
         {
             //OnInitializeClientRpc(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
-            type.Value = new EnemyTypeData(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
-        }
-    }
-    [ClientRpc]
-    private void OnInitializeClientRpc(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
-    {
-        Test(typeIndex, activeAttackIndex, passiveAttackIndex);
-    }
-    private async void Test(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
-    {
-        // Wait for the Gamecontroller Awake to run
-        while (true)
-        {
-            if (GameController.instance == null)
-                await Task.Delay(100);
-            else
-                break;
-        }
+            EnemyTypeData data = new EnemyTypeData();
 
-        parent.enemyType = GameController.instance.enemyPresets[typeIndex];
-        parent.aAttack = (EnemyPreset.aAttackEnum)activeAttackIndex;
-        parent.pAttack = (EnemyPreset.pAttackEnum)passiveAttackIndex;
+            data.typeIndex = GameController.instance.enemyPresets.IndexOf(parent.enemyType);
+            data.activeAttackIndex = (int)parent.aAttack;
+            data.passiveAttackIndex = (int)parent.pAttack;
+
+            type.Value = data;
+        }
+        else if(GameController.instance != null)
+        {
+            OnGameInitialized();
+        }
+        else
+        {
+            GameController.OnGameInitialized += OnGameInitialized;
+        }
+    }
+    private void OnGameInitialized()
+    {
+        parent.enemyType = GameController.instance.enemyPresets[type.Value.typeIndex];
+        parent.aAttack = (EnemyPreset.aAttackEnum)type.Value.activeAttackIndex;
+        parent.pAttack = (EnemyPreset.pAttackEnum)type.Value.passiveAttackIndex;
+
+        GameController.OnGameInitialized -= OnGameInitialized;
     }
 
     // Update is called once per frame
@@ -241,18 +245,11 @@ public class EnemyNetwork : NetworkBehaviour
         }
     }
 
-    private class EnemyTypeData
+    private class EnemyTypeData: INetworkSerializable
     {
         public int typeIndex;
         public int activeAttackIndex;
         public int passiveAttackIndex;
-
-        public EnemyTypeData(int typeIndex, int activeAttackIndex, int passiveAttackIndex)
-        {
-            this.typeIndex = typeIndex;
-            this.activeAttackIndex = activeAttackIndex;
-            this.passiveAttackIndex = passiveAttackIndex;
-        }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {

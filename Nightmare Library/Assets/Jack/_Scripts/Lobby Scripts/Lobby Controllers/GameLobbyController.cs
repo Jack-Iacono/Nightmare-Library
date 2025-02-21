@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEditor.Networking.PlayerConnection;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameLobbyController : LobbyController
 {
@@ -64,19 +65,23 @@ public class GameLobbyController : LobbyController
     }
     private void SpawnPlayer()
     {
+        SceneController.SetSceneActive(SceneController.m_Scene.UNIVERSAL);
         GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
+        SceneController.SetMapActive();
     }
     private void SpawnPlayer(ulong id)
     {
+        SceneController.SetSceneActive(SceneController.m_Scene.UNIVERSAL);
+
         GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, id);
         pPrefab.name = "Player " + id;
 
         if (GameController.gameStarted)
         {
-            Debug.Log(id);
             PlayerController.playerInstances[pPrefab].ChangeAliveState(false);
         }
-            
+
+        SceneController.SetMapActive();
     }
 
     #endregion

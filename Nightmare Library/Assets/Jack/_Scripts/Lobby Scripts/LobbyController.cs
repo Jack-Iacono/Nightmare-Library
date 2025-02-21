@@ -58,7 +58,7 @@ public abstract class LobbyController : NetworkBehaviour
             instance.RegisterCallbacks();
 
             if (await NetworkConnectionController.ConnectToLobby())
-                await NetworkConnectionController.StartConnection();
+                await NetworkConnectionController.StartNetworkManager();
             else
             {
                 instance.LeaveLobby();

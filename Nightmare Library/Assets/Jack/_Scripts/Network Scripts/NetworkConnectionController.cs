@@ -14,6 +14,7 @@ using Unity.Netcode;
 // Used to get the Max Players
 using static LobbyController;
 using Unity.Services.Core;
+using Unity.Networking.Transport.Relay;
 
 public class NetworkConnectionController : NetworkBehaviour
 {
@@ -247,13 +248,10 @@ public class NetworkConnectionController : NetworkBehaviour
             instance = this;
         else
             Destroy(gameObject);
-
-        transport = FindObjectOfType<UnityTransport>();
     }
-
-    private void Update()
+    private void Start()
     {
-        Debug.Log(allocation.RelayServer.Port);
+        transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
     }
 
     private async void OnApplicationQuit()

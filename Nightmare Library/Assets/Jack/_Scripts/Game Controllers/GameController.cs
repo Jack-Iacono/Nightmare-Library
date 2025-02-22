@@ -20,25 +20,15 @@ public class GameController : MonoBehaviour
     public delegate void OnLevelChangeDelegate(int theshold);
     public static OnLevelChangeDelegate OnLevelChange;
 
-    public List<EnemyPreset> enemyPresets = new List<EnemyPreset>();
     public const int enemyCount = 1;
     private List<GameObject> spawnedEnemies = new List<GameObject>();
 
     public static RoundResults roundResults;
 
-    // Local Events
-    public static event EventHandler<bool> OnGamePause;
-
     public static bool isNetworkGame = true;
-
-    // Multiplayer Events
-    public static event EventHandler<bool> OnNetworkGamePause;
 
     public delegate void OnGameEndDelegate();
     public static event OnGameEndDelegate OnGameEnd;
-
-    public delegate void OnGameInitializedDelegate();
-    public static OnGameEndDelegate OnGameInitialized;
 
     private void Awake()
     {
@@ -51,8 +41,6 @@ public class GameController : MonoBehaviour
         SceneController.OnMapLoaded += OnMapLoaded;
 
         PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
-
-        OnGameInitialized?.Invoke();
     }
 
     private void OnMapLoaded(string mapName)

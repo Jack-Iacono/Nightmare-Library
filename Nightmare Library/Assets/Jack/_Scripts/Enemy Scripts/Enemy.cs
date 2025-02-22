@@ -91,13 +91,12 @@ public class Enemy : MonoBehaviour
 
         audioSrc = GetComponent<AudioSource>();
 
-        GameController.OnGamePause += OnGamePause;
         AudioSourceController.OnProject += OnAudioSourceDetect;
 
         navAgent.Warp(spawnLocation);
 
         // Gets the enemy preset that this will follow, does not pick one which is already in use
-        List<EnemyPreset> validPresets = new List<EnemyPreset>(GameController.instance.enemyPresets);
+        List<EnemyPreset> validPresets = new List<EnemyPreset>(PersistentDataController.Instance.enemyPresets);
         foreach (EnemyPreset preset in inUsePresets)
         {
             validPresets.Remove(preset);
@@ -300,11 +299,11 @@ public class Enemy : MonoBehaviour
 
         enemyInstances.Remove(gameObject);
 
-        GameController.OnGamePause -= OnGamePause;
         AudioSourceController.OnProject -= OnAudioSourceDetect;
 
         inUsePresets.Clear();
 
-        PrefabHandler.Instance.CleanupGameObject(gameObject);
+        if(PrefabHandler.Instance != null)
+            PrefabHandler.Instance.CleanupGameObject(gameObject);
     }
 }

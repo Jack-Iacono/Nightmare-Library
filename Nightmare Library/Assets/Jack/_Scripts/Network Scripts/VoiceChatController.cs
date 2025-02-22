@@ -34,7 +34,8 @@ public static class VoiceChatController
 
     public static async void Logout()
     {
-        await VivoxService.Instance.LogoutAsync();
+        if(VivoxService.Instance.IsLoggedIn)
+            await VivoxService.Instance.LogoutAsync();
     }
 
     private static void ParticipantAddedToChannel(VivoxParticipant participant)

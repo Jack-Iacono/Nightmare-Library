@@ -62,28 +62,18 @@ public class EnemyNetwork : NetworkBehaviour
             //OnInitializeClientRpc(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
             EnemyTypeData data = new EnemyTypeData();
 
-            data.typeIndex = GameController.instance.enemyPresets.IndexOf(parent.enemyType);
+            data.typeIndex = PersistentDataController.Instance.enemyPresets.IndexOf(parent.enemyType);
             data.activeAttackIndex = (int)parent.aAttack;
             data.passiveAttackIndex = (int)parent.pAttack;
 
             type.Value = data;
         }
-        else if(GameController.instance != null)
-        {
-            OnGameInitialized();
-        }
         else
         {
-            GameController.OnGameInitialized += OnGameInitialized;
+            parent.enemyType = PersistentDataController.Instance.enemyPresets[type.Value.typeIndex];
+            parent.aAttack = (EnemyPreset.aAttackEnum)type.Value.activeAttackIndex;
+            parent.pAttack = (EnemyPreset.pAttackEnum)type.Value.passiveAttackIndex;
         }
-    }
-    private void OnGameInitialized()
-    {
-        parent.enemyType = GameController.instance.enemyPresets[type.Value.typeIndex];
-        parent.aAttack = (EnemyPreset.aAttackEnum)type.Value.activeAttackIndex;
-        parent.pAttack = (EnemyPreset.pAttackEnum)type.Value.passiveAttackIndex;
-
-        GameController.OnGameInitialized -= OnGameInitialized;
     }
 
     // Update is called once per frame

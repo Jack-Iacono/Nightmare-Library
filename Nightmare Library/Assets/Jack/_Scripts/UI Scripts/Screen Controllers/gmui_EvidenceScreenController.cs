@@ -32,7 +32,7 @@ public class gmui_EvidenceScreenController : ScreenController
 
     private void OnGameStart()
     {
-        List<EnemyPreset> presets = GameController.instance.enemyPresets;
+        List<EnemyPreset> presets = PersistentDataController.Instance.enemyPresets;
         List<EvidenceEnum> evidenceEnums = Enum.GetValues(typeof(EvidenceEnum)).Cast<EvidenceEnum>().ToList(); ;
 
         // Add the spots for the various guesses

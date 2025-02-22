@@ -104,7 +104,7 @@ public class ObjectPool
         {
             foreach (GameObject obj in list)
             {
-                if(obj != null)
+                if(obj != null && PrefabHandler.Instance != null)
                 {
                     PrefabHandler.Instance.CleanupGameObject(obj);
                     PrefabHandler.Instance.DestroyGameObject(obj);

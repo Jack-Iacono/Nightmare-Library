@@ -79,15 +79,15 @@ public class PlayerController : MonoBehaviour
         if (!NetworkConnectionController.connectedToLobby)
             mainPlayerInstance = this;
 
-        charCont.enabled = false;
-        transform.position = MapDataController.Instance.playerSpawnPoint;
-        charCont.enabled = true;
+        Warp(MapDataController.Instance.playerSpawnPoint);
 
         playerLayerMask = gameObject.layer;
     }
-    private void OnSpawnPointRegister()
+    public void Warp(Vector3 pos)
     {
-        
+        charCont.enabled = false;
+        transform.position = pos;
+        charCont.enabled = true;
     }
 
     // Update is called once per frame
@@ -147,7 +147,7 @@ public class PlayerController : MonoBehaviour
         {
             if (currentInput.y != 0)
             {
-                //AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP), transform.position);
+                AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP), transform.position);
                 currentMove.y = jumpHeight;
             }
 

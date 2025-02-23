@@ -21,7 +21,7 @@ public abstract class Attack
 
     public abstract void Update(float dt);
 
-    public virtual void DetectSound()
+    public virtual void DetectSound(Vector3 pos, float radius)
     {
 
     }

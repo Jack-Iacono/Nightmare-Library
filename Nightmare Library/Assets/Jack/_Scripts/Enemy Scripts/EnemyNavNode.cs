@@ -28,11 +28,11 @@ public class EnemyNavNode : MonoBehaviour
         }
     }
 
-    public void CheckNeighbor(EnemyNavNode p)
+    public bool CheckNeighbor(EnemyNavNode p)
     {
         // Make sure not to add if the node is already present
         if (neighbors.ContainsKey(p))
-            return;
+            return false;
 
         Ray ray = new Ray(position, (p.position - position).normalized);
         float dist = Vector3.Distance(p.position, position);
@@ -43,10 +43,10 @@ public class EnemyNavNode : MonoBehaviour
         if (!Physics.Raycast(ray, out hit, dist, pointLayers))
         {
             neighbors.Add(p, dist);
-
-            // Visualizes the paths
-            //Debug.DrawRay(ray.origin, ray.direction * dist, Color.green, 10);
+            return true;
         }
+
+        return false;
     }
     public void RayToNode(EnemyNavNode node)
     {
@@ -77,6 +77,7 @@ public class EnemyNavNode : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        /*
         switch (nodeStatus)
         {
             case 0:
@@ -91,5 +92,6 @@ public class EnemyNavNode : MonoBehaviour
         }
 
         Gizmos.DrawSphere(transform.position, 2f);
+        */
     }
 }

@@ -14,6 +14,9 @@ public class MapDataController : MonoBehaviour
             Destroy(Instance);
 
         Instance = this;
+
+        if(PlayerController.mainPlayerInstance != null)
+            PlayerController.mainPlayerInstance.Warp(playerSpawnPoint);
     }
     private void OnDestroy()
     {

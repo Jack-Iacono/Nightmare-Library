@@ -250,13 +250,10 @@ public class Enemy : MonoBehaviour
 
     private void OnAudioSourceDetect(Vector3 pos, float radius)
     {
-        if (Vector3.SqrMagnitude(transform.position - pos) < radius * radius)
-        {
-            if(activeAttackTree != null)
-                activeAttackTree.DetectSound();
-            if(passiveAttackTree != null)
-                passiveAttackTree.DetectSound();
-        }
+        if (activeAttackTree != null)
+            activeAttackTree.DetectSound(pos, radius);
+        if (passiveAttackTree != null)
+            passiveAttackTree.DetectSound(pos, radius);
     }
 
     public ActiveAttack GetActiveAttack()

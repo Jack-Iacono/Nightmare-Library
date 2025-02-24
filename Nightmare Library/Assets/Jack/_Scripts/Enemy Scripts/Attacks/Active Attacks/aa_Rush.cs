@@ -12,12 +12,18 @@ public class aa_Rush : ActiveAttack
     private float baseRushSpeed = 150;
 
     public List<EnemyNavNode> path { get; private set; } = new List<EnemyNavNode>();
-    private List<EnemyNavNode> nodeQueue = new List<EnemyNavNode>();
+    public List<EnemyNavNode> nodeQueue = new List<EnemyNavNode>();
     private EnemyNavNode previousNode;
 
     // These methods allow the enemy to update the values for attacks during level up
-    private TaskWait n_AtNodePause;
-    private TaskRushTarget n_RushTarget;
+    private TaskWait n_AtNodePauseN;
+    private TaskRushTarget n_RushTargetN;
+
+    private TaskWait n_AtNodePauseI;
+    private TaskRushTarget n_RushTargetI;
+
+    //private TaskWait n_AtNodePause;
+    //private TaskRushTarget n_RushTarget;
 
     private List<EnemyNavNode> visitedNodes = new List<EnemyNavNode>();
 
@@ -31,12 +37,17 @@ public class aa_Rush : ActiveAttack
     {
         base.Initialize(level);
 
+        recentAudioSources.Add(null);
+
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
         RefreshPath();
 
         // References stored so that they can have values changed later
-        n_AtNodePause = new TaskWait(this, baseReachGoalPauseMin, baseReachGoalPauseMax);
-        n_RushTarget = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
+        n_AtNodePauseN = new TaskWait(this, baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_RushTargetN = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
+
+        n_AtNodePauseI = new TaskWait(this, baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_RushTargetI = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -47,39 +58,30 @@ public class aa_Rush : ActiveAttack
                 new CheckPlayerInRange(owner, 3),
                 new TaskAttackPlayersInRange(owner.navAgent, 3)
             }),
+            new Sequence(new List<Node>()
+            {
+                new CheckConditionAudioSourcePresent(this),
+                new TaskRushBeginInvestigation(this),
+                new Sequence(new List<Node>()
+                {
+                    n_RushTargetI,
+                    n_AtNodePauseI
+                }),
+            }),
             new Sequence(new List<Node>
             {
-                n_RushTarget,
-                n_AtNodePause,
-                new TaskRushGetNewPath(this)
+                n_RushTargetN,
+                new TaskRushGetNewPath(this),
+                n_AtNodePauseN
             }),
         });
 
         tree.SetupTree(root);
     }
 
-    public override void DetectSound(Vector3 pos, float radius)
+    public override void DetectSound(AudioSourceController.SourceData data)
     {
-        // Removes all nodes except for the current one
-        if (nodeQueue.Count > 1)
-            nodeQueue.RemoveRange(1, nodeQueue.Count - 1);
-
-        EnemyNavGraph.NeighborPair pair = EnemyNavGraph.GetClosestNodePair(pos);
-
-        for(int i = 0; i < Mathf.CeilToInt(currentLevel / 3) + 1; i++)
-        {
-            if (nodeQueue[0] == pair.node1)
-            {
-                nodeQueue.Add(pair.node2);
-                nodeQueue.Add(pair.node1);
-            }
-            else
-            {
-                nodeQueue.Add(pair.node1);
-                nodeQueue.Add(pair.node2);
-            }
-        }
-
+        recentAudioSources[0] = data;
         visitedNodes.Clear();
     }
 
@@ -93,6 +95,7 @@ public class aa_Rush : ActiveAttack
         }
         return null;
     }
+
     public void RefreshPath()
     {
         if (nodeQueue.Count == 0)
@@ -119,7 +122,6 @@ public class aa_Rush : ActiveAttack
             path[i].RayToNode(path[i + 1]);
         }
     }
-
     private void GetNextPath()
     {
         visitedNodes.Add(nodeQueue[0]);
@@ -147,7 +149,7 @@ public class aa_Rush : ActiveAttack
     {
         base.OnLevelChange(level);
 
-        n_AtNodePause.OnLevelChange(baseReachGoalPauseMin, baseReachGoalPauseMax);
-        n_RushTarget.OnLevelChange(baseAtNodePause, baseRushSpeed);
+        n_AtNodePauseN.OnLevelChange(baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_RushTargetN.OnLevelChange(baseAtNodePause, baseRushSpeed);
     }
 }

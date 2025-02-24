@@ -248,12 +248,12 @@ public class Enemy : MonoBehaviour
             OnLightFlicker?.Invoke(this, EventArgs.Empty);
     }
 
-    private void OnAudioSourceDetect(Vector3 pos, float radius)
+    private void OnAudioSourceDetect(AudioSourceController.SourceData data)
     {
         if (activeAttackTree != null)
-            activeAttackTree.DetectSound(pos, radius);
+            activeAttackTree.DetectSound(data);
         if (passiveAttackTree != null)
-            passiveAttackTree.DetectSound(pos, radius);
+            passiveAttackTree.DetectSound(data);
     }
 
     public ActiveAttack GetActiveAttack()

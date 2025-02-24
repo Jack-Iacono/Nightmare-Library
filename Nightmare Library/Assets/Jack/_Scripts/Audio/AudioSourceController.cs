@@ -20,7 +20,7 @@ public class AudioSourceController : MonoBehaviour
     public delegate void OnPlayDelegate(AudioData sound = null, bool move = false);
     public event OnPlayDelegate OnPlay;
 
-    public delegate void OnProjectDelegate(Vector3 pos, float radius = 10);
+    public delegate void OnProjectDelegate(SourceData data);
     public static event OnProjectDelegate OnProject;
 
     public bool checkListeners = true;
@@ -65,7 +65,7 @@ public class AudioSourceController : MonoBehaviour
 
         // Only sends this out if on the server, moderated by the AudioSourceNetwork
         if (checkListeners)
-            OnProject?.Invoke(trans.position);
+            OnProject?.Invoke(new SourceData(trans.position));
 
         // Send all data to ensure correct sound is played
         if (!fromNetwork)
@@ -87,6 +87,9 @@ public class AudioSourceController : MonoBehaviour
         gameObject.SetActive(true);
         audioSource.Play();
         BeginPlayTimer();
+
+        if (checkListeners)
+            OnProject?.Invoke(new SourceData(trans.position));
     }
     public void PlaySoundOffline(AudioData sound)
     {
@@ -132,5 +135,17 @@ public class AudioSourceController : MonoBehaviour
     private void OnDestroy()
     {
         sourceAccess.Remove(gameObject);
+    }
+
+    public class SourceData
+    {
+        public Vector3 position;
+        public float radius;
+
+        public SourceData(Vector3 position, float radius = 10)
+        {
+            this.position = position;
+            this.radius = radius;
+        }
     }
 }

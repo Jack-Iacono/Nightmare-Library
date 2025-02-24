@@ -13,6 +13,8 @@ public abstract class Attack
     protected int startingLevel = 1;
     public int currentLevel;
 
+    public List<AudioSourceController.SourceData> recentAudioSources;
+
     public virtual void Initialize(int level = 1) 
     {
         startingLevel = level;
@@ -21,7 +23,7 @@ public abstract class Attack
 
     public abstract void Update(float dt);
 
-    public virtual void DetectSound(Vector3 pos, float radius)
+    public virtual void DetectSound(AudioSourceController.SourceData data)
     {
 
     }

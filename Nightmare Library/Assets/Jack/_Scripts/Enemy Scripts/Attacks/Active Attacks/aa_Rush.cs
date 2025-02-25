@@ -11,9 +11,9 @@ public class aa_Rush : ActiveAttack
     private float baseAtNodePause = 0.1f;
     private float baseRushSpeed = 150;
 
-    public List<EnemyNavNode> path { get; private set; } = new List<EnemyNavNode>();
+    public List<EnemyNavNode> path = new List<EnemyNavNode>();
     public List<EnemyNavNode> nodeQueue = new List<EnemyNavNode>();
-    private EnemyNavNode previousNode;
+    public EnemyNavNode previousNode;
 
     // These methods allow the enemy to update the values for attacks during level up
     private TaskWait n_AtNodePauseN;
@@ -22,10 +22,7 @@ public class aa_Rush : ActiveAttack
     private TaskWait n_AtNodePauseI;
     private TaskRushTarget n_RushTargetI;
 
-    //private TaskWait n_AtNodePause;
-    //private TaskRushTarget n_RushTarget;
-
-    private List<EnemyNavNode> visitedNodes = new List<EnemyNavNode>();
+    public List<EnemyNavNode> visitedNodes = new List<EnemyNavNode>();
 
     public aa_Rush(Enemy owner) : base(owner)
     {
@@ -43,10 +40,10 @@ public class aa_Rush : ActiveAttack
         RefreshPath();
 
         // References stored so that they can have values changed later
-        n_AtNodePauseN = new TaskWait(this, baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_AtNodePauseN = new TaskWait(baseReachGoalPauseMin, baseReachGoalPauseMax);
         n_RushTargetN = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
-        n_AtNodePauseI = new TaskWait(this, baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_AtNodePauseI = new TaskWait(baseReachGoalPauseMin, baseReachGoalPauseMax);
         n_RushTargetI = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
         // Establises the Behavior Tree and its logic
@@ -64,15 +61,25 @@ public class aa_Rush : ActiveAttack
                 new TaskRushBeginInvestigation(this),
                 new Sequence(new List<Node>()
                 {
-                    n_RushTargetI,
-                    n_AtNodePauseI
-                }),
+                    new Sequence(new List<Node>()
+                    {
+                        n_RushTargetI,
+                        n_AtNodePauseI,
+                        new TaskRushGetNextGoal(this, false)
+                    }),
+                    new Sequence(new List<Node>()
+                    {
+                        new CheckConditionRushQueueEmpty(this),
+                        new TaskWait(5),
+                        new TaskRushResetQueue(this)
+                    })
+                })
             }),
             new Sequence(new List<Node>
             {
                 n_RushTargetN,
-                new TaskRushGetNewPath(this),
-                n_AtNodePauseN
+                n_AtNodePauseN,
+                new TaskRushGetNextGoal(this)
             }),
         });
 
@@ -85,7 +92,7 @@ public class aa_Rush : ActiveAttack
         visitedNodes.Clear();
     }
 
-    public EnemyNavNode GetNextNode()
+    public EnemyNavNode GetNextStep()
     {
         if(path.Count > 0)
         {
@@ -96,7 +103,19 @@ public class aa_Rush : ActiveAttack
         return null;
     }
 
-    public void RefreshPath()
+    public void RefreshPath(bool getNext = true)
+    {
+        GetNextGoal(getNext);
+
+        if(nodeQueue.Count > 0)
+            path = EnemyNavGraph.GetPathToPoint(previousNode, nodeQueue[0]);
+
+        for (int i = 0; i < path.Count - 1; i++)
+        {
+            path[i].RayToNode(path[i + 1]);
+        }
+    }
+    private void GetNextGoal(bool generateNext = true)
     {
         if (nodeQueue.Count == 0)
         {
@@ -110,38 +129,24 @@ public class aa_Rush : ActiveAttack
             // Warps the agent to where it is supposed to be for the first path
             owner.navAgent.Warp(nodeQueue[0].position);
         }
-        else
-        {
-            GetNextPath();
-        }
 
-        path = EnemyNavGraph.GetPathToPoint(previousNode, nodeQueue[0]);
-
-        for (int i = 0; i < path.Count - 1; i++)
-        {
-            path[i].RayToNode(path[i + 1]);
-        }
-    }
-    private void GetNextPath()
-    {
         visitedNodes.Add(nodeQueue[0]);
 
         previousNode = nodeQueue[0];
         nodeQueue.RemoveAt(0);
 
-        // Check to see if a next node is already present, meaning there is more in the queue
-        if (nodeQueue.Count > 1)
-            return;
-
-        EnemyNavNode tempNode = previousNode.GetRandomNeighbor(visitedNodes);
-
-        // If valid node was found, continue with that, if not, start again
-        if (tempNode != null)
-            nodeQueue.Add(tempNode);
-        else
+        if (generateNext)
         {
-            visitedNodes.Clear();
-            nodeQueue.Add(previousNode.GetRandomNeighbor(visitedNodes));
+            EnemyNavNode tempNode = previousNode.GetRandomNeighbor(visitedNodes);
+
+            // If valid node was found, continue with that, if not, start again
+            if (tempNode != null)
+                nodeQueue.Add(tempNode);
+            else
+            {
+                visitedNodes.Clear();
+                nodeQueue.Add(previousNode.GetRandomNeighbor(visitedNodes));
+            }
         }
     }
 

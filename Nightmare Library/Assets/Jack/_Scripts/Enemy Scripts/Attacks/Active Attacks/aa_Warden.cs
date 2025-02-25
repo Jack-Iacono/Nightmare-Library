@@ -51,7 +51,7 @@ public class aa_Warden : ActiveAttack
         GetWanderLocations(areaCenter.position, ringCount);
         PlaceSensors();
 
-        n_PlayerSightWait = new TaskWait(this, basePlayerSightWaitMin, basePlayerSightWaitMax);
+        n_PlayerSightWait = new TaskWait(basePlayerSightWaitMin, basePlayerSightWaitMax);
         n_GoToSeenTarget = new TaskGotoStaticTarget(this, owner, baseCheckTargetSpeed, baseCheckTargetAccel);
 
         // Establishes the Behavior Tree and its logic
@@ -84,7 +84,7 @@ public class aa_Warden : ActiveAttack
                 new Selector(new List<Node>()
                 {
                     new CheckPlayerInSight(this, owner.navAgent, 40, -0.8f),
-                    new TaskWait(this, 3),
+                    new TaskWait(3),
                 }),
                 new TaskRemoveTarget(this)
             }),
@@ -93,7 +93,7 @@ public class aa_Warden : ActiveAttack
             {
                 new CheckConditionWardenAlert(this),
                 new TaskWardenCheckAlert(this, owner),
-                new TaskWait(this, 3),
+                new TaskWait(3),
                 new TaskClearAlertLocation(this)
             }),
             // Wander by default

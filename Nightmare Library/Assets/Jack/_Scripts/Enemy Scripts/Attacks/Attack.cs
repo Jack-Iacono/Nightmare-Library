@@ -13,7 +13,7 @@ public abstract class Attack
     protected int startingLevel = 1;
     public int currentLevel;
 
-    public List<AudioSourceController.SourceData> recentAudioSources;
+    public List<AudioSourceController.SourceData> recentAudioSources = new List<AudioSourceController.SourceData>();
 
     public virtual void Initialize(int level = 1) 
     {

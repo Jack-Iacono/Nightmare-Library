@@ -24,6 +24,7 @@ public class TaskRushBeginInvestigation : Node
 
             // Makes sure that the enemy has to move to the first node
             bool normalNodeSet = owner.nodeQueue[0] != pair.node1;
+            EnemyNavNode current = owner.nodeQueue[0];
             owner.nodeQueue.Clear();
 
             for (int i = 0; i < passSetCount; i++)
@@ -40,6 +41,7 @@ public class TaskRushBeginInvestigation : Node
                 }
             }
 
+            owner.path = EnemyNavGraph.GetPathToPoint(owner.previousNode, owner.nodeQueue[0]);
             hasRun = true;
         }
 

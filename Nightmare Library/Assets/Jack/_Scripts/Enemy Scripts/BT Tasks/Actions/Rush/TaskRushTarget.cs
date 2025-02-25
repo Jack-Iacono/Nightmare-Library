@@ -34,7 +34,7 @@ public class TaskRushTarget : Node
     public override Status Check(float dt)
     {
         if (currentTargetNode == null)
-            currentTargetNode = owner.GetNextNode();
+            currentTargetNode = owner.GetNextStep();
 
         if (atNodeWait)
         {
@@ -56,7 +56,7 @@ public class TaskRushTarget : Node
             if (Vector3.SqrMagnitude(transform.position - currentTargetNode.position) < 9)
             {
                 atNodeWait = true;
-                currentTargetNode = owner.GetNextNode();
+                currentTargetNode = owner.GetNextStep();
             }
         }
         else

@@ -13,7 +13,6 @@ public class CheckConditionRushQueueEmpty : CheckCondition
 
     protected override bool EvaluateCondition()
     {
-        Debug.Log(owner.nodeQueue.Count);
         return owner.nodeQueue.Count <= 0;
     }
 }

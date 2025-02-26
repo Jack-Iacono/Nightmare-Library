@@ -13,7 +13,7 @@ public abstract class Attack
     protected int startingLevel = 1;
     public int currentLevel;
 
-    public List<AudioSourceController.SourceData> recentAudioSources = new List<AudioSourceController.SourceData>();
+    protected List<AudioSourceController.SourceData> recentAudioSources = new List<AudioSourceController.SourceData>();
 
     public virtual void Initialize(int level = 1) 
     {
@@ -32,6 +32,17 @@ public abstract class Attack
         currentLevel = startingLevel + level - 1;
         currentLevel = currentLevel > maxLevel ? maxLevel : currentLevel;
     }
+
+    public void RemoveFirstAudioSource()
+    {
+        recentAudioSources.RemoveAt(0);
+    }
+    public AudioSourceController.SourceData GetFirstAudioSource()
+    {
+        if(recentAudioSources.Count == 0) return null;
+        return recentAudioSources[0];
+    }
+
     public virtual void OnDestroy()
     {
         GameController.OnLevelChange -= OnLevelChange;

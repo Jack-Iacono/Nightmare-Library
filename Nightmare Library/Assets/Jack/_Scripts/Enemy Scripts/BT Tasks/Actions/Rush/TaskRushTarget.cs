@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 using BehaviorTree;
+using System.IO;
 
 public class TaskRushTarget : Node
 {
@@ -34,7 +35,7 @@ public class TaskRushTarget : Node
     public override Status Check(float dt)
     {
         if (currentTargetNode == null)
-            currentTargetNode = owner.GetNextStep();
+            currentTargetNode = GetNextNodeInPath();
 
         if (atNodeWait)
         {
@@ -56,7 +57,7 @@ public class TaskRushTarget : Node
             if (Vector3.SqrMagnitude(transform.position - currentTargetNode.position) < 9)
             {
                 atNodeWait = true;
-                currentTargetNode = owner.GetNextStep();
+                currentTargetNode = GetNextNodeInPath();
             }
         }
         else
@@ -73,5 +74,16 @@ public class TaskRushTarget : Node
     {
         this.nodeWaitTime = nodeWaitTime;
         this.speed = speed;
+    }
+
+    public EnemyNavNode GetNextNodeInPath()
+    {
+        if (owner.path.Count > 0)
+        {
+            EnemyNavNode node = owner.path[0];
+            owner.path.RemoveAt(0);
+            return node;
+        }
+        return null;
     }
 }

@@ -60,7 +60,7 @@ public class EnemyNavNode : MonoBehaviour
 
         foreach(EnemyNavNode node in neighbors.Keys)
         {
-            if (!exclude.Contains(node))
+            if (exclude == null || !exclude.Contains(node))
                 valid.Add(node);
         }
 

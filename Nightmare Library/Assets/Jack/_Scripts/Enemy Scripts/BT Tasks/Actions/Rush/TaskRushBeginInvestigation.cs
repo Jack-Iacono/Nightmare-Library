@@ -20,28 +20,29 @@ public class TaskRushBeginInvestigation : Node
     {
         if (!hasRun)
         {
-            EnemyNavGraph.NeighborPair pair = EnemyNavGraph.GetClosestNodePair(owner.recentAudioSources[0].position);
+            EnemyNavGraph.NeighborPair pair = EnemyNavGraph.GetClosestNodePair(owner.GetFirstAudioSource().position);
 
             // Makes sure that the enemy has to move to the first node
-            bool normalNodeSet = owner.nodeQueue[0] != pair.node1;
-            EnemyNavNode current = owner.nodeQueue[0];
-            owner.nodeQueue.Clear();
+            bool normalNodeSet = owner.currentNode != pair.node1;
+            List<EnemyNavNode> newNodes = new List<EnemyNavNode>();
 
+            // Add the several pairs of nodes for the rush to run between
             for (int i = 0; i < passSetCount; i++)
             {
                 if (normalNodeSet)
                 {
-                    owner.nodeQueue.Add(pair.node1);
-                    owner.nodeQueue.Add(pair.node2);
+                    newNodes.Add(pair.node1);
+                    newNodes.Add(pair.node2);
                 }
                 else
                 {
-                    owner.nodeQueue.Add(pair.node2);
-                    owner.nodeQueue.Add(pair.node1);
+                    newNodes.Add(pair.node2);
+                    newNodes.Add(pair.node1);
                 }
             }
 
-            owner.path = EnemyNavGraph.GetPathToPoint(owner.previousNode, owner.nodeQueue[0]);
+            // Get the new path
+            owner.SetNodeQueue(newNodes);
             hasRun = true;
         }
 
@@ -49,6 +50,7 @@ public class TaskRushBeginInvestigation : Node
     }
     protected override void OnResetNode()
     {
+        Debug.Log("Reset");
         hasRun = false;
         base.OnResetNode();
     }

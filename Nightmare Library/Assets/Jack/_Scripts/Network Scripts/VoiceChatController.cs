@@ -65,7 +65,6 @@ public static class VoiceChatController
 
         // Combines the current room with the join code
         currentVoiceChannel = NetworkConnectionController.joinCode + vcIdentifier;
-        Debug.Log("Joining " + chatType.ToString() + " Channel: " + currentVoiceChannel);
 
         switch (chatType)
         {
@@ -91,8 +90,6 @@ public static class VoiceChatController
     {
         if(VivoxService.Instance != null && VivoxService.Instance.ActiveChannels.Keys.Contains(currentVoiceChannel))
             await VivoxService.Instance.LeaveChannelAsync(currentVoiceChannel);
-
-        Debug.Log("Leaving Voice Channel: " + currentVoiceChannel.ToString());
     }
 
     public static void UpdatePlayerPosition(GameObject player)

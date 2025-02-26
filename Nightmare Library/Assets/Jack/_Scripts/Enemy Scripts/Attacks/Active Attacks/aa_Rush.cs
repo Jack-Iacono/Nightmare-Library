@@ -12,8 +12,8 @@ public class aa_Rush : ActiveAttack
     private float baseRushSpeed = 150;
 
     public List<EnemyNavNode> path = new List<EnemyNavNode>();
-    public List<EnemyNavNode> nodeQueue = new List<EnemyNavNode>();
-    public EnemyNavNode previousNode;
+    public List<EnemyNavNode> nodeQueue { get; protected set; } = new List<EnemyNavNode>();
+    public EnemyNavNode currentNode { get; protected set; }
 
     // These methods allow the enemy to update the values for attacks during level up
     private TaskWait n_AtNodePauseN;
@@ -36,14 +36,19 @@ public class aa_Rush : ActiveAttack
 
         recentAudioSources.Add(null);
 
+        // Why is this here?
+        SetCurrentNode(EnemyNavGraph.GetRandomNavPoint());
+        RestartNodeQueue();
+        SetCurrentPath();
+
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
-        RefreshPath();
+        owner.navAgent.Warp(currentNode.position);
 
         // References stored so that they can have values changed later
         n_AtNodePauseN = new TaskWait(baseReachGoalPauseMin, baseReachGoalPauseMax);
         n_RushTargetN = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
-        n_AtNodePauseI = new TaskWait(baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_AtNodePauseI = new TaskWait(1, 1);
         n_RushTargetI = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
         // Establises the Behavior Tree and its logic
@@ -59,27 +64,28 @@ public class aa_Rush : ActiveAttack
             {
                 new CheckConditionAudioSourcePresent(this),
                 new TaskRushBeginInvestigation(this),
-                new Sequence(new List<Node>()
+                new Selector(new List<Node>()
                 {
-                    new Sequence(new List<Node>()
-                    {
-                        n_RushTargetI,
-                        n_AtNodePauseI,
-                        new TaskRushGetNextGoal(this, false)
-                    }),
                     new Sequence(new List<Node>()
                     {
                         new CheckConditionRushQueueEmpty(this),
                         new TaskWait(5),
-                        new TaskRushResetQueue(this)
+                        new TaskRushRemoveAudioSource(this)
+                    }),
+                    new Sequence(new List<Node>()
+                    {
+                        n_RushTargetI,
+                        n_AtNodePauseI,
+                        new TaskRushPathComplete(this, false),
+                        new TaskRunning()
                     })
-                })
+                }),
             }),
             new Sequence(new List<Node>
             {
                 n_RushTargetN,
                 n_AtNodePauseN,
-                new TaskRushGetNextGoal(this)
+                new TaskRushPathComplete(this, true)
             }),
         });
 
@@ -88,11 +94,12 @@ public class aa_Rush : ActiveAttack
 
     public override void DetectSound(AudioSourceController.SourceData data)
     {
-        recentAudioSources[0] = data;
+        if(recentAudioSources.Count < 3)
+            recentAudioSources.Add(data);
         visitedNodes.Clear();
     }
 
-    public EnemyNavNode GetNextStep()
+    public EnemyNavNode GetNextPathNode()
     {
         if(path.Count > 0)
         {
@@ -103,50 +110,94 @@ public class aa_Rush : ActiveAttack
         return null;
     }
 
-    public void RefreshPath(bool getNext = true)
+    /// <summary>
+    /// Readys the nodeQueue and currentNode for the next path
+    /// </summary>
+    public void PathComplete(bool getNewNodes = true)
     {
-        GetNextGoal(getNext);
+        if (nodeQueue.Count > 0)
+        {
+            SetCurrentNode(nodeQueue[0]);
+            nodeQueue.RemoveAt(0);
 
-        if(nodeQueue.Count > 0)
-            path = EnemyNavGraph.GetPathToPoint(previousNode, nodeQueue[0]);
+            if (getNewNodes)
+            {
+                EnemyNavNode tempNode = currentNode.GetRandomNeighbor(visitedNodes);
 
+                // If valid node was found, continue with that, if not, clear the visited nodes and pick again
+                if (tempNode != null)
+                {
+                    nodeQueue.Add(tempNode);
+                }
+                else
+                {
+                    RestartNodeQueue();
+                }
+            }
+        }
+        else
+        {
+            // Run as a fresh start with a random far patrol point
+            RestartNodeQueue();
+        }
+
+        // Get the new path
+        SetCurrentPath();
+    }
+    /// <summary>
+    /// Sets the path to the one given and adjusts the path accordingly
+    /// </summary>
+    /// <param name="nodeQueue"></param>
+    public void SetNodeQueue(List<EnemyNavNode> nodeQueue)
+    {
+        this.nodeQueue = new List<EnemyNavNode>(nodeQueue);
+        visitedNodes.Clear();
+        SetCurrentPath();
+    }
+    
+    /// <summary>
+    /// Sets the current node as visited and assigns the current node to the value
+    /// </summary>
+    /// <param name="node"></param>
+    private void SetCurrentNode(EnemyNavNode node)
+    {
+        currentNode = node;
+        visitedNodes.Add(currentNode);
+    }
+    /// <summary>
+    /// Gets an all new set of nodes based on the current node
+    /// </summary>
+    private void RestartNodeQueue()
+    {
+        visitedNodes.Clear();
+        nodeQueue.Clear();
+
+        nodeQueue.Add(EnemyNavGraph.GetFarthestNavPoint(currentNode.position));
+        nodeQueue.Add(currentNode.GetRandomNeighbor(null));
+    }
+    
+    /// <summary>
+    /// Sets the current path based on the node and nodeQueue
+    /// </summary>
+    private void SetCurrentPath()
+    {
+        string s = string.Empty;
+
+        for (int i = 0; i < nodeQueue.Count; i++)
+        {
+            if (nodeQueue[i] != null)
+                s += nodeQueue[i].name + " \n";
+            else
+                s += "null\n";
+        }
+
+        // Get the path that the enemy will now follow
+        path = EnemyNavGraph.GetPathToPoint(currentNode, nodeQueue[0]);
+
+        // For in editor visual
         for (int i = 0; i < path.Count - 1; i++)
         {
             path[i].RayToNode(path[i + 1]);
-        }
-    }
-    private void GetNextGoal(bool generateNext = true)
-    {
-        if (nodeQueue.Count == 0)
-        {
-            // Start the process from the beginning
-
-            nodeQueue.Add(EnemyNavGraph.GetRandomNavPoint());
-            previousNode = EnemyNavGraph.GetFarthestNavPoint(nodeQueue[0].position);
-
-            nodeQueue.Add(previousNode.GetRandomNeighbor(visitedNodes));
-
-            // Warps the agent to where it is supposed to be for the first path
-            owner.navAgent.Warp(nodeQueue[0].position);
-        }
-
-        visitedNodes.Add(nodeQueue[0]);
-
-        previousNode = nodeQueue[0];
-        nodeQueue.RemoveAt(0);
-
-        if (generateNext)
-        {
-            EnemyNavNode tempNode = previousNode.GetRandomNeighbor(visitedNodes);
-
-            // If valid node was found, continue with that, if not, start again
-            if (tempNode != null)
-                nodeQueue.Add(tempNode);
-            else
-            {
-                visitedNodes.Clear();
-                nodeQueue.Add(previousNode.GetRandomNeighbor(visitedNodes));
-            }
         }
     }
 

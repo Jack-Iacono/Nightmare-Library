@@ -13,6 +13,6 @@ public class CheckConditionAudioSourcePresent : CheckCondition
 
     protected override bool EvaluateCondition()
     {
-        return owner.GetFirstAudioSource() != null;
+        return owner.GetAudioSource(0) != null;
     }
 }

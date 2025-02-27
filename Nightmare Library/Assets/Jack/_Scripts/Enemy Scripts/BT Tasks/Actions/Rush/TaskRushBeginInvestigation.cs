@@ -20,11 +20,14 @@ public class TaskRushBeginInvestigation : Node
     {
         if (!hasRun)
         {
-            EnemyNavGraph.NeighborPair pair = EnemyNavGraph.GetClosestNodePair(owner.GetFirstAudioSource().position);
+            EnemyNavGraph.NeighborPair pair = EnemyNavGraph.GetClosestNodePair(owner.GetAudioSource(0).position);
 
             // Makes sure that the enemy has to move to the first node
             bool normalNodeSet = owner.currentNode != pair.node1;
             List<EnemyNavNode> newNodes = new List<EnemyNavNode>();
+
+            // Lets the agent finish their current path
+            newNodes.Add(owner.nodeQueue[0]);
 
             // Add the several pairs of nodes for the rush to run between
             for (int i = 0; i < passSetCount; i++)
@@ -50,7 +53,6 @@ public class TaskRushBeginInvestigation : Node
     }
     protected override void OnResetNode()
     {
-        Debug.Log("Reset");
         hasRun = false;
         base.OnResetNode();
     }

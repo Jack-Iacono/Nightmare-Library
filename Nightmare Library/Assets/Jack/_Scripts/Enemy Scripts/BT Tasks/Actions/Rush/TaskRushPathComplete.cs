@@ -19,7 +19,7 @@ public class TaskRushPathComplete : Node
 
     public override Status Check(float dt)
     {
-        owner.PathComplete();
+        owner.PathComplete(getNodeOnComplete);
 
         status = Status.SUCCESS;
         return status;

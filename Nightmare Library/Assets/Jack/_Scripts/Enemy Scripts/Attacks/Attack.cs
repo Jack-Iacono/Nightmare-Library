@@ -33,14 +33,18 @@ public abstract class Attack
         currentLevel = currentLevel > maxLevel ? maxLevel : currentLevel;
     }
 
-    public void RemoveFirstAudioSource()
+    public void RemoveAudioSource(int index)
     {
-        recentAudioSources.RemoveAt(0);
+        recentAudioSources.RemoveAt(index);
     }
-    public AudioSourceController.SourceData GetFirstAudioSource()
+    public void RemoveAudioSource(AudioSourceController.SourceData data)
     {
-        if(recentAudioSources.Count == 0) return null;
-        return recentAudioSources[0];
+        recentAudioSources.Remove(data);
+    }
+    public AudioSourceController.SourceData GetAudioSource(int index)
+    {
+        if(recentAudioSources.Count <= index) return null;
+        return recentAudioSources[index];
     }
 
     public virtual void OnDestroy()

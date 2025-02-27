@@ -34,8 +34,6 @@ public class aa_Rush : ActiveAttack
     {
         base.Initialize(level);
 
-        recentAudioSources.Add(null);
-
         // Why is this here?
         SetCurrentNode(EnemyNavGraph.GetRandomNavPoint());
         RestartNodeQueue();
@@ -68,9 +66,9 @@ public class aa_Rush : ActiveAttack
                 {
                     new Sequence(new List<Node>()
                     {
-                        new CheckConditionRushQueueEmpty(this),
+                        new CheckConditionRushInvestigationEnd(this),
                         new TaskWait(5),
-                        new TaskRushRemoveAudioSource(this)
+                        new TaskRushEndInvestigation(this)
                     }),
                     new Sequence(new List<Node>()
                     {
@@ -115,11 +113,11 @@ public class aa_Rush : ActiveAttack
     /// </summary>
     public void PathComplete(bool getNewNodes = true)
     {
+        SetCurrentNode(nodeQueue[0]);
+        nodeQueue.RemoveAt(0);
+
         if (nodeQueue.Count > 0)
         {
-            SetCurrentNode(nodeQueue[0]);
-            nodeQueue.RemoveAt(0);
-
             if (getNewNodes)
             {
                 EnemyNavNode tempNode = currentNode.GetRandomNeighbor(visitedNodes);
@@ -152,7 +150,6 @@ public class aa_Rush : ActiveAttack
     {
         this.nodeQueue = new List<EnemyNavNode>(nodeQueue);
         visitedNodes.Clear();
-        SetCurrentPath();
     }
     
     /// <summary>
@@ -167,7 +164,7 @@ public class aa_Rush : ActiveAttack
     /// <summary>
     /// Gets an all new set of nodes based on the current node
     /// </summary>
-    private void RestartNodeQueue()
+    public void RestartNodeQueue()
     {
         visitedNodes.Clear();
         nodeQueue.Clear();
@@ -183,13 +180,7 @@ public class aa_Rush : ActiveAttack
     {
         string s = string.Empty;
 
-        for (int i = 0; i < nodeQueue.Count; i++)
-        {
-            if (nodeQueue[i] != null)
-                s += nodeQueue[i].name + " \n";
-            else
-                s += "null\n";
-        }
+        Debug.Log(currentNode.name + " -> " + (nodeQueue.Count > 0 ? nodeQueue[0].name : "null"));
 
         // Get the path that the enemy will now follow
         path = EnemyNavGraph.GetPathToPoint(currentNode, nodeQueue[0]);

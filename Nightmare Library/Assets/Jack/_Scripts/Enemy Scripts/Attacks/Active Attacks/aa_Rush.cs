@@ -22,12 +22,16 @@ public class aa_Rush : ActiveAttack
     private TaskWait n_AtNodePauseI;
     private TaskRushTarget n_RushTargetI;
 
+    private CheckConditionCounter n_PathCompleteCounter;
+
     public List<EnemyNavNode> visitedNodes = new List<EnemyNavNode>();
 
     public aa_Rush(Enemy owner) : base(owner)
     {
         name = "Rush";
         toolTip = "I couldn't even tell you if I wanted to";
+
+        hearingRadius = 10;
     }
 
     public override void Initialize(int level = 1) 
@@ -48,6 +52,8 @@ public class aa_Rush : ActiveAttack
 
         n_AtNodePauseI = new TaskWait(1, 1);
         n_RushTargetI = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
+
+        n_PathCompleteCounter = new CheckConditionCounter(3, CheckConditionCounter.EvalType.GREATER_EQUAL);
 
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -79,22 +85,40 @@ public class aa_Rush : ActiveAttack
                     })
                 }),
             }),
-            new Sequence(new List<Node>
+            new Selector(new List<Node>()
             {
-                n_RushTargetN,
-                n_AtNodePauseN,
-                new TaskRushPathComplete(this, true)
-            }),
+                // check whether the correct number of paths has elapsed for a break to be triggered
+                new Sequence(new List<Node>()
+                {
+                    n_PathCompleteCounter,
+                    new TaskWait(10),
+                    new TaskChangeCounter(n_PathCompleteCounter, TaskChangeCounter.ChangeType.RESET)
+                }),
+                new Sequence(new List<Node>
+                {
+                    n_RushTargetN,
+                    n_AtNodePauseN,
+                    new TaskRushPathComplete(this, true),
+                    new TaskChangeCounter(n_PathCompleteCounter, TaskChangeCounter.ChangeType.ADD, 1)
+                }),
+            })
         });
 
         tree.SetupTree(root);
     }
 
-    public override void DetectSound(AudioSourceController.SourceData data)
+    public override bool DetectSound(AudioSourceController.SourceData data)
     {
-        if(recentAudioSources.Count < 3)
-            recentAudioSources.Add(data);
-        visitedNodes.Clear();
+        if (base.DetectSound(data))
+        {
+            if (recentAudioSources.Count < 3)
+                recentAudioSources.Add(data);
+            visitedNodes.Clear();
+
+            return true;
+        }
+
+        return false;
     }
 
     public EnemyNavNode GetNextPathNode()
@@ -179,8 +203,6 @@ public class aa_Rush : ActiveAttack
     private void SetCurrentPath()
     {
         string s = string.Empty;
-
-        Debug.Log(currentNode.name + " -> " + (nodeQueue.Count > 0 ? nodeQueue[0].name : "null"));
 
         // Get the path that the enemy will now follow
         path = EnemyNavGraph.GetPathToPoint(currentNode, nodeQueue[0]);

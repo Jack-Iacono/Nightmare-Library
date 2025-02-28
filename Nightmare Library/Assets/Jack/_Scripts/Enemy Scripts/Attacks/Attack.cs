@@ -13,6 +13,7 @@ public abstract class Attack
     protected int startingLevel = 1;
     public int currentLevel;
 
+    protected float hearingRadius = -1;
     protected List<AudioSourceController.SourceData> recentAudioSources = new List<AudioSourceController.SourceData>();
 
     public virtual void Initialize(int level = 1) 
@@ -23,9 +24,20 @@ public abstract class Attack
 
     public abstract void Update(float dt);
 
-    public virtual void DetectSound(AudioSourceController.SourceData data)
+    public virtual bool DetectSound(AudioSourceController.SourceData data)
     {
+        if(hearingRadius == -1)
+            return false;
 
+        // Check if the sound's radius and the hearing radius overlap, allowing the enemy to hear the sound
+        if(Vector3.Distance(data.position, owner.transform.position) <= hearingRadius + data.radius)
+        {
+            // Could add raycast here to detratc from volume if heard through wall
+            Debug.Log("Detect Sound");
+            return true;
+        }
+
+        return false;
     }
     protected virtual void OnLevelChange(int level)
     {

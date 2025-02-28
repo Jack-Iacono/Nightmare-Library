@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public static class EnemyNavGraph
 {
     public static List<EnemyNavNode> enemyNavPoints = new List<EnemyNavNode>();
+    private static List<NeighborPair> neighborPairs = new List<NeighborPair>();
     
     public static void Add(EnemyNavNode point)
     {
@@ -16,24 +18,46 @@ public static class EnemyNavGraph
         {
             // Check all previous points against the new point
             enemyNavPoints[i].CheckNeighbor(point);
+
             // Check the new point against all previous points
-            point.CheckNeighbor(enemyNavPoints[i]);
+            bool added = point.CheckNeighbor(enemyNavPoints[i]);
+
+            if(added)
+                AddNeighborPair(enemyNavPoints[i], point);
         }
     }
     public static void Remove(EnemyNavNode point)
     {
+        RemoveNeighborPairs(point);
         enemyNavPoints.Remove(point);
+    }
+
+    private static void AddNeighborPair(EnemyNavNode node1 ,EnemyNavNode node2)
+    {
+        // Adds this pair if it not already present
+        NeighborPair pair = new NeighborPair(node1, node2);
+        if (!neighborPairs.Contains(pair))
+        {
+            neighborPairs.Add(pair);
+        }
+    }
+    private static void RemoveNeighborPairs(EnemyNavNode node)
+    {
+        for(int i = neighborPairs.Count - 1; i > 0; i--)
+        {
+            if (neighborPairs[i].Contains(node))
+                neighborPairs.RemoveAt(i);
+        }
     }
 
     public static EnemyNavNode GetClosestNavPoint(Vector3 pos)
     {
-        // TEMPORARY!!! using this method to save memory, I do know that this isn't the distance formula
         float minDistance = float.MaxValue;
         EnemyNavNode closest = null;
 
         foreach (EnemyNavNode e in enemyNavPoints)
         {
-            float dist = Mathf.Abs(pos.x - e.position.x) + Mathf.Abs(pos.y - e.position.y) + Mathf.Abs(pos.z - e.position.z);
+            float dist = Vector3.Distance(e.position, pos);
             if (dist < minDistance)
             {
                 closest = e;
@@ -68,6 +92,27 @@ public static class EnemyNavGraph
         List<EnemyNavNode> newList = new List<EnemyNavNode>(enemyNavPoints);
         newList.Remove(exclude);
         return newList[Random.Range(0, newList.Count)];
+    }
+
+    public static NeighborPair GetClosestNodePair(Vector3 pos)
+    {
+        NeighborPair closestPair = null;
+        float minDistance = 10000;
+
+        foreach(NeighborPair pair in neighborPairs)
+        {
+            Ray ray = pair.GetRay();
+            Vector3 closestPointOnRay = ray.origin + Vector3.Dot(pos - ray.origin, ray.direction) * ray.direction;
+            float distanceToRay = Vector3.Distance(pos, closestPointOnRay);
+
+            if(distanceToRay < minDistance)
+            {
+                minDistance = distanceToRay;
+                closestPair = pair;
+            }
+        }
+
+        return closestPair;
     }
 
     /// <summary>
@@ -107,7 +152,7 @@ public static class EnemyNavGraph
                 //float newCost = costSoFar[current] + current.neighbors[next];
 
                 // Check if there is a cost associated with this node, if yes, check to see if the new cost to get there is less than the one already present
-                if(!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
+                if (!costSoFar.ContainsKey(next) || newCost < costSoFar[next])
                 {
                     costSoFar[next] = (int)newCost;
                     // Would add Heuristic here to convert to A*, may add later
@@ -132,5 +177,53 @@ public static class EnemyNavGraph
         }
 
         return path;
+    }
+
+    public class NeighborPair
+    {
+        public EnemyNavNode node1;
+        public EnemyNavNode node2;
+
+        private Ray ray;
+        private float length;
+
+        public bool Contains(EnemyNavNode node)
+        {
+            return node1 == node || node2 == node;
+        }
+
+        public NeighborPair(EnemyNavNode node1, EnemyNavNode node2)
+        {
+            this.node1 = node1;
+            this.node2 = node2;
+
+            ray = new Ray(node1.position, node2.position - node1.position);
+            length = Vector3.Distance(node1.position, node2.position);
+
+            Debug.DrawRay(ray.origin, ray.direction * length, Color.cyan, 10);
+        }
+
+        public Ray GetRay() { return ray; }
+
+        public override bool Equals(object obj)
+        {
+            NeighborPair other = obj as NeighborPair;
+
+            if((other.node1 == node1 && other.node2 == node2) || (other.node2 == node1 && other.node1 == node2))
+            {
+                return true;
+            }
+
+            return false;
+        }
+        public override int GetHashCode()
+        {
+            return node1.GetHashCode() + node2.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return "Node 1: " + node1.ToString() + " || Node 2: " + node2.ToString();
+        }
     }
 }

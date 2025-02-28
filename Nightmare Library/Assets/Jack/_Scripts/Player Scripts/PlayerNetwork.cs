@@ -33,8 +33,7 @@ public class PlayerNetwork : NetworkBehaviour
         playerIntermittentState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
 
         playerCont = GetComponent<PlayerController>();
-        playerCont.OnPlayerAttacked += OnPlayerAttacked;
-
+        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 
     public override void OnNetworkSpawn()
@@ -42,9 +41,11 @@ public class PlayerNetwork : NetworkBehaviour
         base.OnNetworkSpawn();
 
         if (IsOwner)
-            PlayerController.ownerInstance = playerCont;
+            PlayerController.mainPlayerInstance = playerCont;
         else
             GetComponent<PlayerInteractionController>().enabled = false;
+
+        transform.parent = LobbyController.instance.transform;
 
         // Changes the player data for all versions of this gameobject
         if (IsOwner)
@@ -89,31 +90,27 @@ public class PlayerNetwork : NetworkBehaviour
 
     #endregion
 
-    #region Player Attacked
-    public void OnPlayerAttacked(object sender, EventArgs e)
+    #region Player Death
+
+    private void OnPlayerAliveChanged(PlayerController player, bool b)
     {
-        playerCont.Kill(IsOwner);
-        OnPlayerAttackedClientRpc();
-
-        if (IsOwner) 
+        // Check that event is about this player and that we are on the server
+        if (player == playerCont && IsServer)
         {
-            VoiceChatController.JoinChannel("Dead", VoiceChatController.ChatType.POSITIONAL);
+            OnPlayerAliveChangedClientRpc(b);
         }
-
+        
     }
     [ClientRpc]
-    private void OnPlayerAttackedClientRpc()
+    private void OnPlayerAliveChangedClientRpc(bool b)
     {
+        // Do not call again on the owner
         if (!IsServer)
         {
-            playerCont.Kill(IsOwner);
-
-            if (IsOwner)
-            {
-                VoiceChatController.JoinChannel("Dead", VoiceChatController.ChatType.POSITIONAL);
-            }
+            playerCont.ChangeAliveState(b);
         }
     }
+
     #endregion
 
     #region Server Data Transfers
@@ -195,6 +192,8 @@ public class PlayerNetwork : NetworkBehaviour
             players.Clear();
         else
             players.Remove(this);
+
+        PlayerController.OnPlayerAliveChanged -= OnPlayerAliveChanged;
 
         base.OnDestroy();
     }

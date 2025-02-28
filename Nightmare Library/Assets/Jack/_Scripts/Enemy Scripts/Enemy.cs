@@ -5,13 +5,16 @@ using System.Collections.Generic;
 using Unity.Services.Authentication;
 
 using static EnemyPreset;
+using static UnityEngine.UI.GridLayoutGroup;
 
 public class Enemy : MonoBehaviour
 {
-    public static List<Enemy> enemyInstances = new List<Enemy>();
+    public static Dictionary<GameObject, Enemy> enemyInstances = new Dictionary<GameObject, Enemy>();
     protected static List<EnemyPreset> inUsePresets = new List<EnemyPreset>();
     protected static List<aAttackEnum> inUseActiveAttacks = new List<aAttackEnum>();
     protected static List<pAttackEnum> inUsePassiveAttacks = new List<pAttackEnum>();
+
+    public static int layerMask = -1;
 
     [Header("Enemy Characteristics")]
     [SerializeField]
@@ -74,28 +77,27 @@ public class Enemy : MonoBehaviour
 
     private void Awake()
     {
-        if(!enemyInstances.Contains(this))
-            enemyInstances.Add(this);
+        if(!enemyInstances.ContainsKey(gameObject))
+            enemyInstances.Add(gameObject, this);
+
+        if(layerMask == -1)
+            layerMask = gameObject.layer;
     }
 
     private void Start()
-    {
-        Initialize();
-    }
-    public virtual void Initialize()
     {
         navAgent = GetComponent<NavMeshAgent>();
         navAgent.speed = moveSpeed;
 
         audioSrc = GetComponent<AudioSource>();
 
-        GameController.OnGamePause += OnGamePause;
+        AudioSourceController.OnProject += OnAudioSourceDetect;
 
         navAgent.Warp(spawnLocation);
 
         // Gets the enemy preset that this will follow, does not pick one which is already in use
-        List<EnemyPreset> validPresets = new List<EnemyPreset>(GameController.instance.enemyPresets);
-        foreach(EnemyPreset preset in inUsePresets)
+        List<EnemyPreset> validPresets = new List<EnemyPreset>(PersistentDataController.Instance.enemyPresets);
+        foreach (EnemyPreset preset in inUsePresets)
         {
             validPresets.Remove(preset);
         }
@@ -115,9 +117,9 @@ public class Enemy : MonoBehaviour
         passiveAttackTree = enemyType.GetPassiveAttack(pAttack, this);
 
         // Initializes the attacks
-        if(activeAttackTree != null)
+        if (activeAttackTree != null)
             activeAttackTree.Initialize(4);
-        if(passiveAttackTree != null)
+        if (passiveAttackTree != null)
             passiveAttackTree.Initialize(4);
 
         // Gets the evidence from the enemy preset
@@ -158,6 +160,9 @@ public class Enemy : MonoBehaviour
         if(!navAgent)
             navAgent = GetComponent<NavMeshAgent>();
         navAgent.enabled = b;
+
+        // Unregister this event as it won't be used by an inactive enemy
+        AudioSourceController.OnProject -= OnAudioSourceDetect;
     }
 
     public void PlaySound(string soundName)
@@ -243,6 +248,14 @@ public class Enemy : MonoBehaviour
             OnLightFlicker?.Invoke(this, EventArgs.Empty);
     }
 
+    private void OnAudioSourceDetect(AudioSourceController.SourceData data)
+    {
+        if (activeAttackTree != null)
+            activeAttackTree.DetectSound(data);
+        if (passiveAttackTree != null)
+            passiveAttackTree.DetectSound(data);
+    }
+
     public ActiveAttack GetActiveAttack()
     {
         return activeAttackTree;
@@ -275,11 +288,19 @@ public class Enemy : MonoBehaviour
         if(passiveAttackTree != null)
             passiveAttackTree.OnDestroy();
 
+        objPool.CleanupPool();
+
         inUsePresets.Clear();
         inUseActiveAttacks.Clear();
         inUsePassiveAttacks.Clear();
 
-        enemyInstances.Remove(this);
-        GameController.OnGamePause -= OnGamePause;
+        enemyInstances.Remove(gameObject);
+
+        AudioSourceController.OnProject -= OnAudioSourceDetect;
+
+        inUsePresets.Clear();
+
+        if(PrefabHandler.Instance != null)
+            PrefabHandler.Instance.CleanupGameObject(gameObject);
     }
 }

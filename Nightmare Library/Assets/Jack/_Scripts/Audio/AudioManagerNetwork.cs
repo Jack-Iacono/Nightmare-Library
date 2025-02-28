@@ -12,6 +12,4 @@ public class AudioManagerNetwork : NetworkBehaviour
     {
         parent = GetComponent<AudioManager>();
     }
-
-
 }

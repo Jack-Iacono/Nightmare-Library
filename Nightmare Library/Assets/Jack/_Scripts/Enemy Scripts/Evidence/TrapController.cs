@@ -56,7 +56,7 @@ public class TrapController : Interactable
         {
             PlayerController p = PlayerController.playerInstances[other.gameObject];
 
-            if(p == PlayerController.ownerInstance)
+            if(p == PlayerController.mainPlayerInstance)
             {
                 other.GetComponent<PlayerController>().Trap(trapDuration);
                 Pickup();

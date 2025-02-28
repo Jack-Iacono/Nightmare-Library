@@ -61,7 +61,7 @@ public class pa_Temps : PassiveAttack
     {
         foreach (PlayerController player in DeskController.playersAtDesk)
         {
-            player.ReceiveAttack();
+            player.ChangeAliveState(false);
         }
 
         tickTimer = UnityEngine.Random.Range(tickTimeMin - tickTimeMax, tickTimeMin + tickTimeMax);

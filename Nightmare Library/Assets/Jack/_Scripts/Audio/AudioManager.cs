@@ -7,7 +7,6 @@ using UnityEditor;
 using UnityEngine;
 using static AudioManager;
 
-// KEEP TABS ON THIS
 public class AudioManager : NetworkBehaviour
 {
     public static AudioManager Instance;
@@ -17,14 +16,17 @@ public class AudioManager : NetworkBehaviour
     {
         e_MUSIC_LOVER,
         e_STALK_CLOSE_IN,
-        TEST_SOUNDS
+        e_SCREECH_APPEAR,
+        e_WARDEN_SENSOR_STEP,
+        e_STALK_APPEAR,
+        p_JUMP
     }
 
     // Sounds that will be used
     public SoundList[] sounds = new SoundList[0];
+
     // Used for referencing audio clips over the network
     public static Dictionary<AudioData, Vector2> audioReference = new Dictionary<AudioData, Vector2>();
-
     public static ObjectPool soundSourcePool = new ObjectPool();
 
     public delegate void OnPoolObjectsDelegate();
@@ -37,7 +39,7 @@ public class AudioManager : NetworkBehaviour
             Destroy(Instance);
         Instance = this;
 
-        soundSourcePool = new ObjectPool();
+        audioReference = new Dictionary<AudioData, Vector2>();
 
         // Sets the audio data's network reference
         for (int i = 0; i < sounds.Length; i++)
@@ -52,13 +54,19 @@ public class AudioManager : NetworkBehaviour
     }
     private void Start()
     {
-        if (!NetworkConnectionController.IsRunning || IsServer)
+        audioSourceObject = PrefabHandler.Instance.a_AudioSource;
+
+        if (!NetworkConnectionController.connectedToLobby || NetworkManager.IsServer)
         {
-            audioSourceObject = PrefabHandler.Instance.a_AudioSource;
-            soundSourcePool.PoolObject(audioSourceObject, 20, false);
+            SceneController.SetSceneActive(SceneController.m_Scene.UNIVERSAL);
+            soundSourcePool.PoolObject(audioSourceObject, 20);
+            SceneController.SetMapActive();
         }
         else
+        {
+            Debug.Log("Sending Pool Request");
             OnPoolObjects?.Invoke();
+        }
     }
 
     /// <summary>
@@ -82,10 +90,11 @@ public class AudioManager : NetworkBehaviour
         return Instance.sounds[i].sounds[j];
     }
 
+
     public override void OnDestroy()
     {
-        soundSourcePool.ClearPool();
         base.OnDestroy();
+        soundSourcePool.CleanupPool();
     }
 
 #if UNITY_EDITOR

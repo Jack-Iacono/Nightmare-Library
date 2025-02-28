@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class InventoryController : MonoBehaviour
 {
-    public static InventoryController Instance;
+    public static InventoryController instance;
 
     private const int inventorySize = 3;
     private InventoryItem[] inventoryItems = new InventoryItem[inventorySize];
@@ -19,9 +19,9 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
-        if(Instance != null)
-            Destroy(Instance.gameObject);
-        Instance = this;
+        if(instance != null)
+            Destroy(instance.gameObject);
+        instance = this;
 
         for (int i = 0; i < inventorySize; i++)
         {
@@ -114,6 +114,7 @@ public class InventoryController : MonoBehaviour
 
     private void OnDestroy()
     {
-        Instance = null;
+        if(instance == this)
+            instance = null;
     }
 }

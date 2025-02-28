@@ -3,14 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
     public static GameController instance;
 
     public static bool gamePaused = false;
+    public static bool gameStarted = false;
 
-    public const float gameTime = 50;
+    public const float gameTime = 1000;
     public float gameTimer { get; set; } = gameTime;
 
     private const int totalLevels = 5;
@@ -18,23 +20,15 @@ public class GameController : MonoBehaviour
     public delegate void OnLevelChangeDelegate(int theshold);
     public static OnLevelChangeDelegate OnLevelChange;
 
-    public List<EnemyPreset> enemyPresets = new List<EnemyPreset>();
     public const int enemyCount = 1;
-    private static List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(enemyCount);
+    private List<GameObject> spawnedEnemies = new List<GameObject>();
 
-    // Local Events
-    public static event EventHandler<bool> OnGamePause;
+    public static RoundResults roundResults;
 
     public static bool isNetworkGame = true;
 
-    // Multiplayer Events
-    public static event EventHandler<bool> OnNetworkGamePause;
-
     public delegate void OnGameEndDelegate();
     public static event OnGameEndDelegate OnGameEnd;
-
-    public delegate void OnReturnToMenuDelegate();
-    public static event OnReturnToMenuDelegate OnReturnToMenu;
 
     private void Awake()
     {
@@ -43,28 +37,26 @@ public class GameController : MonoBehaviour
         else
             Destroy(this);
 
-        PlayerController.OnPlayerKilled += OnPlayerKilled;
-        for (int i = 0; i < enemyCount; i++)
-        {
-            enemyGuesses.Add(null);
-        }
-    }
-    private void Start()
-    {
-        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
-            SpawnPrefabs();
-        PauseGame(false);
+        roundResults = new RoundResults(enemyCount);
+        SceneController.OnMapLoaded += OnMapLoaded;
+
+        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 
-    private void SpawnPrefabs()
+    private void OnMapLoaded(string mapName)
     {
-        PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
-        for(int i = 0; i < enemyCount; i++)
+        if (NetworkConnectionController.HasAuthority)
         {
-            PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+            for (int i = 0; i < GameController.enemyCount; i++)
+            {
+                GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+                ePrefab.name = "Basic Enemy";
+                spawnedEnemies.Add(ePrefab);
+            }
         }
-    }
 
+        gameStarted = true;
+    }
 
     // Update is called once per frame
     void Update()
@@ -85,12 +77,17 @@ public class GameController : MonoBehaviour
             else
                 EndGame();
         }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            EndGame();
+        }
     }
 
-    private void OnPlayerKilled(PlayerController player)
+    public void OnPlayerAliveChanged(PlayerController player, bool b)
     {
         bool allPlayersDead = true;
-        foreach(PlayerController p in PlayerController.playerInstances.Values)
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
         {
             if (p.isAlive)
             {
@@ -107,48 +104,19 @@ public class GameController : MonoBehaviour
 
     public static void MakeGuess(int index, EnemyPreset preset)
     {
-        
-        enemyGuesses[index] = preset;
+        roundResults.SetGuess(index, preset);
     }
 
-    public void EndGame()
+    public static void EndGame()
     {
         if(NetworkConnectionController.HasAuthority)
         {
-            PauseGame(true);
             OnGameEnd?.Invoke();
         }
 
-        for(int i = 0; i < enemyCount; i++)
-        {
-            if(enemyGuesses[i] != null && Enemy.enemyInstances[i].enemyType == enemyGuesses[i])
-                Debug.Log("Guess " + i + " is correct");
-            else
-                Debug.Log("Guess " + i + " is wrong");
-        }
+        roundResults.SetPresentEnemies(Enemy.enemyInstances);
 
-        // Load the end screen
-        UIController.mainInstance.ChangeToScreen(1);
-    }
-    public static void ReturnToMenu()
-    {
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
-        {
-            OnReturnToMenu?.Invoke();
-        }
-        else
-        {
-            SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
-        }
-    }
-
-    public void PauseGame(bool b)
-    {
-        if (isNetworkGame && NetworkConnectionController.HasAuthority)
-            OnNetworkGamePause?.Invoke(this, b);
-
-        gamePaused = b;
-        OnGamePause?.Invoke(this, b);
+        ((GameLobbyController)LobbyController.instance).GoToPreGame();
     }
 
     private void OnDestroy()
@@ -156,7 +124,49 @@ public class GameController : MonoBehaviour
         if (instance == this)
             instance = null;
 
-        PlayerController.OnPlayerKilled -= OnPlayerKilled;
+        foreach(GameObject g in spawnedEnemies)
+        {
+            Destroy(g);
+        }
+
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
+        {
+            p.ChangeAliveState(true);
+        }
+
+        gameStarted = false;
+        SceneController.OnMapLoaded -= OnMapLoaded;
+        PlayerController.OnPlayerAliveChanged -= OnPlayerAliveChanged;
     }
 
+    public class RoundResults
+    {
+        public List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(enemyCount);
+        public List<EnemyPreset> presentEnemies = new List<EnemyPreset>(enemyCount);
+
+        public RoundResults(int enemyCount)
+        {
+            for (int i = 0; i < enemyCount; i++)
+            {
+                enemyGuesses.Add(null);
+                presentEnemies.Add(null);
+            }
+        }
+
+        public void SetGuess(int i, EnemyPreset e)
+        {
+            enemyGuesses[i] = e;    
+        }
+        public void SetPresentEnemies(Dictionary<GameObject, Enemy> enemies)
+        {
+            List<Enemy> e = new List<Enemy>(enemies.Values);
+            for(int i = 0; i < e.Count; i++)
+            {
+                if (presentEnemies.Count > i)
+                    presentEnemies[i] = e[i].enemyType;
+                else
+                    presentEnemies.Add(e[i].enemyType);
+            }
+        }
+    }
 }

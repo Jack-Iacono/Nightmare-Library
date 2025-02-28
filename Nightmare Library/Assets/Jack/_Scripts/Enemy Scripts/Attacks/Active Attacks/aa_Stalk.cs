@@ -48,10 +48,10 @@ public class aa_Stalk : ActiveAttack
 
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
 
-        n_AttackWait = new TaskWait(this, baseAttackTimeWaitMin, baseAttackTimeWaitMax);
+        n_AttackWait = new TaskWait(baseAttackTimeWaitMin, baseAttackTimeWaitMax);
         n_CloseIn = new TaskStalkCloseIn(this, owner.navAgent);
         n_WanderTime = new TaskWanderTimed(this, owner.navAgent, baseWanderTimeMin, baseWanderTimeMax);
-        n_RunAwayWait = new TaskWait(this, baseRunTimeMin, baseRunTimeMax);
+        n_RunAwayWait = new TaskWait(baseRunTimeMin, baseRunTimeMax);
 
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -78,7 +78,7 @@ public class aa_Stalk : ActiveAttack
                     new Sequence(new List<Node>()
                     {
                         new CheckInPlayerSight(this, owner),
-                        new TaskWait(this, 0.25f),
+                        new TaskWait(0.25f),
                         new TaskWarpAway(this,owner.navAgent),
                         n_RunAwayWait
                     }),
@@ -87,7 +87,7 @@ public class aa_Stalk : ActiveAttack
                     {
                         new CheckTargetInRange(this, owner.transform, 4),
                         new TaskAttackTarget(owner.navAgent),
-                        new TaskWait(this, 3),
+                        new TaskWait(3),
                         new TaskResetStalk(this),
                         new TaskWarpAway(this,owner.navAgent),
                     }),

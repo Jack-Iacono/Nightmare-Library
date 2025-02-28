@@ -12,8 +12,8 @@ public abstract class LobbyController : NetworkBehaviour
     public static LobbyController instance { get; protected set; }
     public static List<MonoBehaviour> observers = new List<MonoBehaviour>();
 
-    public const int MAX_PLAYERS = 12;
-    public const int MIN_PLAYERS = 2;
+    public const int MAX_PLAYERS = 4;
+    public const int MIN_PLAYERS = 1;
 
     public delegate void LobbyEnterDelegate(ulong clientId, bool isServer);
     public static event LobbyEnterDelegate OnLobbyEnter;
@@ -42,9 +42,13 @@ public abstract class LobbyController : NetworkBehaviour
             else
                 ClientEntryAction();
         }
+        else
+        {
+            EntryAction();
+        }
     }
 
-    #region Connection Methods
+    #region Entry Methods
 
     public async static Task<bool> StartConnection()
     {
@@ -54,7 +58,7 @@ public abstract class LobbyController : NetworkBehaviour
             instance.RegisterCallbacks();
 
             if (await NetworkConnectionController.ConnectToLobby())
-                await NetworkConnectionController.StartConnection();
+                await NetworkConnectionController.StartNetworkManager();
             else
             {
                 instance.LeaveLobby();
@@ -103,15 +107,20 @@ public abstract class LobbyController : NetworkBehaviour
 
     }
 
+    /// <summary>
+    /// Called when offline player enters the lobby
+    /// </summary>
+    protected virtual void EntryAction() { }
+
     #endregion
 
     #region Lobby Leaving
 
     public virtual async void LeaveLobby()
     {
-        Debug.Log("Leaving Lobby");
+        //Debug.Log("Leaving Lobby");
         await DisconnectFromLobby();
-        Debug.Log("Disconnected");
+        //Debug.Log("Disconnected");
         SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU, true);
     }
     public virtual async Task DisconnectFromLobby()

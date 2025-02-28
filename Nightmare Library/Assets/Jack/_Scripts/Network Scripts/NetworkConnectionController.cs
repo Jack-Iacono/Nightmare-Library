@@ -13,6 +13,8 @@ using Unity.Netcode;
 
 // Used to get the Max Players
 using static LobbyController;
+using Unity.Services.Core;
+using Unity.Networking.Transport.Relay;
 
 public class NetworkConnectionController : NetworkBehaviour
 {
@@ -48,7 +50,7 @@ public class NetworkConnectionController : NetworkBehaviour
     [SerializeField]
     public static bool HasAuthority
     {
-        get => NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient || NetworkManager.Singleton.IsServer;
+        get => !connectedToLobby || NetworkManager.Singleton.IsServer;
     }
     [SerializeField]
     public static bool IsRunning
@@ -61,6 +63,8 @@ public class NetworkConnectionController : NetworkBehaviour
         bool connected = false;
 
         OnProcessActive?.Invoke(true);
+
+        await UnityServices.InitializeAsync();
 
         if(!NetworkManager.Singleton.IsConnectedClient && !NetworkManager.Singleton.IsServer)
         {
@@ -83,7 +87,7 @@ public class NetworkConnectionController : NetworkBehaviour
         connectedToLobby = connected;
         return connected;
     }
-    public static async Task StartConnection()
+    public static async Task StartNetworkManager()
     {
         if (!NetworkManager.Singleton.IsConnectedClient && !NetworkManager.Singleton.IsHost)
         {
@@ -196,6 +200,11 @@ public class NetworkConnectionController : NetworkBehaviour
 
             OnJoinCodeChanged?.Invoke(instance, joinCode);
 
+            TextEditor te = new TextEditor();
+            te.text = NetworkConnectionController.joinCode;
+            te.SelectAll();
+            te.Copy();
+
             return true;
         }
         catch (Exception e)
@@ -239,18 +248,12 @@ public class NetworkConnectionController : NetworkBehaviour
             instance = this;
         else
             Destroy(gameObject);
-
-        transport = FindObjectOfType<UnityTransport>();
-
-        DontDestroyOnLoad(this);
     }
-    private void Update()
+    private void Start()
     {
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            transport.SetHostRelayData(allocation.RelayServer.IpV4, (ushort)allocation.RelayServer.Port, allocation.AllocationIdBytes, new byte[64], allocation.ConnectionData);
-        }
+        transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
     }
+
     private async void OnApplicationQuit()
     {
         await StopConnection();

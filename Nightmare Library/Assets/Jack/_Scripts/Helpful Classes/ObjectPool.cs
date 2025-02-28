@@ -29,7 +29,7 @@ public class ObjectPool
         // Adds the item to the dictionary
         pooledObjects.Add(gObject.name, list);
     }
-    public void PoolObject(GameObject gObject, int count, bool setActive = false)
+    public void PoolObject(GameObject gObject, int count)
     {
         GameObject p = new GameObject("Pooled Object: " + gObject.name);
 
@@ -39,7 +39,7 @@ public class ObjectPool
         // Populates the list with the right amount of gameobjects
         for (int i = 0; i < count; i++)
         {
-            var inst = InstantiateObject(gObject, p.transform, setActive);
+            var inst = InstantiateObject(gObject, p.transform, false);
             inst.name += " " + i;
             list.Add(inst);
         }
@@ -92,8 +92,27 @@ public class ObjectPool
         return pooledObjects[g.name];
     }
 
-    public void ClearPool()
-    {   
-        pooledObjects.Clear(); 
+    public int ObjectCount(GameObject g)
+    {
+        return pooledObjects[g.name].Count;
+    }
+
+    public void CleanupPool()
+    {
+        // Despawn all objects if they need to be despawned
+        foreach(List<GameObject> list in pooledObjects.Values)
+        {
+            foreach (GameObject obj in list)
+            {
+                if(obj != null && PrefabHandler.Instance != null)
+                {
+                    PrefabHandler.Instance.CleanupGameObject(obj);
+                    PrefabHandler.Instance.DestroyGameObject(obj);
+                }
+                    
+            }
+        }
+
+        pooledObjects = new Dictionary<string, List<GameObject>>();
     }
 }

@@ -37,15 +37,7 @@ public abstract class UIController : MonoBehaviour
 
         ChangeToScreen(0);
 
-        // Registers this script with the OnGamePause event
-        GameController.OnGamePause += OnGamePause;
-
         OnStartFinish?.Invoke();
-    }
-
-    private void OnDestroy()
-    {
-        GameController.OnGamePause -= OnGamePause;
     }
 
     /// <summary>

@@ -25,14 +25,22 @@ public class AudioSourceNetwork : NetworkBehaviour
         {
             parent = GetComponent<AudioSourceController>();
             parent.OnPlay += OnPlay;
-
-            AudioManager.OnPoolObjects += OnPoolObject;
         }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+
+        if (!IsOwner)
+            parent.checkListeners = false;
+
+        if (!IsOwner && isPooledObject.Value)
+            parent.Pool();
     }
 
     public override void OnDestroy()
     {
-        AudioManager.OnPoolObjects -= OnPoolObject;
         base.OnDestroy();
     }
 
@@ -42,12 +50,6 @@ public class AudioSourceNetwork : NetworkBehaviour
         isPooledObject.Value = true;
     }
 
-    private void OnPoolObject()
-    {
-        if (isPooledObject.Value)
-            parent.Pool();
-    }
-
     protected void OnPlay(AudioData sound = null, bool move = false)
     {
         Vector2 data;
@@ -55,6 +57,7 @@ public class AudioSourceNetwork : NetworkBehaviour
             data = AudioManager.audioReference[sound];
         else
             data = new Vector2(-1,-1);
+
         Vector3 movePos = !move ? Vector3.negativeInfinity : transform.position;
 
         if (IsServer)

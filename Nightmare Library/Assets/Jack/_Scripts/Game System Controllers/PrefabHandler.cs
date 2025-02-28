@@ -24,13 +24,22 @@ public class PrefabHandler : MonoBehaviour
     private void Awake()
     {
         if(Instance != null)
+        {
+            Destroy(Instance.network);
             Destroy(Instance);
+        }
+            
         Instance = this;
     }
 
-    public GameObject InstantiatePrefab(GameObject obj, Vector3 pos, Quaternion rot)
+    public GameObject InstantiatePrefab(GameObject obj, Vector3 pos, Quaternion rot, Transform p = null)
     {
-        GameObject g = Instantiate(obj, pos, rot);
+        GameObject g = null;
+
+        if(p != null)
+            g = Instantiate(obj, pos, rot, p);
+        else
+            g = Instantiate(obj, pos, rot);
 
         if (network != null)
             network.InstantiatePrefab(g);
@@ -58,8 +67,24 @@ public class PrefabHandler : MonoBehaviour
         return Instantiate(obj, pos, rot);
     }
 
+    public void CleanupGameObject(GameObject obj)
+    {
+        if(network != null)
+            network.DespawnPrefab(obj);
+    }
+    public void DestroyGameObject(GameObject obj)
+    {
+        Destroy(obj);
+    }
+
     public void SetNetwork(PrefabHandlerNetwork network)
     {
         this.network = network;
+    }
+
+    private void OnDestroy()
+    {
+        if(Instance == this)
+            Instance = null;
     }
 }

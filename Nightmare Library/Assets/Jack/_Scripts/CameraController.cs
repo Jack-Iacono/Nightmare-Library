@@ -28,6 +28,14 @@ public class CameraController : MonoBehaviour
     private float xRotation = 0;
     private float yRotation = 0;
 
+    private Vector3 normalPosition = Vector3.zero;
+
+    private void Awake()
+    {
+        // Sets the normal position that the camera should be in
+        normalPosition = transform.position;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -77,8 +85,8 @@ public class CameraController : MonoBehaviour
     public void SetGhost(bool b)
     {
         // Switches the active camera, ghosts see different layers than players
-        normalCam.enabled = b;
-        ghostCam.enabled = !b;
+        normalCam.enabled = !b;
+        ghostCam.enabled = b;
     }
     public void SetEnabled(bool b)
     {

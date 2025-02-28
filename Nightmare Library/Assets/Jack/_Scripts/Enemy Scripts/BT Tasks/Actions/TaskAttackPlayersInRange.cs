@@ -39,7 +39,11 @@ public class TaskAttackPlayersInRange : Node
                     {
                         if(hit.collider.gameObject == p.gameObject)
                         {
-                            Debug.Log("Attack " + p.name);
+                            if (p.isAlive)
+                            {
+                                p.ChangeAliveState(false);
+                            }
+                            
                             hasAttacked = true;
                         }
                     }

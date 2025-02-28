@@ -11,7 +11,11 @@ public class EnemyNavNode : MonoBehaviour
     [SerializeField]
     private List<EnemyNavNode> neighborOverrides = new List<EnemyNavNode>();
 
-    private LayerMask pointLayers = 1 << 12 | 1 << 9;
+    // May need to re-add 1 << 12 | 
+    private LayerMask pointLayers = 1 << 9;
+
+    // TESTING ONLY
+    public int nodeStatus { get; set; } = -1;
 
     private void Awake()
     {
@@ -24,23 +28,25 @@ public class EnemyNavNode : MonoBehaviour
         }
     }
 
-    public void CheckNeighbor(EnemyNavNode p)
+    public bool CheckNeighbor(EnemyNavNode p)
     {
         // Make sure not to add if the node is already present
         if (neighbors.ContainsKey(p))
-            return;
+            return false;
 
         Ray ray = new Ray(position, (p.position - position).normalized);
         float dist = Vector3.Distance(p.position, position);
 
+        RaycastHit hit;
+
         // If nothing is blocking this path, add the node to the neighbors list
-        if (!Physics.Raycast(ray, dist, pointLayers))
+        if (!Physics.Raycast(ray, out hit, dist, pointLayers))
         {
             neighbors.Add(p, dist);
-
-            // Visualizes the paths
-            // Debug.DrawRay(ray.origin, ray.direction * dist, Color.black, 10);
+            return true;
         }
+
+        return false;
     }
     public void RayToNode(EnemyNavNode node)
     {
@@ -48,8 +54,44 @@ public class EnemyNavNode : MonoBehaviour
         Debug.DrawRay(ray.origin, ray.direction * Vector3.Distance(node.position, position), Color.black, 2f);
     }
 
+    public EnemyNavNode GetRandomNeighbor(List<EnemyNavNode> exclude)
+    {
+        List<EnemyNavNode> valid = new List<EnemyNavNode>();
+
+        foreach(EnemyNavNode node in neighbors.Keys)
+        {
+            if (exclude == null || !exclude.Contains(node))
+                valid.Add(node);
+        }
+
+        if (valid.Count > 0)
+            return valid[Random.Range(0, valid.Count)];
+        else
+            return null;
+    }
+
     private void OnDestroy()
     {
         EnemyNavGraph.Remove(this);
+    }
+
+    private void OnDrawGizmos()
+    {
+        /*
+        switch (nodeStatus)
+        {
+            case 0:
+                Gizmos.color = Color.grey;
+                break;
+            case 1:
+                Gizmos.color = Color.red;
+                break;
+            case 2:
+                Gizmos.color = Color.green;
+                break;
+        }
+
+        Gizmos.DrawSphere(transform.position, 2f);
+        */
     }
 }

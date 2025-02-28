@@ -99,17 +99,12 @@ public class AuthenticationController : MonoBehaviour
         return false;
     }
 
-    private async void Start()
+    private void Start()
     {
         if (instance == null)
             instance = this;
         else
             Destroy(this);
-
-        DontDestroyOnLoad(this);
-
-        // Change this later to link to steam
-        await SignInAnonymously();
     }
     private void OnApplicationQuit()
     {

@@ -16,6 +16,7 @@ public class aa_Warden : ActiveAttack
 
     protected float diff;
 
+    private List<GameObject> spawnedSensors = new List<GameObject>();
     protected List<WardenSensorController> alertQueue = new List<WardenSensorController>();
     protected int alertQueueMax = 3;
 
@@ -50,7 +51,7 @@ public class aa_Warden : ActiveAttack
         GetWanderLocations(areaCenter.position, ringCount);
         PlaceSensors();
 
-        n_PlayerSightWait = new TaskWait(this, basePlayerSightWaitMin, basePlayerSightWaitMax);
+        n_PlayerSightWait = new TaskWait(basePlayerSightWaitMin, basePlayerSightWaitMax);
         n_GoToSeenTarget = new TaskGotoStaticTarget(this, owner, baseCheckTargetSpeed, baseCheckTargetAccel);
 
         // Establishes the Behavior Tree and its logic
@@ -83,7 +84,7 @@ public class aa_Warden : ActiveAttack
                 new Selector(new List<Node>()
                 {
                     new CheckPlayerInSight(this, owner.navAgent, 40, -0.8f),
-                    new TaskWait(this, 3),
+                    new TaskWait(3),
                 }),
                 new TaskRemoveTarget(this)
             }),
@@ -92,7 +93,7 @@ public class aa_Warden : ActiveAttack
             {
                 new CheckConditionWardenAlert(this),
                 new TaskWardenCheckAlert(this, owner),
-                new TaskWait(this, 3),
+                new TaskWait(3),
                 new TaskClearAlertLocation(this)
             }),
             // Wander by default
@@ -150,6 +151,8 @@ public class aa_Warden : ActiveAttack
         GameObject sensor = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_WardenSensor, pos, Quaternion.identity);
         sensor.name = "Sensor: " + sensor.transform.position;
         sensor.GetComponent<WardenSensorController>().onSensorAlert += OnSensorAlert;
+
+        spawnedSensors.Add(sensor);
     }
 
     protected override void OnLevelChange(int level)
@@ -158,5 +161,16 @@ public class aa_Warden : ActiveAttack
 
         n_PlayerSightWait.OnLevelChange(basePlayerSightWaitMin, basePlayerSightWaitMax);
         n_GoToSeenTarget.OnLevelChange(baseCheckTargetSpeed, baseCheckTargetAccel);
+    }
+
+    public override void OnDestroy()
+    {
+        base.OnDestroy();
+
+        foreach(GameObject g in spawnedSensors)
+        {
+            PrefabHandler.Instance.CleanupGameObject(g);
+            PrefabHandler.Instance.DestroyGameObject(g);
+        }
     }
 }

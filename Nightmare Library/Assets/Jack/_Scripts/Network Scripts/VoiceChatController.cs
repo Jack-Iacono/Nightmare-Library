@@ -1,29 +1,57 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Unity.Netcode;
 using Unity.Services.Vivox;
 using UnityEngine;
 
 public static class VoiceChatController
 {
-
     private static string currentVoiceChannel = string.Empty;
     public enum ChatType { ECHO, GROUP, POSITIONAL };
 
     private static bool hasJoinedChannel = false;
     private static ChatType currentChatType = ChatType.GROUP;
 
+    public static string playerId
+    {
+        get => VivoxService.Instance.SignedInPlayerId;
+    }
+    private static List<string> mutedPlayers = new List<string>();
+
     public static async Task Login()
     {
         LoginOptions options = new LoginOptions();
         options.DisplayName = "Temp User";
-        options.EnableTTS = true;
+        options.PlayerId = AuthenticationController.playerInfo.Id;
         await VivoxService.Instance.LoginAsync(options);
+
+        VivoxService.Instance.ParticipantAddedToChannel += ParticipantAddedToChannel;
+        VivoxService.Instance.ParticipantRemovedFromChannel += ParticipantRemovedFromChannel;
     }
+
     public static async void Logout()
     {
-        await VivoxService.Instance.LogoutAsync();
+        if(VivoxService.Instance.IsLoggedIn)
+            await VivoxService.Instance.LogoutAsync();
+    }
+
+    private static void ParticipantAddedToChannel(VivoxParticipant participant)
+    {
+        //Debug.Log($"Participant {participant.PlayerId} Added");
+
+        if (mutedPlayers.Contains(participant.PlayerId))
+        {
+            participant.MutePlayerLocally();
+        }
+        else
+            participant.UnmutePlayerLocally();
+    }
+    private static void ParticipantRemovedFromChannel(VivoxParticipant participant)
+    {
+        //Debug.Log($"Participant {participant.PlayerId} Removed");
     }
 
     public static async void JoinChannel(string vcIdentifier, ChatType chatType = ChatType.GROUP)
@@ -37,7 +65,6 @@ public static class VoiceChatController
 
         // Combines the current room with the join code
         currentVoiceChannel = NetworkConnectionController.joinCode + vcIdentifier;
-        Debug.Log("Joining " + chatType.ToString() + " Channel: " + currentVoiceChannel);
 
         switch (chatType)
         {
@@ -61,15 +88,49 @@ public static class VoiceChatController
     }
     public static async Task LeaveChannel()
     {
-        if(VivoxService.Instance.ActiveChannels.Keys.Contains(currentVoiceChannel))
+        if(VivoxService.Instance != null && VivoxService.Instance.ActiveChannels.Keys.Contains(currentVoiceChannel))
             await VivoxService.Instance.LeaveChannelAsync(currentVoiceChannel);
-
-        Debug.Log("Leaving Voice Channel: " + currentVoiceChannel.ToString());
     }
 
     public static void UpdatePlayerPosition(GameObject player)
     {
         if(currentChatType == ChatType.POSITIONAL && hasJoinedChannel)
             VivoxService.Instance.Set3DPosition(player, currentVoiceChannel);
+    }
+    public static void MutePlayer(ulong networkID, bool mute)
+    {
+        string playerId = LobbyController.playerList.Value.GetPlayerInfo(networkID).id;
+
+        if (mute && !mutedPlayers.Contains(playerId))
+        {
+            mutedPlayers.Add(playerId);
+        }
+        else if(mutedPlayers.Contains(playerId))
+        {
+            mutedPlayers.Remove(playerId);
+        }
+
+        // Check to see if this particular participant in within the channel already
+        ReadOnlyCollection<VivoxParticipant> participants = VivoxService.Instance.ActiveChannels[currentVoiceChannel];
+        foreach (VivoxParticipant participant in participants)
+        {
+            if (mutedPlayers.Contains(participant.PlayerId))
+            {
+                participant.MutePlayerLocally();
+            }
+            else
+                participant.UnmutePlayerLocally();
+        }
+    }
+    public static void UnMuteAll()
+    {
+        mutedPlayers.Clear();
+
+        // Check to see if this particular participant in within the channel already
+        ReadOnlyCollection<VivoxParticipant> participants = VivoxService.Instance.ActiveChannels[currentVoiceChannel];
+        foreach (VivoxParticipant participant in participants)
+        {
+            participant.UnmutePlayerLocally();
+        }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Burst.CompilerServices;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -94,6 +95,64 @@ public static class EnemyNavGraph
         return newList[Random.Range(0, newList.Count)];
     }
 
+    public static EnemyNavNode GetOutOfSightNode(PlayerController player)
+    {
+        EnemyNavNode closest = GetClosestNavPoint(player.transform.position);
+        Transform playerTrans = player.transform;
+        List<EnemyNavNode> viewedNeighbors = new List<EnemyNavNode>();
+
+        // Create a queue to hold all the neighbors being viewed
+        PriorityQueue<EnemyNavNode> priorityQueue = new PriorityQueue<EnemyNavNode>();
+        priorityQueue.Insert(new PriorityQueue<EnemyNavNode>.Element(closest, 0));
+
+        while (priorityQueue.Count > 0)
+        {
+            int dist = priorityQueue.Front();
+            EnemyNavNode current = priorityQueue.Extract();
+
+            RaycastHit hit;
+            Ray playerToNode = new Ray(playerTrans.position, (current.position - playerTrans.position).normalized);
+
+            bool valid = false;
+
+            // Check if this is the closest node, if so, get rid of it
+            // Could I do all of this in one if statement, yes, do I want to do that, no
+            if (current != closest)
+            {
+                // Check if the node is out of view
+                if (Vector3.Dot(playerTrans.forward, playerToNode.direction) <= 0.65f)
+                {
+                    valid = true;
+                }
+                // Check to see if there is something in between the player and the selected node
+                else if (Physics.Raycast(playerToNode.origin, playerToNode.direction, out hit, Vector3.Distance(playerTrans.position, current.position), 1 << 6 | 1 << 9))
+                {
+                    // Check to make sure that something is in between this object and the player
+                    if (hit.collider.gameObject != player.gameObject)
+                    {
+                        valid = true;
+                    }
+                }
+            }
+
+            if (valid)
+                return current;
+            else
+            {
+                viewedNeighbors.Add(current);
+
+                // Send in all nodes that haven't been visited yet
+                foreach(EnemyNavNode node in current.neighbors.Keys)
+                {
+                    if(!viewedNeighbors.Contains(node))
+                        priorityQueue.Insert(new PriorityQueue<EnemyNavNode>.Element(node, dist + (int)current.neighbors[node]));
+                }
+            }
+        }
+        
+        // If no nodes are valid, just return a random neighbor
+        return closest.GetRandomNeighbor(null);
+    }
     public static NeighborPair GetClosestNodePair(Vector3 pos)
     {
         NeighborPair closestPair = null;

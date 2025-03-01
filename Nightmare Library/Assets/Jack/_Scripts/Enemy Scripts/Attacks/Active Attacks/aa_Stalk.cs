@@ -131,6 +131,8 @@ public class aa_Stalk : ActiveAttack
             currentTargetPlayer = validPlayers[rand];
             SetCurrentTarget(currentTargetPlayer.transform);
 
+            Debug.Log(EnemyNavGraph.GetOutOfSightNode(currentTargetPlayer).name);
+
             return true;
         }
 

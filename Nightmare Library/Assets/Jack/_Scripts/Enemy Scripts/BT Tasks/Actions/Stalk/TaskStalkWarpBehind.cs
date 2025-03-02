@@ -14,11 +14,6 @@ public class TaskStalkWarpBehind : Node
     private float speed;
     private float acceleration;
 
-    private float warpDistMin = 10;
-    private float warpDistMax = 15;
-
-    private float blindSpotAngle = 45;
-
     private bool hasWarped = false;
 
     private AudioClip warpSound;
@@ -34,23 +29,17 @@ public class TaskStalkWarpBehind : Node
     }
     public override Status Check(float dt)
     {
-        if (owner.stalkAttemptCounter > 0)
+        if (!hasWarped)
         {
-            if (!hasWarped)
-            {
-                navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
-                navAgent.speed = 0;
+            navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
+            navAgent.speed = 0;
+            hasWarped = true;
 
-                hasWarped = true;
-
-                AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.e_STALK_APPEAR), transform.position);
-            }
-
-            status = Status.SUCCESS;
-            return status;
+            // Play the sound to alert the player
+            AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.e_STALK_APPEAR), owner.currentTargetPlayer.transform.position);
         }
 
-        status = Status.FAILURE;
+        status = Status.SUCCESS;
         return status;
     }
 

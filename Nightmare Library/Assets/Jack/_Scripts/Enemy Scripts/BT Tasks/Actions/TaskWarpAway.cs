@@ -31,8 +31,6 @@ public class TaskWarpAway : Node
             navAgent.speed = 0;
             navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
 
-            owner.UseStalkAttempt();
-
             passCheck = true;
         }
 

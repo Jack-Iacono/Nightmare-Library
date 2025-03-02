@@ -28,10 +28,8 @@ public class TaskWarpAway : Node
     {
         if (!passCheck)
         {
-            targetLocation = EnemyNavGraph.GetFarthestNavPoint(transform.position).position;
-
             navAgent.speed = 0;
-            navAgent.Warp(targetLocation);
+            navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
 
             owner.UseStalkAttempt();
 

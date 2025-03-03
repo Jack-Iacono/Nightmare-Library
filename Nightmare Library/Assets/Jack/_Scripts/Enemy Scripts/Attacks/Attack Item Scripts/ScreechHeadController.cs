@@ -119,7 +119,7 @@ public class ScreechHeadController : MonoBehaviour
         transform.position = targetPlayer.transform.position + offset + Vector3.up;
         transform.LookAt(targetPlayer.transform.position + Vector3.up);
 
-        audioController.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.e_SCREECH_APPEAR), trans.position);
+        audioController.Play(AudioManager.GetAudioData(AudioManager.SoundType.e_SCREECH_APPEAR));
 
         EnableMesh(true);
 

@@ -17,7 +17,7 @@ public class AudioSourceController : MonoBehaviour
 
     private AudioData audioData;
 
-    public delegate void OnPlayDelegate(AudioData sound = null, bool move = false);
+    public delegate void OnPlayDelegate(AudioData sound = null);
     public event OnPlayDelegate OnPlay;
 
     public delegate void OnProjectDelegate(SourceData data);
@@ -50,14 +50,7 @@ public class AudioSourceController : MonoBehaviour
         }
     }
 
-    public void Pool()
-    {
-        isPooled = true;
-        AudioManager.soundSourcePool.AddObjectToPool(PrefabHandler.Instance.a_AudioSource, gameObject);
-        gameObject.SetActive(false);
-    }
-
-    public void PlaySound(bool fromNetwork = false)
+    public void Play(bool fromNetwork = false)
     {
         gameObject.SetActive(true);
         audioSource.Play();
@@ -67,39 +60,13 @@ public class AudioSourceController : MonoBehaviour
         if (checkListeners)
             OnProject?.Invoke(new SourceData(trans.position));
 
-        // Send all data to ensure correct sound is played
-        if (!fromNetwork)
-            OnPlay?.Invoke(audioData, true);
+        if(!fromNetwork)
+            OnPlay?.Invoke();
     }
-    public void PlaySound(AudioData sound, bool fromNetwork = false)
+    public void Play(AudioData data, bool fromNetwork = false)
     {
-        SetAudioSourceData(sound);
-        PlaySound(fromNetwork);
-    }
-    public void PlaySound(AudioData sound, Vector3 pos, bool fromNetwork = false)
-    {
-        trans.position = pos;
-        PlaySound(sound, fromNetwork);
-    }
-
-    public void PlaySoundOffline()
-    {
-        gameObject.SetActive(true);
-        audioSource.Play();
-        BeginPlayTimer();
-
-        if (checkListeners)
-            OnProject?.Invoke(new SourceData(trans.position));
-    }
-    public void PlaySoundOffline(AudioData sound)
-    {
-        SetAudioSourceData(sound);
-        PlaySoundOffline();
-    }
-    public void PlaySoundOffline(AudioData sound, Vector3 pos)
-    {
-        trans.position = pos;
-        PlaySoundOffline(sound);
+        SetAudioSourceData(data);
+        Play(fromNetwork);
     }
 
     private void BeginPlayTimer()
@@ -107,7 +74,7 @@ public class AudioSourceController : MonoBehaviour
         isPlaying = true;
         playTimer = audioData.clipLength;
     }
-    private void SetAudioSourceData(AudioData sound)
+    public void SetAudioSourceData(AudioData sound)
     {
         audioData = sound;
 

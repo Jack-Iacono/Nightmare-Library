@@ -6,6 +6,7 @@ using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
 using static AudioManager;
+using static AudioSourceController;
 
 public class AudioManager : NetworkBehaviour
 {
@@ -29,8 +30,8 @@ public class AudioManager : NetworkBehaviour
     public static Dictionary<AudioData, Vector2> audioReference = new Dictionary<AudioData, Vector2>();
     public static ObjectPool soundSourcePool = new ObjectPool();
 
-    public delegate void OnPoolObjectsDelegate();
-    public static event OnPoolObjectsDelegate OnPoolObjects;
+    public delegate void OnSoundPlayDelegate(AudioData sound, Vector3 pos);
+    public static event OnSoundPlayDelegate OnSoundPlay;
 
     private void Awake()
     {
@@ -56,17 +57,9 @@ public class AudioManager : NetworkBehaviour
     {
         audioSourceObject = PrefabHandler.Instance.a_AudioSource;
 
-        if (!NetworkConnectionController.connectedToLobby || NetworkManager.IsServer)
-        {
-            SceneController.SetSceneActive(SceneController.m_Scene.UNIVERSAL);
-            soundSourcePool.PoolObject(audioSourceObject, 20);
-            SceneController.SetMapActive();
-        }
-        else
-        {
-            Debug.Log("Sending Pool Request");
-            OnPoolObjects?.Invoke();
-        }
+        SceneController.SetSceneActive(SceneController.m_Scene.UNIVERSAL);
+        soundSourcePool.PoolObject(audioSourceObject, 20, true);
+        SceneController.SetMapActive();
     }
 
     /// <summary>
@@ -76,8 +69,15 @@ public class AudioManager : NetworkBehaviour
     /// <param name="pos">The position at which to play this sound</param>
     public static void PlaySound(AudioData sound, Vector3 pos)
     {
-        GameObject source = soundSourcePool.GetObject(audioSourceObject);
-        AudioSourceController.sourceAccess[source].PlaySound(sound, pos);
+        PlaySoundOffline(sound, pos);
+        OnSoundPlay?.Invoke(sound, pos);
+    }
+    public static void PlaySoundOffline(AudioData sound, Vector3 pos)
+    {
+        AudioSourceController source = AudioSourceController.sourceAccess[soundSourcePool.GetObject(audioSourceObject)];
+        source.SetAudioSourceData(sound);
+        source.transform.position = pos;
+        source.Play();
     }
 
     public static AudioData GetAudioData(SoundType type)

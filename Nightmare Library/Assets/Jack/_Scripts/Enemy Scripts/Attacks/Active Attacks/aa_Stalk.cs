@@ -16,8 +16,8 @@ public class aa_Stalk : ActiveAttack
     public int stalkAttemptCounter = 0;
 
     // How long should the enemy remain in it's wander stage
-    protected float baseWanderTimeMin = 1;
-    protected float baseWanderTimeMax = 2;
+    protected float baseWanderTimeMin = 10;
+    protected float baseWanderTimeMax = 20;
 
     // How long should the stalker wait before attacking
     protected float baseAttackTimeWaitMin = 4;
@@ -26,6 +26,10 @@ public class aa_Stalk : ActiveAttack
     // How fast should the stalker move when closing in
     protected float baseCloseInSpeed = 20;
     protected float baseCloseInAccel = 400;
+
+    // How quickly will the enemy gett irritated and begin a stalking phase
+    protected int irritationThreshold = 5;
+    protected int irritationCounter = 0;
 
     // How long should the enemy wait after being seen and running away
     protected float baseRunTimeMin = 3;
@@ -42,6 +46,7 @@ public class aa_Stalk : ActiveAttack
     {
         name = "Stalker";
         toolTip = "This guy should go to jail, clearly what they do isn't legal. Especially the killing part, that might be bad.";
+        hearingRadius = 10;
     }
 
     public override void Initialize(int level = 1)
@@ -84,7 +89,6 @@ public class aa_Stalk : ActiveAttack
                         new CheckInPlayerSight(this, owner),
                         new TaskWait(0.25f),
                         new TaskWarpAway(this,owner.navAgent),
-                        n_RunAwayWait,
                         new TaskChangeCounter(n_StalkCounter, TaskChangeCounter.ChangeType.SUBTRACT, 1)
                     }),
                     // Attack Behavior
@@ -121,11 +125,20 @@ public class aa_Stalk : ActiveAttack
     {
         if (base.DetectSound(data))
         {
-            // If there is already a source, replace it, if not, add it
-            if(recentAudioSources.Count > 0)
-                recentAudioSources[0] = data;
-            else
-                recentAudioSources.Add(data);
+            if (PlayerController.playerInstances.ContainsKey(data.gameObject))
+            {
+                if(irritationCounter < irritationThreshold)
+                {
+                    irritationCounter++;
+                }
+                else
+                {
+                    PlayerController cont = PlayerController.playerInstances[data.gameObject];
+                    currentTargetPlayer = cont;
+                    BeginStalking();
+                    irritationCounter = 0;
+                }
+            }
 
             return true;
         }
@@ -152,8 +165,7 @@ public class aa_Stalk : ActiveAttack
                 }
 
                 // Set the stalking target for this attack
-                int rand = Random.Range(0, validPlayers.Count);
-                currentTargetPlayer = validPlayers[rand];
+                currentTargetPlayer = validPlayers[Random.Range(0, validPlayers.Count)];
             }
             
             SetCurrentTarget(currentTargetPlayer.transform);
@@ -161,6 +173,7 @@ public class aa_Stalk : ActiveAttack
             return true;
         }
 
+        currentTargetPlayer = null;
         return false;
     }
 

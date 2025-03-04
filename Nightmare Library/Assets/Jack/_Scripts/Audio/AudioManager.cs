@@ -67,12 +67,12 @@ public class AudioManager : NetworkBehaviour
     /// </summary>
     /// <param name="sound">The sound data that should be played</param>
     /// <param name="pos">The position at which to play this sound</param>
-    public static void PlaySound(AudioData sound, Vector3 pos)
+    public static void PlaySoundAtPoint(AudioData sound, Vector3 pos)
     {
-        PlaySoundOffline(sound, pos);
+        PlaySoundAtPointOffline(sound, pos);
         OnSoundPlay?.Invoke(sound, pos);
     }
-    public static void PlaySoundOffline(AudioData sound, Vector3 pos)
+    public static void PlaySoundAtPointOffline(AudioData sound, Vector3 pos)
     {
         AudioSourceController source = AudioSourceController.sourceAccess[soundSourcePool.GetObject(audioSourceObject)];
         source.SetAudioSourceData(sound);

@@ -36,7 +36,7 @@ public class TaskStalkWarpBehind : Node
             hasWarped = true;
 
             // Play the sound to alert the player
-            AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.e_STALK_APPEAR), owner.currentTargetPlayer.transform.position);
+            AudioManager.PlaySoundAtPoint(AudioManager.GetAudioData(AudioManager.SoundType.e_STALK_APPEAR), owner.currentTargetPlayer.transform.position);
         }
 
         status = Status.SUCCESS;

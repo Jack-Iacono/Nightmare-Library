@@ -29,7 +29,10 @@ public class TaskWarpAway : Node
         if (!passCheck)
         {
             navAgent.speed = 0;
-            navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
+            if(owner.currentTargetPlayer != null)
+                navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
+            else
+                navAgent.Warp(EnemyNavGraph.GetRandomNavPoint().position);
 
             passCheck = true;
         }

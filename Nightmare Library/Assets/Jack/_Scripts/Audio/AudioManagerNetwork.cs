@@ -40,7 +40,7 @@ public class AudioManagerNetwork : NetworkBehaviour
     private void OnSoundPlayServerRpc(int i, int j, Vector3 pos, ulong sender)
     {
         AudioData data = AudioManager.GetAudioData(i, j);
-        AudioManager.PlaySoundOffline(data, pos);
+        AudioManager.PlaySoundAtPointOffline(data, pos);
 
         OnSoundPlayClientRpc(i, j, pos,sender);
     }
@@ -50,7 +50,7 @@ public class AudioManagerNetwork : NetworkBehaviour
         if (sender != NetworkManager.LocalClientId)
         {
             AudioData data = AudioManager.GetAudioData(i, j);
-            AudioManager.PlaySoundOffline(data, pos);
+            AudioManager.PlaySoundAtPointOffline(data, pos);
         }
     }
 }

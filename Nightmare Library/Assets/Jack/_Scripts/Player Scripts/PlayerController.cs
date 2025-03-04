@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour
     private const int ghostLayer = 14;
 
     public CameraController camCont;
+    public AudioSourceController audioSource;
     private PlayerInteractionController interactionCont;
 
     [Header("Mesh / Material")]
@@ -147,7 +148,7 @@ public class PlayerController : MonoBehaviour
         {
             if (currentInput.y != 0)
             {
-                AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP), transform.position);
+                audioSource.Play(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP));
                 currentMove.y = jumpHeight;
             }
 

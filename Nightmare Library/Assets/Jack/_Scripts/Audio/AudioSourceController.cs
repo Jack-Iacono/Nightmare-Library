@@ -17,18 +17,20 @@ public class AudioSourceController : MonoBehaviour
 
     private AudioData audioData;
 
-    public delegate void OnPlayDelegate(AudioData sound = null);
+    public delegate void OnPlayDelegate(AudioData sound);
     public event OnPlayDelegate OnPlay;
 
     public delegate void OnProjectDelegate(SourceData data);
     public static event OnProjectDelegate OnProject;
 
+    private SourceData sourceData;
     public bool checkListeners = true;
 
     private void Awake()
     {
         sourceAccess.Add(gameObject, this);
         audioSource = GetComponent<AudioSource>();
+        sourceData = new SourceData(gameObject);
         trans = transform;
     }
     public void Initialize()
@@ -58,15 +60,21 @@ public class AudioSourceController : MonoBehaviour
 
         // Only sends this out if on the server, moderated by the AudioSourceNetwork
         if (checkListeners)
-            OnProject?.Invoke(new SourceData(trans.position));
+            OnProject?.Invoke(sourceData);
 
         if(!fromNetwork)
-            OnPlay?.Invoke();
+            OnPlay?.Invoke(audioData);
     }
     public void Play(AudioData data, bool fromNetwork = false)
     {
         SetAudioSourceData(data);
         Play(fromNetwork);
+    }
+
+    public void Stop()
+    {
+        isPlaying = false;
+        audioSource.Stop();
     }
 
     private void BeginPlayTimer()
@@ -97,6 +105,9 @@ public class AudioSourceController : MonoBehaviour
         audioSource.maxDistance = sound.maxDistance;
         if(sound.rolloffMode == AudioRolloffMode.Custom)
             audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, sound.rollOffCurve);
+
+        // Change this to use volume later
+        sourceData.radius = 10;
     }
 
     private void OnDestroy()
@@ -106,12 +117,20 @@ public class AudioSourceController : MonoBehaviour
 
     public class SourceData
     {
-        public Vector3 position;
+        public GameObject gameObject;
+        public Transform transform;
         public float radius;
 
-        public SourceData(Vector3 position, float radius = 10)
+        public SourceData(GameObject gameObject, float radius = 10)
         {
-            this.position = position;
+            this.gameObject = gameObject;
+            transform = gameObject.transform;
+            this.radius = radius;
+        }
+        public SourceData(GameObject gameObject, Transform transform, float radius = 10)
+        {
+            this.gameObject = gameObject;
+            this.transform = transform;
             this.radius = radius;
         }
     }

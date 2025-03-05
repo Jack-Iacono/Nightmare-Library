@@ -125,19 +125,17 @@ public class aa_Stalk : ActiveAttack
     {
         if (base.DetectSound(data))
         {
-            if (PlayerController.playerInstances.ContainsKey(data.gameObject))
+            // Always raise the irritation count on any sound
+            if (irritationCounter < irritationThreshold)
             {
-                if(irritationCounter < irritationThreshold)
-                {
-                    irritationCounter++;
-                }
-                else
-                {
-                    PlayerController cont = PlayerController.playerInstances[data.gameObject];
-                    currentTargetPlayer = cont;
-                    BeginStalking();
-                    irritationCounter = 0;
-                }
+                irritationCounter++;
+            }
+            else if (PlayerController.playerInstances.ContainsKey(data.gameObject))
+            {
+                PlayerController cont = PlayerController.playerInstances[data.gameObject];
+                currentTargetPlayer = cont;
+                BeginStalking();
+                irritationCounter = 0;
             }
 
             return true;

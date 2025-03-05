@@ -19,7 +19,7 @@ public class TaskWardenCheckAlert : Node
     }
     public override Status Check(float dt)
     {
-        currentTarget = owner.GetAlertItem().transform.position;
+        currentTarget = owner.GetAlertItem();
 
         agent.destination = currentTarget;
 

@@ -10,6 +10,10 @@ public class DeskController : MonoBehaviour
 
     public static List<PlayerController> playersAtDesk = new List<PlayerController>();
 
+    public delegate void OnDeskPlayerDelegate(PlayerController controller);
+    public static event OnDeskPlayerDelegate OnPlayerEnter;
+    public static event OnDeskPlayerDelegate OnPlayerExit;
+
     private void Awake()
     {
         if (instance != null)
@@ -30,7 +34,9 @@ public class DeskController : MonoBehaviour
         if(other.tag == "Player")
         {
             if (PlayerController.playerInstances[other.gameObject].isAlive)
+            {
                 playersAtDesk.Add(PlayerController.playerInstances[other.gameObject]);
+            }
         }
     }
     private void OnTriggerExit(Collider other)
@@ -38,7 +44,9 @@ public class DeskController : MonoBehaviour
         if (other.tag == "Player")
         {
             if (PlayerController.playerInstances[other.gameObject].isAlive)
+            {
                 playersAtDesk.Remove(PlayerController.playerInstances[other.gameObject]);
+            }
         }
     }
 

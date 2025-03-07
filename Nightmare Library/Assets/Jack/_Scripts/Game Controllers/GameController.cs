@@ -30,6 +30,9 @@ public class GameController : MonoBehaviour
     public delegate void OnGameEndDelegate();
     public static event OnGameEndDelegate OnGameEnd;
 
+    public delegate void OnGameStartDelegate();
+    public static event OnGameStartDelegate OnGameStart;
+
     private void Awake()
     {
         if (instance == null)
@@ -56,6 +59,7 @@ public class GameController : MonoBehaviour
         }
 
         gameStarted = true;
+        OnGameStart();
     }
 
     // Update is called once per frame

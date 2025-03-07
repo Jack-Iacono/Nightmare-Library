@@ -10,24 +10,30 @@ using UnityEngine.UI;
 using static Button3D;
 using static EnemyPreset;
 
-public class gmui_EvidenceScreenController : ScreenController
+public class EvidenceBoardController : MonoBehaviour
 {
     [SerializeField]
-    private List<Button3D> presetButtons = new List<Button3D>();
+    private List<GameObject> noteObjects = new List<GameObject>();
+    private List<EnemyNoteLink> enemyNotes = new List<EnemyNoteLink>();
     [SerializeField]
     private List<Button3D> evidenceButtons = new List<Button3D>();
-    [SerializeField]
-    private Button3D nameButton;
 
-    private BiDict<Button3D, EnemyPreset> presetLink = new BiDict<Button3D, EnemyPreset>();
     private BiDict<Button3D, EvidenceEnum> evidenceLink = new BiDict<Button3D, EvidenceEnum>();
 
     private int currentIndex = 0;
     private List<EvidenceScreenData> screenData = new List<EvidenceScreenData>();
 
-    public override void Initialize(UIController parent)
+    private void Awake()
     {
-        base.Initialize(parent);
+        if(!GameController.gameStarted)
+            GameController.OnGameStart += OnGameStart;
+        else
+            OnGameStart();
+
+        foreach(GameObject g in noteObjects)
+        {
+            enemyNotes.Add(new EnemyNoteLink(g));
+        }
     }
 
     private void OnGameStart()
@@ -42,17 +48,15 @@ public class gmui_EvidenceScreenController : ScreenController
         }
 
         // Run through the buttons and set them up according to the game controller's enemy list
-        for (int i = 0; i < presetButtons.Count; i++)
+        for (int i = 0; i < enemyNotes.Count; i++)
         {
             if (presets.Count > i)
             {
                 // Set the text of the button to the enemy name
-                presetButtons[i].SetText(presets[i].enemyName);
-                presetLink.Add(presetButtons[i], presets[i]);
-                presetButtons[i].OnClick += PresetButtonClick;
+                enemyNotes[i].SetEnemy(presets[i]);
             }
             else
-                presetButtons[i].gameObject.SetActive(false);
+                enemyNotes[i].gameObject.SetActive(false);
         }
 
         // Run through the evidence and set up the delegates on the buttons since Unity inspector can't do it
@@ -68,18 +72,11 @@ public class gmui_EvidenceScreenController : ScreenController
                 evidenceButtons[i].gameObject.SetActive(false);
         }
 
-        nameButton.OnClick += NameButtonClick;
+        //UpdateCurrentScreen();
 
-        UpdateCurrentScreen();
+        GameController.OnGameStart -= OnGameStart;
     }
 
-    public void PresetButtonClick(Interactable interactable, bool fromNetwork)
-    {
-        GameController.MakeGuess(currentIndex, presetLink[(Button3D)interactable]);
-
-        screenData[currentIndex].guess = presetLink[(Button3D)interactable];
-        UpdateCurrentScreen();
-    }
     public void EvidenceButtonClick(Interactable interactable, bool fromNetwork)
     {
         Button3D button = (Button3D)interactable;
@@ -90,11 +87,6 @@ public class gmui_EvidenceScreenController : ScreenController
         else
             screenData[currentIndex].selectedEvidence.Add(e);
 
-        UpdateCurrentScreen();
-    }
-    public void NameButtonClick(Interactable interactable, bool fromNetwork)
-    {
-        currentIndex = (currentIndex + 1) % screenData.Count;
         UpdateCurrentScreen();
     }
 
@@ -113,35 +105,17 @@ public class gmui_EvidenceScreenController : ScreenController
             }
         }
 
-        // Greys out the selected button
-        foreach (Button3D button in presetLink.Keys1)
-        {
-            if (screenData[currentIndex].guess == presetLink[button])
-            {
-                button.SetColor(Color.grey);
-            }
-            else
-            {
-                button.SetColor(Color.white);
-            }
-        }
-
-        if (screenData[currentIndex].guess != null)
-            nameButton.SetText(screenData[currentIndex].guess.enemyName);
-        else
-            nameButton.SetText("Creature " + currentIndex);
-
         CheckNames();
     }
 
     private void CheckNames()
     {
-        foreach(EnemyPreset p in presetLink.Keys2)
+        foreach(EnemyNoteLink n in enemyNotes)
         {
-            if (p.CheckEvidence(screenData[currentIndex].selectedEvidence))
-                presetLink[p].gameObject.SetActive(true);
+            if (n.preset.CheckEvidence(screenData[currentIndex].selectedEvidence))
+                n.gameObject.SetActive(true);
             else
-                presetLink[p].gameObject.SetActive(false);
+                n.gameObject.SetActive(false);
         }
     }
 
@@ -149,5 +123,27 @@ public class gmui_EvidenceScreenController : ScreenController
     {
         public List<EvidenceEnum> selectedEvidence = new List<EvidenceEnum>();
         public EnemyPreset guess;
+    }
+
+    [Serializable]
+    private class EnemyNoteLink
+    {
+        public GameObject gameObject;
+        [NonSerialized] public Image image;
+        [NonSerialized] public TMP_Text text;
+
+        [NonSerialized] public EnemyPreset preset;
+
+        public EnemyNoteLink(GameObject gameObject)
+        {
+            this.gameObject = gameObject;
+            image = gameObject.GetComponent<Image>();
+            text = gameObject.GetComponentInChildren<TMP_Text>();
+        }
+        public void SetEnemy(EnemyPreset p)
+        {
+            preset = p;
+            text.text = p.name;
+        }
     }
 }

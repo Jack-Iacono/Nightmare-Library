@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using System;
 
-public class moui_TempScreenController : ScreenController
+public class ThermostatController : MonoBehaviour
 {
     [SerializeField]
     private TMP_Text tempText;
@@ -16,10 +16,8 @@ public class moui_TempScreenController : ScreenController
         TempController.OnTempChanged += OnTempChanged;
         TempController.OnTempStateChanged += OnTempStateChanged;
     }
-
-    public override void ShowScreen()
+    private void Start()
     {
-        base.ShowScreen();
         OnTempStateChanged(TempController.tempChangeState);
         OnTempChanged(TempController.currentTemp);
     }

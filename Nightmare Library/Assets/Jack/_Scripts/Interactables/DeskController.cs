@@ -10,10 +10,6 @@ public class DeskController : MonoBehaviour
 
     public static List<PlayerController> playersAtDesk = new List<PlayerController>();
 
-    public delegate void OnDeskPlayerDelegate(PlayerController controller);
-    public static event OnDeskPlayerDelegate OnPlayerEnter;
-    public static event OnDeskPlayerDelegate OnPlayerExit;
-
     private void Awake()
     {
         if (instance != null)

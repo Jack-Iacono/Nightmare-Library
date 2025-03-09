@@ -140,12 +140,16 @@ public class EnemyPreset : ScriptableObject
         return list;
     }
 
-    public bool CheckEvidence(List<EvidenceEnum> list)
+    public bool CheckEvidence(bool[] e)
     {
-        foreach (EvidenceEnum e in list)
+        // Run through all evidence in the evidence sent
+        for(int i = 0; i < e.Length; i++)
         {
-            if(!evidence.Contains(e))
+            // If the evidence is being used and is not present on this enemy, this is not the enemy being looked for
+            if (e[i] && !evidence.Contains((EvidenceEnum)i))
+            {
                 return false;
+            }
         }
         return true;
     }

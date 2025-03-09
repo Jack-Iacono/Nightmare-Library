@@ -15,13 +15,17 @@ public class EvidenceBoardController : MonoBehaviour
     [SerializeField]
     private List<GameObject> noteObjects = new List<GameObject>();
     private List<EnemyNoteLink> enemyNotes = new List<EnemyNoteLink>();
+
+    [SerializeField] 
+    private List<Button3D> enemyIndexObjects = new List<Button3D>();
+
     [SerializeField]
     private List<Button3D> evidenceButtons = new List<Button3D>();
 
     private BiDict<Button3D, EvidenceEnum> evidenceLink = new BiDict<Button3D, EvidenceEnum>();
 
     private int currentIndex = 0;
-    private List<EvidenceScreenData> screenData = new List<EvidenceScreenData>();
+    private EvidenceData[] evidenceData = new EvidenceData[0];
 
     private void Awake()
     {
@@ -29,11 +33,6 @@ public class EvidenceBoardController : MonoBehaviour
             GameController.OnGameStart += OnGameStart;
         else
             OnGameStart();
-
-        foreach(GameObject g in noteObjects)
-        {
-            enemyNotes.Add(new EnemyNoteLink(g));
-        }
     }
 
     private void OnGameStart()
@@ -41,10 +40,19 @@ public class EvidenceBoardController : MonoBehaviour
         List<EnemyPreset> presets = PersistentDataController.Instance.enemyPresets;
         List<EvidenceEnum> evidenceEnums = Enum.GetValues(typeof(EvidenceEnum)).Cast<EvidenceEnum>().ToList(); ;
 
-        // Add the spots for the various guesses
-        for (int i = 0; i < GameController.enemyCount; i++)
+        // Goes through all the note gameobjects and decides which are going to be used
+        for (int i = 0; i < noteObjects.Count; i++)
         {
-            screenData.Add(new EvidenceScreenData());
+            if (i < GameController.enemyCount)
+                enemyNotes.Add(new EnemyNoteLink(noteObjects[i]));
+            else
+                noteObjects[i].SetActive(false);
+        }
+        // Add the spots for the various presets
+        evidenceData = new EvidenceData[GameController.enemyCount];
+        for(int i = 0; i < evidenceData.Length; i++)
+        {
+            evidenceData[i] = new EvidenceData();
         }
 
         // Run through the buttons and set them up according to the game controller's enemy list
@@ -72,7 +80,17 @@ public class EvidenceBoardController : MonoBehaviour
                 evidenceButtons[i].gameObject.SetActive(false);
         }
 
-        //UpdateCurrentScreen();
+        // This deactivates any index markers that won't be used to represent enemy indexes. This is used when altering the enemy count
+        if(GameController.enemyCount < enemyIndexObjects.Count)
+        {
+            for (int i = enemyIndexObjects.Count - 1; i > GameController.enemyCount - 1; i--)
+            {
+                enemyIndexObjects[i].gameObject.SetActive(false);
+                enemyIndexObjects.RemoveAt(i);
+            }
+        }
+
+        UpdateEvidenceButtons();
 
         GameController.OnGameStart -= OnGameStart;
     }
@@ -80,49 +98,71 @@ public class EvidenceBoardController : MonoBehaviour
     public void EvidenceButtonClick(Interactable interactable, bool fromNetwork)
     {
         Button3D button = (Button3D)interactable;
-        EvidenceEnum e = evidenceLink[button];
+        int eIndex = (int)evidenceLink[button];
 
-        if (screenData[currentIndex].selectedEvidence.Contains(e))
-            screenData[currentIndex].selectedEvidence.Remove(e);
-        else
-            screenData[currentIndex].selectedEvidence.Add(e);
+        // Toggle the evidence on / off
+        evidenceData[currentIndex].evidence[eIndex] = !evidenceData[currentIndex].evidence[eIndex];
 
-        UpdateCurrentScreen();
+        UpdateEvidenceButtons();
+    }
+    public void EnemyIndexButtonClick(int index)
+    {
+        currentIndex = index;
+        UpdateEnemyIndexObjects();
     }
 
-    private void UpdateCurrentScreen()
+    public void UpdateEnemyIndexObjects()
+    {
+        // This sets the current index object to not be seen to indicate that it is in use
+        for (int i = 0; i < enemyIndexObjects.Count; i++)
+        {
+            if (i == currentIndex)
+                enemyIndexObjects[i].gameObject.SetActive(false);
+            else
+                enemyIndexObjects[i].gameObject.SetActive(true);
+        }
+    }
+    public void UpdateEvidenceButtons()
     {
         // Run through the evidence buttons and set the screen up to look like the data
-        foreach(Button3D button in evidenceLink.Keys1)
+        foreach (Button3D button in evidenceLink.Keys1)
         {
-            if (screenData[currentIndex].selectedEvidence.Contains(evidenceLink[button]))
+            // Run through each evidenceData for that button
+            for (int i = 0; i < evidenceData.Length; i++)
             {
-                button.SetColor(Color.grey);
-            }
-            else
-            {
-                button.SetColor(Color.white);
+                // check if that evidence is being selected
+                if (evidenceData[i].evidence[(int)evidenceLink[button]])
+                {
+                    button.SetColor(Color.grey);
+                }
+                else
+                {
+                    button.SetColor(Color.white);
+                }
             }
         }
 
-        CheckNames();
+        UpdateEnemyNames();
     }
-
-    private void CheckNames()
+    private void UpdateEnemyNames()
     {
         foreach(EnemyNoteLink n in enemyNotes)
         {
-            if (n.preset.CheckEvidence(screenData[currentIndex].selectedEvidence))
+            if (n.preset.CheckEvidence(evidenceData[currentIndex].evidence))
                 n.gameObject.SetActive(true);
             else
                 n.gameObject.SetActive(false);
         }
     }
 
-    private class EvidenceScreenData
+    private class EvidenceData
     {
-        public List<EvidenceEnum> selectedEvidence = new List<EvidenceEnum>();
-        public EnemyPreset guess;
+        public bool[] evidence = new bool[0];
+        public EvidenceData()
+        {
+            // Creates an array to hold to on or off values of each of the evidence types present
+            evidence = new bool[Enum.GetValues(typeof(EvidenceEnum)).Length];
+        }
     }
 
     [Serializable]

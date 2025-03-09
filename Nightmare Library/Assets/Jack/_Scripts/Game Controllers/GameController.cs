@@ -20,7 +20,7 @@ public class GameController : MonoBehaviour
     public delegate void OnLevelChangeDelegate(int theshold);
     public static OnLevelChangeDelegate OnLevelChange;
 
-    public const int enemyCount = 1;
+    public static int enemyCount = 2;
     private List<GameObject> spawnedEnemies = new List<GameObject>();
 
     public static RoundResults roundResults;
@@ -59,7 +59,7 @@ public class GameController : MonoBehaviour
         }
 
         gameStarted = true;
-        OnGameStart();
+        OnGameStart?.Invoke();
     }
 
     // Update is called once per frame

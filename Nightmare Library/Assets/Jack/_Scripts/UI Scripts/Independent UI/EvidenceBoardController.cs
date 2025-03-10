@@ -27,6 +27,9 @@ public class EvidenceBoardController : MonoBehaviour
     private int currentIndex = 0;
     private EvidenceData[] evidenceData = new EvidenceData[0];
 
+    public delegate void OnEvidenceDataChangeDelegate(int index, EvidenceData data);
+    public event OnEvidenceDataChangeDelegate OnEvidenceDataChange;
+
     private void Awake()
     {
         if(!GameController.gameStarted)
@@ -90,6 +93,7 @@ public class EvidenceBoardController : MonoBehaviour
             }
         }
 
+        UpdateEnemyIndexObjects();
         UpdateEvidenceButtons();
 
         GameController.OnGameStart -= OnGameStart;
@@ -102,6 +106,8 @@ public class EvidenceBoardController : MonoBehaviour
 
         // Toggle the evidence on / off
         evidenceData[currentIndex].evidence[eIndex] = !evidenceData[currentIndex].evidence[eIndex];
+
+        OnEvidenceDataChange?.Invoke(currentIndex, evidenceData[currentIndex]);
 
         UpdateEvidenceButtons();
     }
@@ -121,6 +127,8 @@ public class EvidenceBoardController : MonoBehaviour
             else
                 enemyIndexObjects[i].gameObject.SetActive(true);
         }
+
+        UpdateEnemyNames();
     }
     public void UpdateEvidenceButtons()
     {
@@ -155,7 +163,16 @@ public class EvidenceBoardController : MonoBehaviour
         }
     }
 
-    private class EvidenceData
+    public void SetEvidenceData(int index, bool[] data)
+    {
+        evidenceData[index].evidence = data;
+
+        //Only change the info on screen if that screen in being used
+        if(index == currentIndex)
+            UpdateEvidenceButtons();
+    }
+
+    public class EvidenceData
     {
         public bool[] evidence = new bool[0];
         public EvidenceData()

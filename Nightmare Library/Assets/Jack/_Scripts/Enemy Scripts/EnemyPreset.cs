@@ -18,9 +18,12 @@ public class EnemyPreset : ScriptableObject
     public aAttackEnum[] activeAttacks = new aAttackEnum[0];
     public pAttackEnum[] passiveAttacks = new pAttackEnum[0];
 
-    public const int EvidenceCount = 3;
+    public const int EnemyEvidenceCount = 3;
     public enum EvidenceEnum { HYSTERICS, MUSIC_LOVER, FOOTPRINT, TRAPPER, HALLUCINATOR, LIGHT_FLICKER };
     public EvidenceEnum[] evidence = new EvidenceEnum[3];
+
+    // This is used by other scripts for network data stuff
+    public static readonly int EvidenceTypeCount = Enum.GetValues(typeof(EvidenceEnum)).Length;
 
     public aAttackEnum GetRandomActiveAttack()
     {
@@ -108,9 +111,9 @@ public class EnemyPreset : ScriptableObject
     /// <returns>The list of evidence</returns>
     public Evidence[] GetEvidence(Enemy e)
     {
-        Evidence[] list = new Evidence[EvidenceCount];
+        Evidence[] list = new Evidence[EnemyEvidenceCount];
 
-        for(int i = 0; i < EvidenceCount; i++)
+        for(int i = 0; i < EnemyEvidenceCount; i++)
         {
             switch (evidence[i])
             {

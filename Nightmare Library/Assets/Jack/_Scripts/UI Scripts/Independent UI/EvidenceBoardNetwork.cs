@@ -6,13 +6,14 @@ using UnityEngine;
 
 using static EvidenceBoardController;
 using static EnemyPreset;
+using Unity.Collections.LowLevel.Unsafe;
 
 [RequireComponent(typeof(EvidenceBoardController))]
 public class EvidenceBoardNetwork : NetworkBehaviour
 {
     private EvidenceBoardController parent;
 
-    private NetworkVariable<EvidenceDataS> evidenceData = new NetworkVariable<EvidenceDataS>();
+    private NetworkVariable<EvidenceBoardData> evidenceData = new NetworkVariable<EvidenceBoardData>();
 
     private void Awake()
     {
@@ -25,12 +26,14 @@ public class EvidenceBoardNetwork : NetworkBehaviour
         {
             parent = GetComponent<EvidenceBoardController>();
             parent.OnEvidenceDataChange += OnEvidenceDataChange;
-
-            if (IsServer)
-                evidenceData.Value = new EvidenceDataS();
-            else
-                evidenceData.OnValueChanged += OnEvidenceDataValueChanged;
         }
+    }
+    public override void OnNetworkSpawn()
+    {
+        if (NetworkManager.IsServer)
+            evidenceData.Value = new EvidenceBoardData();
+        else
+            evidenceData.OnValueChanged += OnEvidenceDataValueChanged;
     }
 
     private void OnEvidenceDataChange(int index, EvidenceData data)
@@ -38,40 +41,49 @@ public class EvidenceBoardNetwork : NetworkBehaviour
         if (IsServer)
         {
             // Adjusts the old value to hold the new values
-            evidenceData.Value = EvidenceDataS.SetIndex(evidenceData.Value, index, data);
+            evidenceData.Value = new EvidenceBoardData(evidenceData.Value, index, data.evidence);
         }
         else
         {
-            OnEvidenceDataChangeServerRpc(index, new bool[0]); 
+            OnEvidenceDataChangeServerRpc(index, data.evidence); 
         }
     }
     [ServerRpc(RequireOwnership = false)]
     private void OnEvidenceDataChangeServerRpc(int index, bool[] data)
     {
-        //OnEvidenceDataChange(index, data);
+        evidenceData.Value = new EvidenceBoardData(evidenceData.Value, index, data);
+        parent.SetEvidenceData(evidenceData.Value.data);
     }
-    private void OnEvidenceDataValueChanged(EvidenceDataS previousValue, EvidenceDataS newValue)
+    private void OnEvidenceDataValueChanged(EvidenceBoardData previousValue, EvidenceBoardData newValue)
     {
-        throw new NotImplementedException();
+        parent.SetEvidenceData(newValue.data);
     }
 
-    private class EvidenceDataS : INetworkSerializable
+    private class EvidenceBoardData : INetworkSerializable
     {
+        // Array containing entire evidence list
         public bool[] data;
 
-        public EvidenceDataS()
+        public EvidenceBoardData()
         {
-            data = new bool[Enum.GetValues(typeof(EvidenceEnum)).Length * GameController.enemyCount];
+            data = new bool[EvidenceTypeCount * GameController.enemyCount];
+            Debug.Log(data.Length);
         }
-        public static EvidenceDataS SetIndex(EvidenceDataS eDataS, int index, EvidenceData eData)
+        public EvidenceBoardData(EvidenceBoardData eDataS, int index, bool[] eData)
         {
-            // Replace the given index range
-            for(int i = 0; i < eData.evidence.Length; i++)
-            {
-                eDataS.data[i + index * eData.evidence.Length] = eData.evidence[i];
-            }
+            Debug.Log(eDataS.data.Length);
+            data = new bool[EvidenceTypeCount * GameController.enemyCount];
 
-            return eDataS;
+            // Replace the given index range
+            for (int i = 0; i < eData.Length; i++)
+            {
+                if(Mathf.FloorToInt(i / EvidenceTypeCount) == index)
+                    data[i] = eData[i % EvidenceTypeCount];
+                else
+                    data[i] = eData[i];
+
+                Debug.Log(data[i]);
+            }
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter

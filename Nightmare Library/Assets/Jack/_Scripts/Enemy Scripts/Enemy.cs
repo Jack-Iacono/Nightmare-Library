@@ -42,7 +42,7 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
-    protected Evidence[] evidence = new Evidence[EnemyPreset.EvidenceCount];
+    protected Evidence[] evidence = new Evidence[EnemyPreset.EnemyEvidenceCount];
 
     [Space(10)]
     public LayerMask interactionLayers = 1 << 10;

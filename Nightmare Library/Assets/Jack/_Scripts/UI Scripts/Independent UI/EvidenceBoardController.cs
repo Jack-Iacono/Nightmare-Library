@@ -36,6 +36,13 @@ public class EvidenceBoardController : MonoBehaviour
             GameController.OnGameStart += OnGameStart;
         else
             OnGameStart();
+
+        // Add the spots for the various presets
+        evidenceData = new EvidenceData[GameController.enemyCount];
+        for (int i = 0; i < evidenceData.Length; i++)
+        {
+            evidenceData[i] = new EvidenceData();
+        }
     }
 
     private void OnGameStart()
@@ -50,12 +57,6 @@ public class EvidenceBoardController : MonoBehaviour
                 enemyNotes.Add(new EnemyNoteLink(noteObjects[i]));
             else
                 noteObjects[i].SetActive(false);
-        }
-        // Add the spots for the various presets
-        evidenceData = new EvidenceData[GameController.enemyCount];
-        for(int i = 0; i < evidenceData.Length; i++)
-        {
-            evidenceData[i] = new EvidenceData();
         }
 
         // Run through the buttons and set them up according to the game controller's enemy list
@@ -162,14 +163,15 @@ public class EvidenceBoardController : MonoBehaviour
                 n.gameObject.SetActive(false);
         }
     }
-
-    public void SetEvidenceData(int index, bool[] data)
+    
+    public void SetEvidenceData(bool[] data)
     {
-        evidenceData[index].evidence = data;
-
-        //Only change the info on screen if that screen in being used
-        if(index == currentIndex)
-            UpdateEvidenceButtons();
+        // Add the spots for the various presets
+        for (int i = 0; i < data.Length; i++)
+        {
+            evidenceData[Mathf.FloorToInt(i / EvidenceTypeCount)].evidence[i % EvidenceTypeCount] = data[i];
+        }
+        UpdateEvidenceButtons();
     }
 
     public class EvidenceData
@@ -179,6 +181,10 @@ public class EvidenceBoardController : MonoBehaviour
         {
             // Creates an array to hold to on or off values of each of the evidence types present
             evidence = new bool[Enum.GetValues(typeof(EvidenceEnum)).Length];
+        }
+        public EvidenceData(bool[] evidence)
+        {
+            this.evidence = evidence;
         }
     }
 

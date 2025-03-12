@@ -116,6 +116,7 @@ public class EvidenceBoardController : MonoBehaviour
     {
         currentIndex = index;
         UpdateEnemyIndexObjects();
+        UpdateEvidenceButtons();
     }
 
     public void UpdateEnemyIndexObjects()
@@ -136,18 +137,14 @@ public class EvidenceBoardController : MonoBehaviour
         // Run through the evidence buttons and set the screen up to look like the data
         foreach (Button3D button in evidenceLink.Keys1)
         {
-            // Run through each evidenceData for that button
-            for (int i = 0; i < evidenceData.Length; i++)
+            // check if that evidence is being selected
+            if (evidenceData[currentIndex].evidence[(int)evidenceLink[button]])
             {
-                // check if that evidence is being selected
-                if (evidenceData[i].evidence[(int)evidenceLink[button]])
-                {
-                    button.SetColor(Color.grey);
-                }
-                else
-                {
-                    button.SetColor(Color.white);
-                }
+                button.SetColor(Color.grey);
+            }
+            else
+            {
+                button.SetColor(Color.white);
             }
         }
 

@@ -67,22 +67,18 @@ public class EvidenceBoardNetwork : NetworkBehaviour
         public EvidenceBoardData()
         {
             data = new bool[EvidenceTypeCount * GameController.enemyCount];
-            Debug.Log(data.Length);
         }
         public EvidenceBoardData(EvidenceBoardData eDataS, int index, bool[] eData)
         {
-            Debug.Log(eDataS.data.Length);
             data = new bool[EvidenceTypeCount * GameController.enemyCount];
 
             // Replace the given index range
-            for (int i = 0; i < eData.Length; i++)
+            for (int i = 0; i < data.Length; i++)
             {
                 if(Mathf.FloorToInt(i / EvidenceTypeCount) == index)
                     data[i] = eData[i % EvidenceTypeCount];
                 else
-                    data[i] = eData[i];
-
-                Debug.Log(data[i]);
+                    data[i] = eDataS.data[i];
             }
         }
 

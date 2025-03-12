@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class gmui_CameraScreenController : ScreenController
+public class CameraMonitorController : MonoBehaviour
 {
     [Header("Monitor Variabels")]
     [SerializeField]
@@ -13,7 +13,7 @@ public class gmui_CameraScreenController : ScreenController
     public GameObject cameraNoSignalScreen;
     public RawImage cameraPicture;
 
-    public List<MonitorCameraController> linkedCameras = new List<MonitorCameraController>();
+    public List<LibraryCameraController> linkedCameras = new List<LibraryCameraController>();
     private int cameraIndex = 0;
 
     public float useRadius = 5f;
@@ -109,10 +109,9 @@ public class gmui_CameraScreenController : ScreenController
         ChangeCamera(cameraIndex);
     }
 
-    public void Click(bool upDown)
+    public void NextCamera()
     {
-        cameraIndex = (cameraIndex + (upDown ? 1 : -1)) % linkedCameras.Count;
-        cameraIndex = cameraIndex < 0 ? linkedCameras.Count - 1 : cameraIndex;
+        cameraIndex = (cameraIndex + 1) % linkedCameras.Count;
         ChangeCamera(cameraIndex);
     }
 }

@@ -4,17 +4,17 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-[RequireComponent(typeof(MonitorCameraController))]
-public class MonitorCameraNetwork : InteractableNetwork
+[RequireComponent(typeof(LibraryCameraController))]
+public class LibraryCameraNetwork : InteractableNetwork
 {
-    private MonitorCameraController monitor;
+    private LibraryCameraController monitor;
     private NetworkVariable<bool> isBroadcasting;
 
     protected override void Awake()
     {
         base.Awake();
 
-        monitor = GetComponent<MonitorCameraController>();
+        monitor = GetComponent<LibraryCameraController>();
 
         var permission = NetworkVariableWritePermission.Server;
         isBroadcasting = new NetworkVariable<bool>(writePerm: permission);

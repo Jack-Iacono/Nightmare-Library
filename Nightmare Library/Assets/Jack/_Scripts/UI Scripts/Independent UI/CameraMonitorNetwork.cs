@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-[RequireComponent(typeof(gmui_CameraScreenController))]
-public class gmui_CameraScreenNetwork : NetworkBehaviour
+[RequireComponent(typeof(CameraMonitorController))]
+public class CameraMonitorNetwork : NetworkBehaviour
 {
-    private gmui_CameraScreenController parent;
+    private CameraMonitorController parent;
     private NetworkVariable<int> cameraIndex = new NetworkVariable<int>();
 
     private void Awake()
@@ -18,7 +18,7 @@ public class gmui_CameraScreenNetwork : NetworkBehaviour
             Destroy(GetComponent<NetworkObject>());
         }
 
-        parent = GetComponent<gmui_CameraScreenController>();
+        parent = GetComponent<CameraMonitorController>();
         parent.OnStartFinish += OnParentStartFinish;
     }
 

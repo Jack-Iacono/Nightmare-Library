@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class MonitorCameraController : Interactable
+public class LibraryCameraController : Interactable
 {
     [Header("Monitor Variables")]
     public Camera cam;

@@ -14,6 +14,7 @@ public class GameControllerNetwork : NetworkBehaviour
     // Network Variables
     private NetworkVariable<ContinuousData> contState;
     public static NetworkVariable<bool> gamePaused;
+    private static NetworkVariable<int> enemyCount = new NetworkVariable<int>();
 
     private void Awake()
     {
@@ -30,10 +31,11 @@ public class GameControllerNetwork : NetworkBehaviour
 
         parent = GetComponent<GameController>();
 
-        var permission = NetworkVariableWritePermission.Owner;
+        var permission = NetworkVariableWritePermission.Server;
 
         contState = new NetworkVariable<ContinuousData>(writePerm: permission);
         gamePaused = new NetworkVariable<bool>(writePerm: permission);
+        enemyCount = new NetworkVariable<int>(writePerm: permission);
 
         PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
@@ -45,9 +47,11 @@ public class GameControllerNetwork : NetworkBehaviour
         if (!IsOwner)
         {
             parent.enabled = false;
+            enemyCount.OnValueChanged += OnEnemyCountValueChanged;
         }
         else
         {
+            GameController.OnEnemyCountChanged += OnEnemyCountChanged;
             GameController.OnGameEnd += OnGameEnd;
         }
     }
@@ -59,12 +63,23 @@ public class GameControllerNetwork : NetworkBehaviour
             TransmitContinuousState();
         else
             ConsumeContinuousState();
-
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            LobbyController.instance.LeaveLobby();
-        }
     }
+
+    #region Enemy Count
+
+    private void OnEnemyCountChanged(int count)
+    {
+        enemyCount.Value = count;
+    }
+    private void OnEnemyCountValueChanged(int previousValue, int newValue)
+    {
+        if(!IsServer)
+            GameController.SetEnemyCount(newValue);
+    }
+
+    #endregion
+
+    #region Player Death / Resurrection
 
     private void OnPlayerAliveChanged(PlayerController player, bool b)
     {
@@ -80,6 +95,8 @@ public class GameControllerNetwork : NetworkBehaviour
             VoiceChatController.MutePlayer(id, !b);
         }
     }
+
+    #endregion
 
     #region Game Ending
 

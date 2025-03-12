@@ -92,11 +92,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5190595082256867613}
-  - component: {fileID: 1409823471656591316}
   - component: {fileID: 8496951882186121}
   - component: {fileID: 440438311803379737}
   - component: {fileID: -3205594276566838839}
   - component: {fileID: -8437593454259909595}
+  - component: {fileID: 7887605355350558816}
   m_Layer: 10
   m_Name: BookMonitorCamera
   m_TagString: Untagged
@@ -120,29 +120,6 @@ Transform:
   - {fileID: 8912513545089529293}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1409823471656591316
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1144792509897681785}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 20535cdb343090148b8fb7116a0fcc97, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  placementTypes: 0000000001000000
-  floorPlacementType: 1
-  wallPlacementType: 0
-  fixPlacement: 1
-  precisePlacement: 1
-  allowPlayerClick: 0
-  allowPlayerPickup: 1
-  allowEnemyHysterics: 1
-  allowEnemyFlicker: 0
-  attachedLight: {fileID: 0}
-  cam: {fileID: 6077936201343342321}
 --- !u!65 &8496951882186121
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -223,6 +200,30 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &7887605355350558816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1144792509897681785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d78df90eab9ecc4889860dbd8fd6a2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameobjectOverride: {fileID: 0}
+  placementTypes: 
+  floorPlacementType: 0
+  wallPlacementType: 0
+  fixPlacement: 1
+  precisePlacement: 0
+  allowPlayerClick: 0
+  allowPlayerPickup: 0
+  allowEnemyHysterics: 0
+  allowEnemyFlicker: 0
+  attachedLight: {fileID: 0}
+  cam: {fileID: 6077936201343342321}
 --- !u!1 &2220237486304452311
 GameObject:
   m_ObjectHideFlags: 0

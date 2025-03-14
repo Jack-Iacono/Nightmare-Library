@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class InventoryController : MonoBehaviour
@@ -8,6 +9,7 @@ public class InventoryController : MonoBehaviour
 
     private const int inventorySize = 3;
     private InventoryItem[] inventoryItems = new InventoryItem[inventorySize];
+    private IMoveable[] moveables = new IMoveable[inventorySize];
 
     private int currentItemIndex = 0;
 
@@ -46,6 +48,21 @@ public class InventoryController : MonoBehaviour
             {
                 currentItemIndex = (currentItemIndex - 1 + inventorySize) % inventorySize;
                 onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
+            }
+        }
+    }
+
+    public void PickupMoveable(IMoveable moveable)
+    {
+        if (!moveables.Contains(moveable))
+        {
+            for(int i = 0; i < inventorySize; i++)
+            {
+                if (moveables[i] == null)
+                {
+                    moveables[i] = moveable;
+                    break;
+                }
             }
         }
     }

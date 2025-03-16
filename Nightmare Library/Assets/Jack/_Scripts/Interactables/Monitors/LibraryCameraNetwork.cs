@@ -5,7 +5,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(LibraryCameraController))]
-public class LibraryCameraNetwork : InteractableNetwork
+public class LibraryCameraNetwork : HoldableItemNetwork
 {
     private LibraryCameraController monitor;
     private NetworkVariable<bool> isBroadcasting;
@@ -28,8 +28,6 @@ public class LibraryCameraNetwork : InteractableNetwork
             isBroadcasting.OnValueChanged += OnBroadcastNetworkUpdate;
         }
     }
-
-    
 
     public override void OnNetworkSpawn()
     {

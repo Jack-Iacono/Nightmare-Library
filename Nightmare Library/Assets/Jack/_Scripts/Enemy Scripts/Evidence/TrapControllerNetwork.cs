@@ -7,7 +7,7 @@ using UnityEngine;
 using NetVar;
 
 [RequireComponent(typeof(TrapController))]
-public class TrapControllerNetwork : InteractableNetwork
+public class TrapControllerNetwork : HoldableItemNetwork
 {
     private TrapController tController;
 

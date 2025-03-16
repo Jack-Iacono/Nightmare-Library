@@ -3,13 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HoldableItem : MonoBehaviour
+public class HoldableItem : MonoBehaviour, IEnemyHystericObject
 {
     public string itemName;
 
     // Used for easy referencing
     public static Dictionary<GameObject, HoldableItem> instances = new Dictionary<GameObject, HoldableItem>();
     public Transform trans { get; protected set; }
+
+    [SerializeField]
+    private GameObject gameobjectOverride = null;
 
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
@@ -58,23 +61,53 @@ public class HoldableItem : MonoBehaviour
     public delegate void OnAllEnabledDelegate(bool enabled);
     public event OnAllEnabledDelegate OnSetPhysical;
 
-    private void Awake()
+    protected virtual void Awake()
     {
-        HoldableItem.instances.Add(gameObject, this);
+        // Add this object to the dictionary for easy referncing from other scripts via the gameObject
+        if (gameobjectOverride == null)
+        {
+            HoldableItem.instances.Add(gameObject, this);
+            IEnemyHystericObject.instances.Add(gameObject, this);
+        }
+        else
+        {
+            HoldableItem.instances.Add(gameobjectOverride, this);
+            IEnemyHystericObject.instances.Add(gameobjectOverride, this);
+        }
+
+        // Find the renderers present on this object for use with placement
+        foreach (MeshRenderer r in GetComponentsInChildren<MeshRenderer>())
+        {
+            renderMaterialList.Add(r, r.material);
+        }
+
+        // Find all the colliders associated with this object
+        foreach (Collider col in GetComponentsInChildren<Collider>())
+        {
+            colliders.Add(col);
+        }
+
+        if (colliders.Count > 0)
+            mainColliderSize = colliders[0].bounds.size;
+        else
+            mainColliderSize = Vector3.zero;
+
+        hasRigidBody = TryGetComponent(out rb);
+        trans = transform;
     }
 
-    public virtual GameObject Pickup()
+    public virtual GameObject Pickup(bool fromNetwork = false)
     {
         SetPhysical(false);
 
         if (hasRigidBody)
             rb.isKinematic = true;
 
-        OnPickup?.Invoke();
+        OnPickup?.Invoke(fromNetwork);
 
         return gameObject;
     }
-    public virtual void Place(Vector3 pos, Quaternion rot)
+    public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
         trans.position = pos;
         trans.rotation = rot;
@@ -84,9 +117,9 @@ public class HoldableItem : MonoBehaviour
         if (fixPlacement && hasRigidBody)
             rb.isKinematic = true;
 
-        OnPlace?.Invoke();
+        OnPlace?.Invoke(fromNetwork);
     }
-    public virtual void Throw(Vector3 pos, Vector3 force)
+    public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
     {
         trans.position = pos;
         SetPhysical(true);
@@ -97,6 +130,18 @@ public class HoldableItem : MonoBehaviour
             rb.AddForce(force, ForceMode.Impulse);
         }
 
+        OnThrow?.Invoke(force, fromNetwork);
+    }
+
+    public void ExecuteHystericInteraction()
+    {
+        Throw(
+            trans.position,
+            new Vector3
+                (UnityEngine.Random.Range(0, 1),
+                UnityEngine.Random.Range(0.1f, 1),
+                UnityEngine.Random.Range(0, 1)
+                ) * 10);
     }
 
     public void SetPhysical(bool b)
@@ -152,5 +197,6 @@ public class HoldableItem : MonoBehaviour
     private void OnDestroy()
     {
         HoldableItem.instances.Remove(gameObject);
+        IEnemyHystericObject.instances.Remove(gameObject);
     }
 }

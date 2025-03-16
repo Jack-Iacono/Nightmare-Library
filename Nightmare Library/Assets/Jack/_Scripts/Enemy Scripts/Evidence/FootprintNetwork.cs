@@ -7,7 +7,7 @@ using UnityEngine;
 using NetVar;
 
 [RequireComponent(typeof(FootprintController))]
-public class FootprintNetwork : InteractableNetwork
+public class FootprintNetwork : HoldableItemNetwork
 {
     private FootprintController fController;
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class LibraryCameraController : Interactable
+public class LibraryCameraController : HoldableItem
 {
     [Header("Monitor Variables")]
     public Camera cam;
@@ -25,10 +25,10 @@ public class LibraryCameraController : Interactable
         SetBroadcasting(false);
         return base.Pickup(fromNetwork);
     }
-    public override void Place(bool fromNetwork = false)
+    public override void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
         SetBroadcasting(true);
-        base.Place(fromNetwork);
+        base.Place(pos, rot, fromNetwork);
     }
     public override void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
     {

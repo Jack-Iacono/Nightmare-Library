@@ -100,9 +100,9 @@ public class EvidenceBoardController : MonoBehaviour
         GameController.OnGameStart -= OnGameStart;
     }
 
-    public void EvidenceButtonClick(Interactable interactable, bool fromNetwork)
+    private void EvidenceButtonClick(IClickable clickable)
     {
-        Button3D button = (Button3D)interactable;
+        Button3D button = (Button3D)clickable;
         int eIndex = (int)evidenceLink[button];
 
         // Toggle the evidence on / off

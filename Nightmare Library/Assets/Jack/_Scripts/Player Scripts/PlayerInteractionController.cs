@@ -45,9 +45,6 @@ public class PlayerInteractionController : MonoBehaviour
     public delegate void OnItemSightChangeDelegate(int interactionType);
     public static event OnItemSightChangeDelegate onItemSightChange;
 
-    private Interactable currentSeenItem;
-    private int currentSightType = -1;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -97,42 +94,52 @@ public class PlayerInteractionController : MonoBehaviour
         Ray ray = playerCont.camCont.GetCameraRay();
         RaycastHit hit;
 
+        HoldableItem currentHeldItem = InventoryController.currentHeldItem;
+
+        // Process Throwing first since you don't need to raycast for it
+        if (isThrow)
+        {
+            // TEMPORARY
+            // Not sure where to throw from or what velocity to have
+            currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
+            InventoryController.instance.RemoveCurrentItem();
+            currentHeldItem = null;
+            actionBuffering = true;
+        }
+
         // Used for changing reticle to indicate when player is looking at an interactable
         if (Physics.Raycast(ray, out hit, interactDistance, interactLayers))
         {
             GameObject hitObject = hit.collider.gameObject;
+            int objectType = -1;
+
+            // Determine what kind of object the ray is hitting
+            if (IClickable.instances.ContainsKey(hitObject))
+                objectType = 0;
+            else if (HoldableItem.instances.ContainsKey(hitObject))
+                objectType = 1;
+
+            onItemSightChange?.Invoke(objectType);
 
             if(!actionBuffering && isActive)
             {
-                if (isClick && IClickable.instances.ContainsKey(hitObject))
+                if (isClick && objectType == 0)
                 {
                     IClickable.instances[hitObject].Click();
 
                     actionBuffering = true;
                 }
-                else if (isPickup && HoldableItem.instances.ContainsKey(hitObject) && InventoryController.instance.HasOpenSlot())
+                else if (isPickup && objectType == 1 && InventoryController.instance.HasOpenSlot())
                 {
                     InventoryController.instance.AddItem(HoldableItem.instances[hitObject]);
                     HoldableItem.instances[hitObject].Pickup();
 
                     actionBuffering = true;
                 }
-                else if (InventoryController.instance.GetCurrentItem() != null)
+                else if (currentHeldItem != null)
                 {
-                    HoldableItem currentHeldItem = InventoryController.instance.GetCurrentItem();
-
-                    // Check if the player is throwing the current item
-                    if (isThrow)
-                    {
-                        // TEMPORARY
-                        // Not sure where to throw from or what velocity to have
-                        currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
-                        InventoryController.instance.RemoveCurrentItem();
-                        currentHeldItem = null;
-                        actionBuffering = true;
-                    }
                     // For starting or resuming the placement
-                    else if (isPlaceStart || (isPlacePressed && !isPlacingItem))
+                    if (isPlaceStart || (isPlacePressed && !isPlacingItem))
                     {
                         // Working like this as it will not be networked this way
                         currentHeldItem.gameObject.SetActive(true);
@@ -214,17 +221,20 @@ public class PlayerInteractionController : MonoBehaviour
                         isPlacingItem = false;
                         playerCont.Lock(false);
                     }
-                    else if (isPlacingItem)
-                    {
-                        // Resets the item if it was being placed and the player is now too far from the placement range
-                        currentHeldItem.ResetMeshMaterial();
-                        currentHeldItem.EnableMesh(false);
-                        isPlacingItem = false;
-                        playerCont.Lock(false);
-                    }
                 }
             }
-            
+        }
+        else if (isPlacingItem)
+        {
+            // Resets the item if it was being placed and the player is now too far from the placement range
+            currentHeldItem.ResetMeshMaterial();
+            currentHeldItem.EnableMesh(false);
+            isPlacingItem = false;
+            playerCont.Lock(false);
+        }
+        else
+        {
+            onItemSightChange?.Invoke(-1);
         }
     }
 

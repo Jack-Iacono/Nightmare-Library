@@ -274,6 +274,11 @@ public class PlayerController : MonoBehaviour
         camCont.enabled = !b;
     }
 
+    public bool IsMoveInput()
+    {
+        return currentInput != Vector3.zero;
+    }
+
     public void SetMove(bool b)
     {
         canMove = b;

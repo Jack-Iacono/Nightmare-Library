@@ -5,13 +5,13 @@ using Unity.Netcode;
 using UnityEngine;
 
 [RequireComponent(typeof(IdolController))]
-public class IdolNetwork : InteractableNetwork
+public class IdolNetwork : NetworkBehaviour
 {
-    private IdolController idolCont;
+    private IdolController parent;
+    private NetworkVariable<bool> isActive = new NetworkVariable<bool>();
 
     public override void OnNetworkSpawn()
     {
-        
         if (!NetworkConnectionController.connectedToLobby)
         {
             Destroy(this);
@@ -19,10 +19,18 @@ public class IdolNetwork : InteractableNetwork
         }
         else
         {
-            idolCont = GetComponent<IdolController>();
+            parent = GetComponent<IdolController>();
 
             if (IsOwner)
-                idolCont.OnIdolActivated += OnIdolActivated;
+            {
+                isActive.Value = false;
+                parent.OnActiveStateChanged += OnParentActiveStateChanged;
+            }
+            else
+            {
+                isActive.OnValueChanged += OnActiveValueChanged;
+                parent.OnClick += OnClick;
+            }
 
             PrefabHandlerNetwork.AddSpawnedPrefab(GetComponent<NetworkObject>());
         }
@@ -30,28 +38,25 @@ public class IdolNetwork : InteractableNetwork
         base.OnNetworkSpawn();
     }
 
-    protected override void OnClick(Interactable interactable, bool fromNetwork = false)
+    private void OnParentActiveStateChanged()
     {
-        if (!IsOwner)
-            TransmitClickServerRpc(NetworkManager.LocalClientId);
-    }
-    [ServerRpc(RequireOwnership = false)]
-    protected override void TransmitClickServerRpc(ulong sender)
-    {
-        idolCont.Remove();
+        isActive.Value = parent.isActive;
     }
 
-    private void OnIdolActivated(object sender, bool b)
+    protected void OnClick(IClickable clickable)
     {
-        if (IsOwner)
-        {
-            ConsumeIdolCountChangeClientRpc(b);
-        }
+        if (!IsOwner)
+            TransmitClickServerRpc();
     }
-    [ClientRpc]
-    private void ConsumeIdolCountChangeClientRpc(bool activeState)
+    [ServerRpc(RequireOwnership = false)]
+    protected void TransmitClickServerRpc()
     {
-        gameObject.SetActive(activeState);
+        parent.Click();
+    }
+
+    private void OnActiveValueChanged(bool previousValue, bool newValue)
+    {
+        parent.Activate(newValue);
     }
 
     public override void OnDestroy()

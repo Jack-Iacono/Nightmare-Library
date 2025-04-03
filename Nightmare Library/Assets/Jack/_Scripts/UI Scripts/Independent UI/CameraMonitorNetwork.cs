@@ -31,24 +31,34 @@ public class CameraMonitorNetwork : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        if (IsOwner)
-        {
-            parent.OnCamIndexChange += OnParentIndexChange;
-        }
-        else
+        if (!IsOwner)
         {
             cameraIndex.OnValueChanged += OnCameraIndexChange;
             parent.ChangeCamera(cameraIndex.Value);
         }
+
+        parent.OnCamIndexChange += OnParentIndexChange;
     }
 
-    private void OnParentIndexChange(int index)
+    private void OnParentIndexChange(int index, bool fromNetwork = false)
     {
+        if (!fromNetwork)
+        {
+            if (IsOwner)
+                cameraIndex.Value = index;
+            else
+                OnParentIndexChangeServerRpc(index);
+        }
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void OnParentIndexChangeServerRpc(int index)
+    {
+        parent.SetCameraIndex(index);
         cameraIndex.Value = index;
     }
+
     private void OnCameraIndexChange(int previousValue, int newValue)
     {
-        Debug.Log("New Screen Value " + newValue);
         parent.ChangeCamera(newValue);
     }
 }

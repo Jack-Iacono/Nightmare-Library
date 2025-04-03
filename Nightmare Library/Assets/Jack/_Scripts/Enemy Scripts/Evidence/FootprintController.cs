@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FootprintController : Interactable
+public class FootprintController : HoldableItem
 {
     private float avgDuration = 10;
     private float dev = 1;
@@ -33,12 +33,12 @@ public class FootprintController : Interactable
         }
     }
 
-    public override void Place(bool fromNetwork = false)
+    public override void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
         currentLifeTimer = UnityEngine.Random.Range(avgDuration - dev, avgDuration + dev); 
         isRunning = true;
 
-        base.Place(fromNetwork);
+        base.Place(pos, rot, fromNetwork);
     }
     public override GameObject Pickup(bool fromNetwork = false)
     {

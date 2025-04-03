@@ -1226,7 +1226,6 @@ GameObject:
   - component: {fileID: 404030155}
   - component: {fileID: 404030158}
   - component: {fileID: 404030157}
-  - component: {fileID: 404030156}
   m_Layer: 0
   m_Name: Screen Body
   m_TagString: Untagged
@@ -1249,27 +1248,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2059528550}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &404030156
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 404030154}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &404030157
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -3056,10 +3034,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2059528550}
-  - component: {fileID: 2059528551}
   - component: {fileID: 2059528553}
-  - component: {fileID: 2059528552}
-  m_Layer: 0
+  - component: {fileID: 2059528554}
+  m_Layer: 10
   m_Name: Start Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3082,38 +3059,6 @@ Transform:
   - {fileID: 404030155}
   m_Father: {fileID: 2142758258}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2059528551
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2059528549}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2577064894
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
---- !u!114 &2059528552
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2059528549}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0635fcc6ea34a54b8401f443583812e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2059528553
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3126,17 +3071,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c35de6b4aec795438ce2a2fe6224bc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameobjectOverride: {fileID: 404030154}
-  placementTypes: 
-  floorPlacementType: 0
-  wallPlacementType: 0
-  fixPlacement: 1
-  precisePlacement: 0
-  allowPlayerClick: 1
-  allowPlayerPickup: 0
-  allowEnemyHysterics: 0
-  allowEnemyFlicker: 0
-  attachedLight: {fileID: 0}
   text: {fileID: 0}
   m_OnClick:
     m_PersistentCalls:
@@ -3153,6 +3087,27 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!65 &2059528554
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2059528549}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 0.1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2107492480
 GameObject:
   m_ObjectHideFlags: 0

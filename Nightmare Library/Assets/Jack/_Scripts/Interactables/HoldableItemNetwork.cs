@@ -1,16 +1,13 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Netcode;
 using UnityEngine;
-
+using Unity.Netcode;
 using NetVar;
 
-[RequireComponent(typeof(Interactable))]
-public class InteractableNetwork : NetworkBehaviour
+[RequireComponent(typeof(HoldableItem))]
+public class HoldableItemNetwork : NetworkBehaviour
 {
-    protected Interactable parent;
-
+    private HoldableItem parent;
     private bool canUpdateRigidbody = false;
     protected bool ownInteraction = false;
 
@@ -28,22 +25,22 @@ public class InteractableNetwork : NetworkBehaviour
     private bool wasUpdating = false;
     private int currentUpdateFrame = 0;
 
-    private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>(); 
+    private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>();
     private NetworkVariable<bool> isPhysical = new NetworkVariable<bool>();
 
     protected virtual void Awake()
     {
-        if(!NetworkConnectionController.connectedToLobby)
+        if (!NetworkConnectionController.connectedToLobby)
         {
             Destroy(this);
             Destroy(GetComponent<NetworkObject>());
         }
-        else if(NetworkManager.IsServer)
+        else if (NetworkManager.IsServer)
         {
             PrefabHandlerNetwork.AddSpawnedPrefab(GetComponent<NetworkObject>());
         }
 
-        parent = GetComponent<Interactable>();
+        parent = GetComponent<HoldableItem>();
         previousPosition = transform.position;
 
         if (IsServer)
@@ -56,21 +53,9 @@ public class InteractableNetwork : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
-        if(parent.allowPlayerClick)
-            parent.OnClick += OnClick;
-        if (parent.allowPlayerPickup)
-        {
-            parent.OnPickup += OnPickup;
-
-            // These options have to be available if the player can pick the item up
-            parent.OnPlace += OnPlace;
-            parent.OnThrow += OnThrow;
-        }
-        
-        if(parent.allowEnemyHysterics)
-            parent.OnEnemyInteractHysterics += OnEnemyInteractHysterics;
-        if(parent.allowEnemyFlicker)
-            parent.OnEnemyInteractFlicker += OnEnemyInteractFlicker;
+        parent.OnPickup += OnPickup;
+        parent.OnPlace += OnPlace;
+        parent.OnThrow += OnThrow;
 
         parent.OnSetPhysical += OnAllEnabled;
         canUpdateRigidbody = parent.hasRigidBody;
@@ -174,7 +159,7 @@ public class InteractableNetwork : NetworkBehaviour
         // Ensure that the owner does not waste time updating to it's own values
         if (!IsOwner)
         {
-            if(Vector3.SqrMagnitude(newValue.Position - transform.position) < transformThreshold * transformThreshold)
+            if (Vector3.SqrMagnitude(newValue.Position - transform.position) < transformThreshold * transformThreshold)
             {
                 transform.rotation = Quaternion.Lerp(parent.trans.rotation, newValue.Rotation, interpolationStrength);
                 parent.trans.position = Vector3.Slerp(parent.trans.position, newValue.Position, interpolationStrength);
@@ -193,7 +178,7 @@ public class InteractableNetwork : NetworkBehaviour
     /// </summary>
     private void RectifyTransform()
     {
-        if(NetworkManager.IsServer)
+        if (NetworkManager.IsServer)
             RectifyTransformClientRpc();
         else
         {
@@ -213,30 +198,6 @@ public class InteractableNetwork : NetworkBehaviour
             RectifyTransform();
     }
 
-    #endregion
-
-    #region Click
-    protected virtual void OnClick(Interactable interactable, bool fromNetwork = false)
-    {
-        if (!fromNetwork)
-        {
-            if (IsOwner)
-                ConsumeClickClientRpc(NetworkManager.LocalClientId);
-            else
-                TransmitClickServerRpc(NetworkManager.LocalClientId);
-        }
-    }
-    [ServerRpc(RequireOwnership = false)]
-    protected virtual void TransmitClickServerRpc(ulong sender)
-    {
-        ConsumeClickClientRpc(sender);
-    }
-    [ClientRpc]
-    protected virtual void ConsumeClickClientRpc(ulong sender)
-    {
-        if (NetworkManager.LocalClientId != sender)
-            parent.Click(true);
-    }
     #endregion
 
     #region Pickup
@@ -332,38 +293,6 @@ public class InteractableNetwork : NetworkBehaviour
             parent.Throw(pos, force, true);
     }
 
-    #endregion
-
-    #region Enemy Interact Hysterics
-    protected virtual void OnEnemyInteractHysterics(bool fromNetwork)
-    {
-        EnemyInteractHystericsClientRpc(NetworkManager.LocalClientId);
-    }
-    [ClientRpc]
-    protected virtual void EnemyInteractHystericsClientRpc(ulong sender)
-    {
-        if (NetworkManager.LocalClientId != sender)
-            parent.rb.isKinematic = false;
-    }
-    #endregion
-
-    #region Enemy Interact Flicker
-    protected virtual void OnEnemyInteractFlicker(bool fromNetwork)
-    {
-        if (IsServer && !fromNetwork)
-            ConsumeEnemyInteractFlickerClientRpc(NetworkManager.LocalClientId);
-    }
-    [ServerRpc(RequireOwnership = false)]
-    protected virtual void TransmitEnemyInteractFlickerServerRpc(ulong sender)
-    {
-        ConsumeEnemyInteractFlickerClientRpc(sender);
-    }
-    [ClientRpc]
-    protected virtual void ConsumeEnemyInteractFlickerClientRpc(ulong sender)
-    {
-        if (NetworkManager.LocalClientId != sender)
-            parent.EnemyInteractFlicker();
-    }
     #endregion
 
     private void OnAllEnabled(bool enabled)

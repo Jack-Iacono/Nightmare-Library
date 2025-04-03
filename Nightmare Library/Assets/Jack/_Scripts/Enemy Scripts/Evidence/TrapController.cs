@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TrapController : Interactable
+public class TrapController : HoldableItem
 {
     private float trapDuration = 5;
 
@@ -35,12 +35,12 @@ public class TrapController : Interactable
         }
     }
 
-    public override void Place(bool fromNetwork = false)
+    public override void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
         currentLifeTimer = UnityEngine.Random.Range(avgDuration - dev, avgDuration + dev); isRunning = true;
         gameObject.SetActive(true);
         isRunning = true;
-        base.Place(fromNetwork);
+        base.Place(pos, rot, fromNetwork);
     }
     public override GameObject Pickup(bool fromNetwork = false)
     {

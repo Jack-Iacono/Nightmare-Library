@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEditor.Progress;
 
 public class gui_HUDScreenController : ScreenController
 {
@@ -29,6 +30,8 @@ public class gui_HUDScreenController : ScreenController
         inventoryText.text = "Empty";
         reticle.sprite = normalReticle;
     }
+
+    
 
     private void Update()
     {
@@ -65,8 +68,12 @@ public class gui_HUDScreenController : ScreenController
     }
     private void OnInventoryHeldItemChanged(InventoryItem item)
     {
-        if (item.realObject != null)
-            inventoryText.text = item.realObject.name;
+        
+    }
+    private void OnInventoryHeldItemChanged(HoldableItem holdable)
+    {
+        if (holdable != null)
+            inventoryText.text = holdable.name;
         else
             inventoryText.text = "Empty";
     }

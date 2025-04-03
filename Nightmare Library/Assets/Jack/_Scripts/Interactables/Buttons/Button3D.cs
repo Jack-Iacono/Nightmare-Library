@@ -8,12 +8,15 @@ using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-public class Button3D : Interactable
+public class Button3D : MonoBehaviour, IClickable
 {
     [Space(10)]
     [Header("Button Variables")]
     [SerializeField]
     private TMP_Text text;
+
+    [SerializeField]
+    private Collider colliderOverride;
     
     [Space(10)]
     [SerializeField]
@@ -21,11 +24,16 @@ public class Button3D : Interactable
 
     private Image image;
 
+    public event IClickable.OnClickDelegate OnClick;
 
-    protected override void Awake()
+    protected void Awake()
     {
-        base.Awake();
         image = GetComponent<Image>();
+
+        if(colliderOverride != null)
+            IClickable.instances.Add(colliderOverride.gameObject, this);
+        else
+            IClickable.instances.Add(gameObject, this);
     }
 
     [Serializable]
@@ -36,14 +44,14 @@ public class Button3D : Interactable
         set { m_OnClick = value; }
     }
 
-    public override void Click(bool fromNetwork = false)
+    public void Click()
     {
-        base.Click(fromNetwork);
         m_OnClick?.Invoke();
+        OnClick?.Invoke(this);
     }
-    public override void Hover(bool onOff)
+    public void Hover(bool onOff)
     {
-        base.Hover(onOff);
+        
     }
 
     public void SetText(string text)
@@ -59,8 +67,8 @@ public class Button3D : Interactable
         image.color = color;
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    private void OnDestroy()
     {
-        throw new NotImplementedException();
+        IClickable.instances.Remove(gameObject);
     }
 }

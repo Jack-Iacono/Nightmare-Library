@@ -21,7 +21,7 @@ public class CameraMonitorController : MonoBehaviour
     private float playerCheckTimer = 0.25f;
     private LayerMask playerMask = 1 << 6;
 
-    public delegate void OnCamIndexChangeDelegate(int index);
+    public delegate void OnCamIndexChangeDelegate(int index, bool fromNetwork = false);
     public OnCamIndexChangeDelegate OnCamIndexChange;
 
     public delegate void OnStartFinishDelegate();
@@ -88,7 +88,7 @@ public class CameraMonitorController : MonoBehaviour
             }
         }
     }
-    public void ChangeCamera(int i)
+    public void ChangeCamera(int i, bool fromNetwork = false)
     {
         linkedCameras[cameraIndex].SetViewing(false);
         cameraIndex = i;
@@ -97,10 +97,10 @@ public class CameraMonitorController : MonoBehaviour
         display = linkedCameras[cameraIndex].renderTexture;
         cameraPicture.texture = display;
 
-        cameraText.text = "Cam " + cameraIndex;
+        cameraText.text = "Cam " + (cameraIndex + 1).ToString();
 
         CheckCameraBroadcasting();
-        OnCamIndexChange?.Invoke(cameraIndex);
+        OnCamIndexChange?.Invoke(cameraIndex, fromNetwork);
     }
 
     public void SetCameraIndex(int i)
@@ -113,5 +113,7 @@ public class CameraMonitorController : MonoBehaviour
     {
         cameraIndex = (cameraIndex + 1) % linkedCameras.Count;
         ChangeCamera(cameraIndex);
+
+        OnCamIndexChange?.Invoke(cameraIndex);
     }
 }

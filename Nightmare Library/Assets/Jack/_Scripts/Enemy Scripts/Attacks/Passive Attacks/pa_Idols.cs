@@ -66,7 +66,7 @@ public class pa_Idols : PassiveAttack
         {
             if (!idolObjects[i].isActive)
             {
-                idolObjects[i].Activate();
+                idolObjects[i].Activate(true);
                 OnIdolCountChanged?.Invoke(currentIdolCount);
                 break;
             }
@@ -82,7 +82,7 @@ public class pa_Idols : PassiveAttack
         currentIdolCount = 0;
         foreach(IdolController i in idolObjects)
         {
-            i.Deactivate();
+            i.Activate(false);
         }
     }
 

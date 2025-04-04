@@ -4,5 +4,8 @@ using UnityEngine;
 
 public class ComputerUIController : UIController
 {
-    
+    protected override void Awake()
+    {
+        
+    }
 }

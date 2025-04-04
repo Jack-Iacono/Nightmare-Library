@@ -5,6 +5,10 @@ using UnityEngine;
 public class ComputerController : MonoBehaviour, IClickable
 {
     private bool inUse = false;
+    [SerializeField]
+    private Transform cameraPosition;
+    [SerializeField]
+    private ComputerUIController uiController;
 
     public event IClickable.OnClickDelegate OnClick;
 
@@ -15,7 +19,7 @@ public class ComputerController : MonoBehaviour, IClickable
 
     private void Update()
     {
-        if (inUse && Input.GetKeyDown(KeyCode.Q))
+        if (inUse && PlayerController.mainPlayerInstance.CheckMoveInput())
         {
             SetUseState(false);
         }
@@ -23,8 +27,19 @@ public class ComputerController : MonoBehaviour, IClickable
 
     public void SetUseState(bool b)
     {
+        if (b)
+        {
+            PlayerController.mainPlayerInstance.Lock(true, cameraPosition);
+            //uiController.ChangeToScreen(0);
+        }
+        else
+        {
+            PlayerController.mainPlayerInstance.Lock(false);
+            //uiController.ChangeToScreen(0);
+        }
+
+        GameUIController.ActivateHUD(!b);
         inUse = b;
-        PlayerController.mainPlayerInstance.Lock(b);
         Cursor.lockState = b ? CursorLockMode.Confined : CursorLockMode.Locked;
     }
 
@@ -36,10 +51,7 @@ public class ComputerController : MonoBehaviour, IClickable
             OnClick?.Invoke(this);
         }
     }
-    public void Hover(bool enterExit)
-    {
-        
-    }
+    public void Hover(bool enterExit){ }
 
     private void OnDestroy()
     {

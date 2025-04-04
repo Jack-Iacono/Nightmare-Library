@@ -33,7 +33,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     [Tooltip("Negative values will pull player downward, Positive value will push them up")]
     private float gravity = -0.98f;
-    private bool canMove = true;
+
+    private bool isLocked = false;
 
     [Header("Acceleration Variables", order = 2)]
     [SerializeField]
@@ -99,8 +100,11 @@ public class PlayerController : MonoBehaviour
             if (!isTrapped)
             {
                 GetInput();
-                CalculateNormalMove();
-                Move();
+                if (!isLocked)
+                {
+                    CalculateNormalMove();
+                    Move();
+                }
             }
             else
             {
@@ -268,20 +272,22 @@ public class PlayerController : MonoBehaviour
             mainPlayerInstance = this;
         }
     }
+
     public void Lock(bool b)
     {
-        enabled = !b;
-        camCont.enabled = !b;
+        isLocked = b;
+        camCont.Lock(b);
+    }
+    public void Lock(bool b, Transform camTransform)
+    {
+        isLocked = b;
+        camCont.Lock(b, camTransform);
     }
 
-    public bool IsMoveInput()
+    public bool CheckMoveInput()
     {
+        // Checks whether there is move input for this frame
         return currentInput != Vector3.zero;
-    }
-
-    public void SetMove(bool b)
-    {
-        canMove = b;
     }
 
     [Serializable]

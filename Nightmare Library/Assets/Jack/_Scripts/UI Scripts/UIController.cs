@@ -55,7 +55,9 @@ public abstract class UIController : MonoBehaviour
             screens[currentScreen].HideScreen();
         }
 
-        screens[nextScreen].ShowScreen();
+        // Used to hide all screens
+        if(i != -1)
+            screens[nextScreen].ShowScreen();
 
         // sets the current screen to the new screen
         currentScreen = nextScreen;

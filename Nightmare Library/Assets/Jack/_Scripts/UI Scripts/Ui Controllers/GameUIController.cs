@@ -19,7 +19,7 @@ public class GameUIController : UIController
         if(Instance != null)
         {
             if (b)
-                Instance.ChangeToScreen(Instance.currentScreen);
+                Instance.ChangeToScreen(0);
             else
                 Instance.ChangeToScreen(-1);
         }

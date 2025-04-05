@@ -33,6 +33,9 @@ public class CameraController : MonoBehaviour
     private bool isLocked = false;
     private bool camMoved = false;
 
+    public delegate void CameraMoveDelegate(CameraController cam);
+    public static CameraMoveDelegate OnCameraMoveFinish;
+
     private void Awake()
     {
         // Sets the normal position that the camera should be in
@@ -92,6 +95,8 @@ public class CameraController : MonoBehaviour
 
             yield return null;
         }
+
+        OnCameraMoveFinish?.Invoke(this); 
     }
     private IEnumerator ResetCamera()
     {

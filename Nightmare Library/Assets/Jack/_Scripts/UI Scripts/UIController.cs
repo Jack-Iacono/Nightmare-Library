@@ -44,7 +44,7 @@ public abstract class UIController : MonoBehaviour
     /// Changes the currently active UI screen
     /// </summary>
     /// <param name="i">The index of the screen to change to</param>
-    public void ChangeToScreen(int i)
+    public virtual void ChangeToScreen(int i)
     {
         nextScreen = i;
 

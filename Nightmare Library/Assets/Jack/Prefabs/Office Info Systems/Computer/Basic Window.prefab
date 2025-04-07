@@ -110,7 +110,6 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls: []
-  windowRect: {fileID: 3615711716571816760}
   connectedWindow: {fileID: 8022993991660134468}
 --- !u!1 &2354320023412805187
 GameObject:
@@ -391,7 +390,7 @@ GameObject:
   - component: {fileID: 5094659719523095595}
   - component: {fileID: 8022993991660134468}
   m_Layer: 5
-  m_Name: Test Window
+  m_Name: Basic Window
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

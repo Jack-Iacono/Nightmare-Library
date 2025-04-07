@@ -17,6 +17,9 @@ public class ComputerController : MonoBehaviour, IClickable
 
     private List<ComputerWindow> openWindows = new List<ComputerWindow>();
 
+    public delegate void ComputerStateDelegate(bool b);
+    public static event ComputerStateDelegate OnComputerStateChange;
+
     private void Awake()
     {
         IClickable.instances.Add(screenGameObject, this);
@@ -57,6 +60,8 @@ public class ComputerController : MonoBehaviour, IClickable
         GameUIController.ActivateHUD(!b);
         inUse = b;
         Cursor.lockState = b ? CursorLockMode.Confined : CursorLockMode.Locked;
+
+        OnComputerStateChange?.Invoke(b);
     }
 
     public void Click()

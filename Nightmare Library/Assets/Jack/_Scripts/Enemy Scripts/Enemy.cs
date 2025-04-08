@@ -42,7 +42,7 @@ public class Enemy : MonoBehaviour
     protected ActiveAttack activeAttackTree;
     protected PassiveAttack passiveAttackTree;
 
-    protected Evidence[] evidence = new Evidence[EnemyPreset.EvidenceCount];
+    protected Evidence[] evidence = new Evidence[EnemyPreset.EnemyEvidenceCount];
 
     [Space(10)]
     public LayerMask interactionLayers = 1 << 10;
@@ -212,7 +212,7 @@ public class Enemy : MonoBehaviour
         {
             GameObject print = objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
-            Interactable.interactables[print].Place(hit.point, Quaternion.identity);
+            HoldableItem.instances[print].Place(hit.point, Quaternion.identity);
             print.SetActive(true);
         }
 
@@ -239,8 +239,8 @@ public class Enemy : MonoBehaviour
         {
             for(int i = 0; i < col.Length; i++)
             {
-                if(Interactable.interactables[col[i].gameObject].allowEnemyFlicker)
-                    Interactable.interactables[col[i].gameObject].EnemyInteractFlicker();
+                if(IElectronic.instances.ContainsKey(col[i].gameObject))
+                    IElectronic.instances[col[i].gameObject].ElectronicInterfere();
             }
         }
 

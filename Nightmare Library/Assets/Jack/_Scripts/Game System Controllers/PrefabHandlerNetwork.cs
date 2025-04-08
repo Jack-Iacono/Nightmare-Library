@@ -10,6 +10,7 @@ public class PrefabHandlerNetwork : NetworkBehaviour
     private PrefabHandler parent;
 
     private static List<NetworkObject> spawnedObjects = new List<NetworkObject>();
+    public static BiDict<GameObject, ulong> NetworkIdLink = new BiDict<GameObject, ulong>();
 
     private void Awake()
     {
@@ -27,10 +28,12 @@ public class PrefabHandlerNetwork : NetworkBehaviour
     }
     public void InstantiatePrefab(GameObject obj, ulong owner = ulong.MaxValue)
     {
+        NetworkObject netObj = obj.GetComponent<NetworkObject>();
+
         if(owner == ulong.MaxValue)
-            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
+            netObj.SpawnWithOwnership(OwnerClientId);
         else
-            obj.GetComponent<NetworkObject>().SpawnWithOwnership(owner);
+            netObj.SpawnWithOwnership(owner);
 
         // Send a message to the object saying that it is spawned
         obj.SendMessage("OnObjectSpawn", SendMessageOptions.DontRequireReceiver);

@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 858308870471911617}
   - component: {fileID: 848618968928024411}
   - component: {fileID: -1646677342014547017}
-  - component: {fileID: 2022904386883623777}
-  - component: {fileID: 282615980765021016}
+  - component: {fileID: 5521582050316379299}
+  - component: {fileID: 4114519339189712331}
   m_Layer: 10
   m_Name: Enemy Interactable
   m_TagString: Untagged
@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 934286768
+  GlobalObjectIdHash: 3742009265
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0
@@ -105,7 +105,7 @@ MonoBehaviour:
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
---- !u!114 &2022904386883623777
+--- !u!114 &5521582050316379299
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -114,21 +114,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 9005950701217598113}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4633a56595702ab4bb90d1adefbb8c9b, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d54018939fc4a6418505fa9aa2d67a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemName: Stupid Item
   gameobjectOverride: {fileID: 0}
-  placementTypes: 00000000
+  placementTypes: 0000000001000000
   floorPlacementType: 0
   wallPlacementType: 0
-  fixPlacement: 1
+  fixPlacement: 0
   precisePlacement: 0
-  allowPlayerClick: 0
-  allowPlayerPickup: 1
-  allowEnemyHysterics: 1
-  allowEnemyFlicker: 0
-  attachedLight: {fileID: 0}
---- !u!114 &282615980765021016
+--- !u!114 &4114519339189712331
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -137,7 +133,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 9005950701217598113}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0635fcc6ea34a54b8401f443583812e, type: 3}
+  m_Script: {fileID: 11500000, guid: 6a0654958fe166247afdae2dcad5439d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &9221067980410880935

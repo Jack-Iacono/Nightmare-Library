@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WardenSensorController : Interactable
+public class WardenSensorController : HoldableItem
 {
     public delegate void OnSensorAlert(WardenSensorController controller);
     public event OnSensorAlert onSensorAlert;
@@ -23,7 +23,7 @@ public class WardenSensorController : Interactable
             if (p.gameObject == other.gameObject)
             {
                 NotifySensorTriggered();
-                audioController.PlaySoundOffline(AudioManager.GetAudioData(AudioManager.SoundType.e_WARDEN_SENSOR_STEP), trans.position);
+                audioController.Play(AudioManager.GetAudioData(AudioManager.SoundType.e_WARDEN_SENSOR_STEP));
                 break;
             }
         }

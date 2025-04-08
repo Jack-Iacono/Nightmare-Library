@@ -8,8 +8,6 @@ using UnityEngine;
 public class DeskNetwork : NetworkBehaviour
 {
     DeskController parent;
-    [SerializeField]
-    private GameObject onlineIdolPrefab;
 
     private void Awake()
     {

@@ -7,13 +7,14 @@ using Unity.Netcode;
 public class ObjectPool
 {
     private Dictionary<string, List<GameObject>> pooledObjects = new Dictionary<string, List<GameObject>>();
+    private bool spawnOfflineOverride = false;
 
     public ObjectPool() { }
 
-    public void PoolObject(GameObject gObject, int count, Transform parent, bool setActive = false)
+    public void PoolObject(GameObject gObject, int count, bool spawnOfflineOverride = false)
     {
         GameObject p = new GameObject("Pooled Object: " + gObject.name);
-        p.transform.parent = parent;
+        this.spawnOfflineOverride = spawnOfflineOverride;
 
         // Creates an empty list
         List<GameObject> list = new List<GameObject>();
@@ -21,25 +22,7 @@ public class ObjectPool
         // Populates the list with the right amount of gameobjects
         for (int i = 0; i < count; i++)
         {
-            var inst = InstantiateObject(gObject, p.transform, setActive);
-            inst.name += " " + i;
-            list.Add(inst);
-        }
-
-        // Adds the item to the dictionary
-        pooledObjects.Add(gObject.name, list);
-    }
-    public void PoolObject(GameObject gObject, int count)
-    {
-        GameObject p = new GameObject("Pooled Object: " + gObject.name);
-
-        // Creates an empty list
-        List<GameObject> list = new List<GameObject>();
-
-        // Populates the list with the right amount of gameobjects
-        for (int i = 0; i < count; i++)
-        {
-            var inst = InstantiateObject(gObject, p.transform, false);
+            var inst = InstantiateObject(gObject, p.transform);
             inst.name += " " + i;
             list.Add(inst);
         }
@@ -54,14 +37,20 @@ public class ObjectPool
         pooledObjects[gObject.name].Add(newObject);
         return newObject;
     }
-    private GameObject InstantiateObject(GameObject obj, Transform parent, bool setActive = false)
+    private GameObject InstantiateObject(GameObject obj, Transform parent)
     {
-        GameObject g = PrefabHandler.Instance.InstantiatePrefab(obj, parent.position, parent.rotation);
+        GameObject g;
+        if (!spawnOfflineOverride)
+            g = PrefabHandler.Instance.InstantiatePrefab(obj, parent.position, parent.rotation);
+        else
+            g = PrefabHandler.Instance.InstantiatePrefabOffline(obj, parent.position, parent.rotation);
 
         g.SendMessage("Initialize", SendMessageOptions.DontRequireReceiver);
+
         if (NetworkConnectionController.IsRunning)
             g.SendMessage("OnPoolSpawn", SendMessageOptions.DontRequireReceiver);
-        g.SetActive(setActive);
+
+        g.SetActive(false);
         return g;
     }
 

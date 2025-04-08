@@ -30,7 +30,9 @@ public class DeskController : MonoBehaviour
         if(other.tag == "Player")
         {
             if (PlayerController.playerInstances[other.gameObject].isAlive)
+            {
                 playersAtDesk.Add(PlayerController.playerInstances[other.gameObject]);
+            }
         }
     }
     private void OnTriggerExit(Collider other)
@@ -38,7 +40,9 @@ public class DeskController : MonoBehaviour
         if (other.tag == "Player")
         {
             if (PlayerController.playerInstances[other.gameObject].isAlive)
+            {
                 playersAtDesk.Remove(PlayerController.playerInstances[other.gameObject]);
+            }
         }
     }
 

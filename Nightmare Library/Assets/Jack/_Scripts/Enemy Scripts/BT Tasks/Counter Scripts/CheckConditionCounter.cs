@@ -44,11 +44,11 @@ public class CheckConditionCounter : CheckCondition
     }
     public void Decrement(int value = -1)
     {
-        counter = counter - value < 0 ? 0 : counter - value;
+        counter -= value;
     }
     public void Set(int value)
     {
-        counter = value < 0 ? 0 : value;
+        counter = value;
     }
     public int Get()
     {

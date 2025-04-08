@@ -21,6 +21,8 @@ public class TaskStalkCloseIn : Node
     }
     public override Status Check(float dt)
     {
+        Debug.Log("Closing In");
+
         navAgent.destination = owner.currentTargetDynamic.position;
         navAgent.speed = speed;
         navAgent.acceleration = acceleration;

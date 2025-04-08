@@ -20,7 +20,7 @@ public class TaskRushBeginInvestigation : Node
     {
         if (!hasRun)
         {
-            EnemyNavGraph.NeighborPair pair = EnemyNavGraph.GetClosestNodePair(owner.GetAudioSource(0).position);
+            EnemyNavGraph.NeighborPair pair = EnemyNavGraph.GetClosestNodePair(owner.GetAudioSource(0).transform.position);
 
             // Makes sure that the enemy has to move to the first node
             bool normalNodeSet = owner.currentNode != pair.node1;

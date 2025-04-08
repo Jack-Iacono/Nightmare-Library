@@ -27,6 +27,10 @@ public class aa_Stalk : ActiveAttack
     protected float baseCloseInSpeed = 20;
     protected float baseCloseInAccel = 400;
 
+    // How quickly will the enemy gett irritated and begin a stalking phase
+    protected int irritationThreshold = 5;
+    protected int irritationCounter = 0;
+
     // How long should the enemy wait after being seen and running away
     protected float baseRunTimeMin = 3;
     protected float baseRunTimeMax = 7;
@@ -36,10 +40,13 @@ public class aa_Stalk : ActiveAttack
     protected TaskWait n_AttackWait;
     protected TaskWait n_RunAwayWait;
 
+    protected CheckConditionCounter n_StalkCounter;
+
     public aa_Stalk(Enemy owner) : base(owner)
     {
         name = "Stalker";
         toolTip = "This guy should go to jail, clearly what they do isn't legal. Especially the killing part, that might be bad.";
+        hearingRadius = 10;
     }
 
     public override void Initialize(int level = 1)
@@ -53,6 +60,8 @@ public class aa_Stalk : ActiveAttack
         n_WanderTime = new TaskWanderTimed(this, owner.navAgent, baseWanderTimeMin, baseWanderTimeMax);
         n_RunAwayWait = new TaskWait(baseRunTimeMin, baseRunTimeMax);
 
+        n_StalkCounter = new CheckConditionCounter(0, CheckConditionCounter.EvalType.GREATER);
+
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
         {
@@ -60,7 +69,7 @@ public class aa_Stalk : ActiveAttack
             new Sequence(new List<Node>()
             {
                 // Check if the target player is at the desk
-                new CheckStalkTargetInMap(this),
+                new CheckConditionStalkTargetOutOffice(this),
                 new Selector(new List<Node>()
                 {
                     // Attempt to assign a new target
@@ -71,7 +80,7 @@ public class aa_Stalk : ActiveAttack
             }),
             new Sequence(new List<Node>()
             {
-                new CheckConditionStalkCounter(this, owner.navAgent),
+                n_StalkCounter,
                 new Selector(new List<Node>()
                 {
                     // Run Away Behavior
@@ -80,7 +89,7 @@ public class aa_Stalk : ActiveAttack
                         new CheckInPlayerSight(this, owner),
                         new TaskWait(0.25f),
                         new TaskWarpAway(this,owner.navAgent),
-                        n_RunAwayWait
+                        new TaskChangeCounter(n_StalkCounter, TaskChangeCounter.ChangeType.SUBTRACT, 1)
                     }),
                     // Attack Behavior
                     new Sequence(new List<Node>()
@@ -89,6 +98,7 @@ public class aa_Stalk : ActiveAttack
                         new TaskAttackTarget(owner.navAgent),
                         new TaskWait(3),
                         new TaskResetStalk(this),
+                        new TaskChangeCounter(n_StalkCounter, TaskChangeCounter.ChangeType.SET, -1),
                         new TaskWarpAway(this,owner.navAgent),
                     }),
                     // Warp behind and approach
@@ -111,44 +121,69 @@ public class aa_Stalk : ActiveAttack
         tree.SetupTree(root);
     }
 
-    public bool BeginStalking()
+    public override bool DetectSound(AudioSourceController.SourceData data)
     {
-        if(DeskController.playersAtDesk.Count < PlayerController.playerInstances.Count)
+        if (base.DetectSound(data))
         {
-            // Set the amount of stalking attempts this attack will have
-            stalkAttemptCounter = Random.Range(currentStalkAttemptMin, currentStalkAttemptMax + 1);
-
-            // Remove any players that are at the desk
-            List<PlayerController> validPlayers = new List<PlayerController>(PlayerController.playerInstances.Values);
-            for(int i = validPlayers.Count - 1; i > 0; i--)
+            // Always raise the irritation count on any sound
+            if (irritationCounter < irritationThreshold)
             {
-                if (!validPlayers[i].isAlive || DeskController.playersAtDesk.Contains(validPlayers[i]))
-                    validPlayers.Remove(validPlayers[i]);
+                irritationCounter++;
             }
-
-            // Set the stalking target for this attack
-            int rand = Random.Range(0, validPlayers.Count);
-            currentTargetPlayer = validPlayers[rand];
-            SetCurrentTarget(currentTargetPlayer.transform);
+            else if (PlayerController.playerInstances.ContainsKey(data.gameObject))
+            {
+                PlayerController cont = PlayerController.playerInstances[data.gameObject];
+                currentTargetPlayer = cont;
+                BeginStalking();
+                irritationCounter = 0;
+            }
 
             return true;
         }
 
         return false;
     }
+
+    public bool BeginStalking()
+    {
+        if(DeskController.playersAtDesk.Count < PlayerController.playerInstances.Count)
+        {
+            // Set the amount of stalking attempts this attack will have
+            n_StalkCounter.Set(Random.Range(currentStalkAttemptMin, currentStalkAttemptMax + 1));
+
+            // If the enemy already has a target, allow it to attack that one without reassigning
+            if(currentTargetPlayer == null)
+            {
+                // Remove any players that are at the desk
+                List<PlayerController> validPlayers = new List<PlayerController>(PlayerController.playerInstances.Values);
+                for (int i = validPlayers.Count - 1; i > 0; i--)
+                {
+                    if (!validPlayers[i].isAlive || DeskController.playersAtDesk.Contains(validPlayers[i]))
+                        validPlayers.Remove(validPlayers[i]);
+                }
+
+                // Set the stalking target for this attack
+                currentTargetPlayer = validPlayers[Random.Range(0, validPlayers.Count)];
+            }
+            
+            SetCurrentTarget(currentTargetPlayer.transform);
+
+            return true;
+        }
+
+        currentTargetPlayer = null;
+        return false;
+    }
+
+    public void AssignTarget(PlayerController player)
+    {
+        // Deciding what to do here
+
+    }
     public void RemoveTarget()
     {
         SetCurrentTarget(null);
         currentTargetPlayer = null;
-    }
-
-    public void UseStalkAttempt()
-    {
-        stalkAttemptCounter--;
-    }
-    public void EmptyStalkAttempts()
-    {
-        stalkAttemptCounter = -1;
     }
 
     protected override void OnLevelChange(int level)

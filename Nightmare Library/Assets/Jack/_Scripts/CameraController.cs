@@ -30,17 +30,21 @@ public class CameraController : MonoBehaviour
 
     private Vector3 normalPosition = Vector3.zero;
 
+    private bool isLocked = false;
+
+    public delegate void CameraMoveDelegate(CameraController cam);
+    public static CameraMoveDelegate OnCameraMoveFinish;
+
     private void Awake()
     {
         // Sets the normal position that the camera should be in
-        normalPosition = transform.position;
+        normalPosition = transform.localPosition;
     }
 
     // Start is called before the first frame update
     void Start()
     {
         camCont = this;
-
         Cursor.lockState = CursorLockMode.Locked;
     }
 
@@ -51,13 +55,53 @@ public class CameraController : MonoBehaviour
         if (!GameController.gamePaused)
         {
             // Move the camera
-            MoveCamera();
+            if(!isLocked)
+                MoveCamera();
+        }
+    }
 
-            // TEMPORARY!!!!
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ? CursorLockMode.None : CursorLockMode.Locked;
-            }
+    public void Lock(bool locked)
+    {
+        if(!locked)
+        {
+            //transform.localPosition = normalPosition;
+            //transform.localRotation = Quaternion.identity;
+            StopAllCoroutines();    
+            StartCoroutine(ResetCamera());
+        }
+
+        isLocked = locked;
+    }
+    public void Lock(bool locked, Transform camTransform)
+    {
+        //transform.position = camTransform.position;
+        //transform.rotation = camTransform.rotation;
+        StopAllCoroutines();
+        StartCoroutine(MoveCamera(camTransform));
+
+        Lock(locked);
+    }
+
+    private IEnumerator MoveCamera(Transform movePoint)
+    {
+        while (Vector3.SqrMagnitude(movePoint.position - transform.position) > 0.00005f)
+        {
+            transform.position = Vector3.Slerp(transform.position, movePoint.position, 8 * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, movePoint.rotation, 8 * Time.deltaTime);
+
+            yield return null;
+        }
+
+        OnCameraMoveFinish?.Invoke(this); 
+    }
+    private IEnumerator ResetCamera()
+    {
+        while(Vector3.SqrMagnitude(normalPosition - transform.localPosition) > 0.00005f)
+        {
+            transform.localPosition = Vector3.Slerp(transform.localPosition, normalPosition, 8 * Time.deltaTime);
+            transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.identity, 8 * Time.deltaTime);
+
+            yield return null;
         }
     }
 

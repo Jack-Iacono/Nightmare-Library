@@ -20,7 +20,7 @@ public class GameController : MonoBehaviour
     public delegate void OnLevelChangeDelegate(int theshold);
     public static OnLevelChangeDelegate OnLevelChange;
 
-    public const int enemyCount = 1;
+    public static int enemyCount = 1;
     private List<GameObject> spawnedEnemies = new List<GameObject>();
 
     public static RoundResults roundResults;
@@ -29,6 +29,12 @@ public class GameController : MonoBehaviour
 
     public delegate void OnGameEndDelegate();
     public static event OnGameEndDelegate OnGameEnd;
+
+    public delegate void OnGameStartDelegate();
+    public static event OnGameStartDelegate OnGameStart;
+
+    public delegate void OnEnemyCountChangedDelegate(int count);
+    public static event OnEnemyCountChangedDelegate OnEnemyCountChanged;
 
     private void Awake()
     {
@@ -56,6 +62,7 @@ public class GameController : MonoBehaviour
         }
 
         gameStarted = true;
+        OnGameStart?.Invoke();
     }
 
     // Update is called once per frame
@@ -82,6 +89,12 @@ public class GameController : MonoBehaviour
         {
             EndGame();
         }
+    }
+
+    public static void SetEnemyCount(int e)
+    {
+        enemyCount = e;
+        OnEnemyCountChanged?.Invoke(enemyCount);
     }
 
     public void OnPlayerAliveChanged(PlayerController player, bool b)

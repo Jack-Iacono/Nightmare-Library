@@ -44,7 +44,7 @@ public abstract class UIController : MonoBehaviour
     /// Changes the currently active UI screen
     /// </summary>
     /// <param name="i">The index of the screen to change to</param>
-    public void ChangeToScreen(int i)
+    public virtual void ChangeToScreen(int i)
     {
         nextScreen = i;
 
@@ -55,7 +55,9 @@ public abstract class UIController : MonoBehaviour
             screens[currentScreen].HideScreen();
         }
 
-        screens[nextScreen].ShowScreen();
+        // Used to hide all screens
+        if(i != -1)
+            screens[nextScreen].ShowScreen();
 
         // sets the current screen to the new screen
         currentScreen = nextScreen;

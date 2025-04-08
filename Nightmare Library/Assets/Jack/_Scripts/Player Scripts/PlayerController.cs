@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour
     private const int ghostLayer = 14;
 
     public CameraController camCont;
+    public AudioSourceController audioSource;
     private PlayerInteractionController interactionCont;
 
     [Header("Mesh / Material")]
@@ -32,7 +33,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     [Tooltip("Negative values will pull player downward, Positive value will push them up")]
     private float gravity = -0.98f;
-    private bool canMove = true;
+
+    private bool isLocked = false;
 
     [Header("Acceleration Variables", order = 2)]
     [SerializeField]
@@ -98,8 +100,11 @@ public class PlayerController : MonoBehaviour
             if (!isTrapped)
             {
                 GetInput();
-                CalculateNormalMove();
-                Move();
+                if (!isLocked)
+                {
+                    CalculateNormalMove();
+                    Move();
+                }
             }
             else
             {
@@ -147,7 +152,7 @@ public class PlayerController : MonoBehaviour
         {
             if (currentInput.y != 0)
             {
-                AudioManager.PlaySound(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP), transform.position);
+                audioSource.Play(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP));
                 currentMove.y = jumpHeight;
             }
 
@@ -267,15 +272,22 @@ public class PlayerController : MonoBehaviour
             mainPlayerInstance = this;
         }
     }
+
     public void Lock(bool b)
     {
-        enabled = !b;
-        camCont.enabled = !b;
+        isLocked = b;
+        camCont.Lock(b);
+    }
+    public void Lock(bool b, Transform camTransform)
+    {
+        isLocked = b;
+        camCont.Lock(b, camTransform);
     }
 
-    public void SetMove(bool b)
+    public bool CheckMoveInput()
     {
-        canMove = b;
+        // Checks whether there is move input for this frame
+        return currentInput != Vector3.zero;
     }
 
     [Serializable]

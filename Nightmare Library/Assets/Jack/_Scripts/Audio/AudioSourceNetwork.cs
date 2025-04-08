@@ -7,15 +7,9 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSourceController))]
 public class AudioSourceNetwork : NetworkBehaviour
 {
-    AudioSourceController parent;
-
-    private NetworkVariable<bool> isPooledObject;
-
+    private AudioSourceController parent;
     private void Awake()
     {
-        var permission = NetworkVariableWritePermission.Server;
-        isPooledObject = new NetworkVariable<bool>(writePerm: permission);
-
         if (!NetworkConnectionController.connectedToLobby)
         {
             Destroy(this);
@@ -28,50 +22,22 @@ public class AudioSourceNetwork : NetworkBehaviour
         }
     }
 
-    public override void OnNetworkSpawn()
-    {
-        base.OnNetworkSpawn();
-
-        if (!IsOwner)
-            parent.checkListeners = false;
-
-        if (!IsOwner && isPooledObject.Value)
-            parent.Pool();
-    }
-
-    public override void OnDestroy()
-    {
-        base.OnDestroy();
-    }
-
-    // receives this call when spawned on the network
-    public void OnPoolSpawn()
-    {
-        isPooledObject.Value = true;
-    }
-
-    protected void OnPlay(AudioData sound = null, bool move = false)
+    private void OnPlay(AudioData sound)
     {
         Vector2 data;
         if (sound != null)
             data = AudioManager.audioReference[sound];
         else
-            data = new Vector2(-1,-1);
-
-        Vector3 movePos = !move ? Vector3.negativeInfinity : transform.position;
+            data = new Vector2(-1, -1);
 
         if (IsServer)
-            OnPlayerClientRpc((int)data.x, (int)data.y, movePos, NetworkManager.LocalClientId);
+            OnPlayClientRpc((int)data.x, (int)data.y, NetworkManager.LocalClientId);
         else
-            OnPlayerServerRpc((int)data.x, (int)data.y, movePos, NetworkManager.LocalClientId);
+            OnPlayServerRpc((int)data.x, (int)data.y, NetworkManager.LocalClientId);
     }
+
     [ServerRpc(RequireOwnership = false)]
-    private void OnPlayerServerRpc(int i, int j, Vector3 pos, ulong sender)
-    {
-        OnPlayerClientRpc(i, j, pos, sender);
-    }
-    [ClientRpc]
-    private void OnPlayerClientRpc(int i, int j, Vector3 pos, ulong sender)
+    private void OnPlayServerRpc(int i, int j, ulong sender)
     {
         if (sender != NetworkManager.LocalClientId)
         {
@@ -79,13 +45,26 @@ public class AudioSourceNetwork : NetworkBehaviour
             if (i != -1)
             {
                 AudioData data = AudioManager.GetAudioData(i, j);
-                if (pos != Vector3.negativeInfinity)
-                    parent.PlaySound(data, pos, true);
-                else
-                    parent.PlaySound(data, false);
+                parent.Play(data, true);
             }
             else
-                parent.PlaySound(true);
+                parent.Play(true);
+        }
+        OnPlayClientRpc(i, j, sender);
+    }
+    [ClientRpc]
+    private void OnPlayClientRpc(int i, int j, ulong sender)
+    {
+        if (sender != NetworkManager.LocalClientId)
+        {
+            // check for presence of audio source
+            if (i != -1)
+            {
+                AudioData data = AudioManager.GetAudioData(i, j);
+                parent.Play(data, true);
+            }
+            else
+                parent.Play(true);
         }
     }
 }

@@ -4,7 +4,7 @@ using Unity.Burst.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
-using static Interactable;
+using static HoldableItem;
 
 [RequireComponent(typeof(PlayerController))]
 public class PlayerInteractionController : MonoBehaviour
@@ -39,15 +39,11 @@ public class PlayerInteractionController : MonoBehaviour
     [SerializeField]
     private Material blockedPlacementMaterial;
     private bool isPlacingItem = false;
-    private Interactable currentHeldItem;
     private bool isPlacementValid = false;
 
     public bool canSeeItem { get; private set; }
     public delegate void OnItemSightChangeDelegate(int interactionType);
     public static event OnItemSightChangeDelegate onItemSightChange;
-
-    private Interactable currentSeenItem;
-    private int currentSightType = -1;
 
     // Start is called before the first frame update
     void Start()
@@ -91,97 +87,58 @@ public class PlayerInteractionController : MonoBehaviour
         
         isActive = isClick || isPickup || isPlaceFinish || isPlacePressed || isPlaceStart || isThrow;
     }
+
     private void Check()
     {
         // Create the ray that represents where the player is looking
         Ray ray = playerCont.camCont.GetCameraRay();
         RaycastHit hit;
-        bool raycastHit = false;
+
+        HoldableItem currentHeldItem = InventoryController.currentHeldItem;
+
+        // Process Throwing first since you don't need to raycast for it
+        if (currentHeldItem != null && isThrow)
+        {
+            // TEMPORARY
+            // Not sure where to throw from or what velocity to have
+            currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
+            InventoryController.instance.RemoveCurrentItem();
+            currentHeldItem = null;
+            actionBuffering = true;
+        }
 
         // Used for changing reticle to indicate when player is looking at an interactable
-        if(Physics.Raycast(ray, out hit, interactDistance, interactLayers))
+        if (Physics.Raycast(ray, out hit, interactDistance, interactLayers))
         {
-            raycastHit = true;
-            if (interactables.ContainsKey(hit.collider.gameObject))
+            GameObject hitObject = hit.collider.gameObject;
+            int objectType = -1;
+
+            // Determine what kind of object the ray is hitting
+            if (IClickable.instances.ContainsKey(hitObject))
+                objectType = 0;
+            else if (HoldableItem.instances.ContainsKey(hitObject))
+                objectType = 1;
+
+            onItemSightChange?.Invoke(objectType);
+
+            if(!actionBuffering && isActive)
             {
-                // Assign the default type to "null"
-                int type = -1;
-                // Store the interaactable that is currently being viewed
-                Interactable itemInView = interactables[hit.collider.gameObject];
-
-                // Check to see which interaction can happen for the viewed item
-                if (itemInView.allowPlayerClick)
-                    type = 0;
-                else if (itemInView.allowPlayerPickup)
-                    type = 1;
-
-                // Send message to items that are being hovered or are being un-hovered
-                if(itemInView != currentSeenItem)
+                if (isClick && objectType == 0)
                 {
-                    if (currentSeenItem != null)
-                        currentSeenItem.Hover(false);
-                    itemInView.Hover(true);
-                    currentSeenItem = itemInView;
+                    IClickable.instances[hitObject].Click();
+
+                    actionBuffering = true;
                 }
-                    
-                if (!canSeeItem || currentSightType != type)
+                else if (isPickup && objectType == 1 && InventoryController.instance.HasOpenSlot())
                 {
-                    onItemSightChange?.Invoke(type);
-                    currentSightType = type;
+                    InventoryController.instance.AddItem(HoldableItem.instances[hitObject]);
+                    HoldableItem.instances[hitObject].Pickup();
+
+                    actionBuffering = true;
                 }
-
-                canSeeItem = true;
-            }
-            else
-            {
-                if (canSeeItem)
-                    onItemSightChange?.Invoke(-1);
-                canSeeItem = false;
-
-                if (currentSeenItem != null)
+                else if (currentHeldItem != null)
                 {
-                    currentSeenItem.Hover(false);
-                    currentSeenItem = null;
-                }
-            }
-        }
-        else
-        {
-            if (canSeeItem)
-                onItemSightChange?.Invoke(-1);
-            canSeeItem = false;
-
-            if(currentSeenItem != null)
-            {
-                currentSeenItem.Hover(false);
-                currentSeenItem = null;
-            }
-        }
-
-        if (!actionBuffering && isActive)
-        {
-            // Get the currently held item, if there is one, from the Inventory controller
-            InventoryItem temp = InventoryController.instance.GetCurrentItem();
-            if (!temp.IsEmpty())
-                currentHeldItem = interactables[temp.realObject];
-
-            // Check if the player is throwing the current item
-            if (currentHeldItem != null && isThrow)
-            {
-                // TEMPORARY
-                // Not sure where to throw from or what velocity to have
-                currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
-                InventoryController.instance.RemoveCurrentItem();
-                currentHeldItem = null;
-                actionBuffering = true;
-            }
-
-            // Check if the player is looking at a surface
-            if (raycastHit)
-            {
-                // Check if the player is holding an item
-                if (currentHeldItem != null)
-                {
+                    // For starting or resuming the placement
                     if (isPlaceStart || (isPlacePressed && !isPlacingItem))
                     {
                         // Working like this as it will not be networked this way
@@ -193,14 +150,13 @@ public class PlayerInteractionController : MonoBehaviour
                         if (currentHeldItem.precisePlacement)
                         {
                             PlacementType type = CheckPlacementType(hit);
-
                             SetObjectTransform(type, hit);
-
                             playerCont.Lock(true);
                         }
 
                         isPlacingItem = true;
                     }
+                    // Handles moving the item while it is already being placed
                     else if (isPlacePressed && isPlacingItem)
                     {
                         PlacementType type = CheckPlacementType(hit);
@@ -215,7 +171,7 @@ public class PlayerInteractionController : MonoBehaviour
                                         currentHeldItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         break;
                                     case PlacementType.WALL:
-                                        if(currentHeldItem.wallPlacementType == 0)
+                                        if (currentHeldItem.wallPlacementType == 0)
                                             currentHeldItem.transform.Rotate(Vector3.forward, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         else
                                             currentHeldItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
@@ -248,7 +204,7 @@ public class PlayerInteractionController : MonoBehaviour
 
                             if (currentHeldItem.placementTypes.Contains(type))
                             {
-                                currentHeldItem.Place();
+                                currentHeldItem.Place(currentHeldItem.trans.position, currentHeldItem.trans.rotation);
                                 InventoryController.instance.RemoveCurrentItem();
                             }
 
@@ -266,43 +222,34 @@ public class PlayerInteractionController : MonoBehaviour
                         playerCont.Lock(false);
                     }
                 }
-
-                // Check for interactions that aren't placing or throwing
-                if (canSeeItem)
-                {
-                    if(isClick && interactables[hit.collider.gameObject].allowPlayerClick)
-                        interactables[hit.collider.gameObject].Click();
-                    else if (isPickup && interactables[hit.collider.gameObject].allowPlayerPickup && InventoryController.instance.HasOpenSlot())
-                    {
-                        InventoryController.instance.AddItem(interactables[hit.collider.gameObject].Pickup());
-                    }
-
-                    actionBuffering = true;
-                }
             }
-            else if(isPlacingItem)
-            {
-                // Resets the item if it was being placed and the player is now too far from the placement range
-                currentHeldItem.ResetMeshMaterial();
-                currentHeldItem.EnableMesh(false);
-                isPlacingItem = false;
-                playerCont.Lock(false);
-            }
+        }
+        else if (isPlacingItem)
+        {
+            // Resets the item if it was being placed and the player is now too far from the placement range
+            currentHeldItem.ResetMeshMaterial();
+            currentHeldItem.EnableMesh(false);
+            isPlacingItem = false;
+            playerCont.Lock(false);
+        }
+        else
+        {
+            onItemSightChange?.Invoke(-1);
         }
     }
 
     public void DropItems()
     {
-        InventoryItem[] items = InventoryController.instance.GetInventoryItems();
+        HoldableItem[] items = InventoryController.instance.GetInventoryItems();
         for(int i = 0; i < items.Length; i++)
         {
-            InventoryItem item = items[i];
+            HoldableItem item = items[i];
 
-            if (!item.IsEmpty())
+            if (item != null)
             {
                 //NavMeshHit hit;
                 //NavMesh.SamplePosition(transform.position + new Vector3(0,i,0), out hit, 10, NavMesh.AllAreas);
-                interactables[item.realObject].Place(transform.position + new Vector3(0, i, 0), transform.rotation);
+                item.Place(transform.position + new Vector3(0, i, 0), transform.rotation);
             }
         }
         InventoryController.instance.ClearInventory();
@@ -310,6 +257,8 @@ public class PlayerInteractionController : MonoBehaviour
 
     private void SetObjectTransform(PlacementType type, RaycastHit hit)
     {
+        HoldableItem currentHeldItem = InventoryController.currentHeldItem;
+
         switch (type)
         {
             case PlacementType.FLOOR:

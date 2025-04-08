@@ -2,7 +2,6 @@ using BehaviorTree;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 using UnityEngine.AI;
 
 public class aa_Warden : ActiveAttack
@@ -17,7 +16,7 @@ public class aa_Warden : ActiveAttack
     protected float diff;
 
     private List<GameObject> spawnedSensors = new List<GameObject>();
-    protected List<WardenSensorController> alertQueue = new List<WardenSensorController>();
+    protected List<Vector3> alertQueue = new List<Vector3>();
     protected int alertQueueMax = 3;
 
     protected float basePlayerSightWaitMin = 1;
@@ -35,6 +34,7 @@ public class aa_Warden : ActiveAttack
         toolTip = "He guards something, just not sure what";
 
         diff = wanderRange / ringCount;
+        hearingRadius = 1000;
     }
 
     public override void Initialize(int level = 1)
@@ -84,7 +84,7 @@ public class aa_Warden : ActiveAttack
                 new Selector(new List<Node>()
                 {
                     new CheckPlayerInSight(this, owner.navAgent, 40, -0.8f),
-                    new TaskWait(3),
+                    new TaskWait(2),
                 }),
                 new TaskRemoveTarget(this)
             }),
@@ -120,11 +120,24 @@ public class aa_Warden : ActiveAttack
         }
     }
 
+    public override bool DetectSound(AudioSourceController.SourceData data)
+    {
+        // Bypasses the typical hearing range check
+        // Check that the sound is within the warden's area of partol
+        if (Vector3.Distance(data.transform.position, areaCenter.position) < wanderRange)
+        {
+            alertQueue.Clear();
+            alertQueue.Add(data.transform.position);
+            return true;
+        }
+
+        return false;
+    }
     protected void OnSensorAlert(WardenSensorController sensor)
     {
-        if(alertQueue.Count < alertQueueMax && !alertQueue.Contains(sensor))
+        if(alertQueue.Count < alertQueueMax && !alertQueue.Contains(sensor.trans.position))
         {
-            alertQueue.Add(sensor);
+            alertQueue.Add(sensor.trans.position);
         }
     }
 
@@ -132,7 +145,7 @@ public class aa_Warden : ActiveAttack
     {
         return alertQueue.Count == 0;   
     }
-    public WardenSensorController GetAlertItem()
+    public Vector3 GetAlertItem()
     {
         return alertQueue[0];
     }

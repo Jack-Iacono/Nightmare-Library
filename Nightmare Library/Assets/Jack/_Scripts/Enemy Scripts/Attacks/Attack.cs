@@ -30,7 +30,7 @@ public abstract class Attack
             return false;
 
         // Check if the sound's radius and the hearing radius overlap, allowing the enemy to hear the sound
-        if(Vector3.Distance(data.position, owner.transform.position) <= hearingRadius + data.radius)
+        if(Vector3.Distance(data.transform.position, owner.transform.position) <= hearingRadius + data.radius)
         {
             // Could add raycast here to detratc from volume if heard through wall
             Debug.Log("Detect Sound");

@@ -4,17 +4,20 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class IdolController : Interactable
+public class IdolController : MonoBehaviour, IClickable
 {
     public static List<IdolController> allIdols = new List<IdolController>();
 
     public bool isActive = false;
-    public event EventHandler<bool> OnIdolActivated;
+    public event IClickable.OnClickDelegate OnClick;
 
-    protected override void Awake()
+    public delegate void OnActiveStateChangedDelegate();
+    public event OnActiveStateChangedDelegate OnActiveStateChanged;
+
+    protected void Awake()
     {
-        base.Awake();
         allIdols.Add(this);
+        IClickable.instances.Add(gameObject, this);
     }
 
     private void Start()
@@ -23,32 +26,26 @@ public class IdolController : Interactable
         isActive = false;
     }
 
-    public override void Click(bool fromNetwork = false)
+    public void Click()
     {
-        if(NetworkManager.Singleton == null || !NetworkManager.Singleton.IsConnectedClient || NetworkManager.Singleton.IsServer)
+        if (NetworkConnectionController.HasAuthority)
             Remove();
-
-        base.Click();
+        else
+            Activate(false);
+        OnClick?.Invoke(this);
     }
+    public void Hover(bool enterExit) { }
 
-    public void Activate()
+    public void Activate(bool b)
     {
-        gameObject.SetActive(true);
-        isActive = true;
-        OnIdolActivated?.Invoke(this, true);
-    }
-    public void Deactivate()
-    {
-        gameObject.SetActive(false);
-        isActive = false;
-        OnIdolActivated?.Invoke(this, false);
+        gameObject.SetActive(b);
+        isActive = b;
+
+        OnActiveStateChanged?.Invoke();
     }
     public void Remove()
     {
-        gameObject.SetActive(false);
-        isActive = false;
-        OnIdolActivated?.Invoke(this, false);
-
+        Activate(false);
         pa_Idols.RemoveIdol();
     }
 
@@ -65,5 +62,6 @@ public class IdolController : Interactable
     private void OnDestroy()
     {
         allIdols.Remove(this);
+        IClickable.instances.Remove(gameObject);
     }
 }

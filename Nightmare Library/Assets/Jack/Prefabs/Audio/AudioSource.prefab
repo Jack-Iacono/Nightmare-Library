@@ -11,8 +11,6 @@ GameObject:
   - component: {fileID: 6296153060464654257}
   - component: {fileID: 3003348849581341333}
   - component: {fileID: 6885678130686421874}
-  - component: {fileID: -8453895816009320796}
-  - component: {fileID: 698178138388217114}
   m_Layer: 0
   m_Name: AudioSource
   m_TagString: Untagged
@@ -145,35 +143,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isPooled: 0
   checkListeners: 1
---- !u!114 &-8453895816009320796
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4782423263898580498}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2872767096
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
---- !u!114 &698178138388217114
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4782423263898580498}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdbe5238ebd86c74e8151f209bd89bc0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

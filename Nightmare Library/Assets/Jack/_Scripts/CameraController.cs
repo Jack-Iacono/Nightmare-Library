@@ -31,7 +31,6 @@ public class CameraController : MonoBehaviour
     private Vector3 normalPosition = Vector3.zero;
 
     private bool isLocked = false;
-    private bool camMoved = false;
 
     public delegate void CameraMoveDelegate(CameraController cam);
     public static CameraMoveDelegate OnCameraMoveFinish;
@@ -69,7 +68,6 @@ public class CameraController : MonoBehaviour
             //transform.localRotation = Quaternion.identity;
             StopAllCoroutines();    
             StartCoroutine(ResetCamera());
-            camMoved = false;
         }
 
         isLocked = locked;
@@ -80,8 +78,6 @@ public class CameraController : MonoBehaviour
         //transform.rotation = camTransform.rotation;
         StopAllCoroutines();
         StartCoroutine(MoveCamera(camTransform));
-
-        camMoved = true;
 
         Lock(locked);
     }

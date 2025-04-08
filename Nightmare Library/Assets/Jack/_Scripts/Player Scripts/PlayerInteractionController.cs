@@ -97,7 +97,7 @@ public class PlayerInteractionController : MonoBehaviour
         HoldableItem currentHeldItem = InventoryController.currentHeldItem;
 
         // Process Throwing first since you don't need to raycast for it
-        if (isThrow)
+        if (currentHeldItem != null && isThrow)
         {
             // TEMPORARY
             // Not sure where to throw from or what velocity to have

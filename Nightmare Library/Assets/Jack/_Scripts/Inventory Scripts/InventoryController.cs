@@ -94,6 +94,7 @@ public class InventoryController : MonoBehaviour
         {
             inventoryItems[currentItemIndex] = null;
             onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
+            currentHeldItem = null;
             return true;
         }
 

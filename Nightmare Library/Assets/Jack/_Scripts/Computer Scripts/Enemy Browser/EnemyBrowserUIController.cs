@@ -4,63 +4,57 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(ComputerWindow))]
 public class EnemyBrowserUIController : UIController
 {
-    [SerializeField]
-    private GameObject forwardButton;
-    [SerializeField]
-    private GameObject backButton;
+    private ComputerWindow window;
 
-    private List<int> screenTrail = new List<int>() { 0 };
-    private int trailIndex = 0;
+    [SerializeField]
+    private Button forwardButton;
+    [SerializeField]
+    private Button backButton;
+
+    private LinkedList<int> links = new LinkedList<int>();
 
     protected override void Awake()
     {
-        ComputerController.OnComputerStateChange += OnComputerStateChanged;
+        window = GetComponent<ComputerWindow>();
+        ComputerWindow.OnWindowOpen += OnWindowOpen;
     }
 
-    private void OnComputerStateChanged(bool b)
+    private void OnWindowOpen(ComputerWindow window)
     {
-        if (!b)
-        {
-            ChangeToScreen(0);
+        links.Clear();
+        ChangeToScreen(0);
+    }
 
-            trailIndex = 0;
-            screenTrail = new List<int>() { 0 };
-        }
+    private void CheckPageButtons()
+    {
+        forwardButton.gameObject.SetActive(links.Find(currentScreen) != links.Last);
+        backButton.gameObject.SetActive(links.Find(currentScreen) != links.First);
     }
 
     public override void ChangeToScreen(int i)
     {
-        if(i != screenTrail[trailIndex])
-        {
-            // If this path would contradict a prior path, remove the prior path
-            if (screenTrail.Count - 1 > trailIndex)
-                screenTrail.RemoveRange(trailIndex, screenTrail.Count - 1);
-
-            if (screenTrail[trailIndex] == i)
-                screenTrail.Add(i);
-            trailIndex++;
-        }
-
-        Debug.Log(trailIndex + " || " + screenTrail.Count);
-
-        forwardButton.SetActive(trailIndex < screenTrail.Count - 1);
-        backButton.SetActive(trailIndex > 0);
+        if (links.Count == 0)
+            links.AddFirst(i);
+        else if(links.Last.Value == currentScreen)
+            links.AddLast(i);
+        else if(links.Find(currentScreen).Next.Value != i)
+            links.Find(currentScreen).Next.Value = i;
 
         base.ChangeToScreen(i);
+        CheckPageButtons();
     }
 
     public void PageBack()
     {
-        if(trailIndex > 0)
-            trailIndex--;
-        ChangeToScreen(screenTrail[trailIndex]);
+        base.ChangeToScreen(links.Find(currentScreen).Previous.Value);
+        CheckPageButtons();
     }
     public void PageForward()
     {
-        if(screenTrail.Count - 1 > trailIndex)
-            trailIndex++;
-        ChangeToScreen(screenTrail[trailIndex]);
+        base.ChangeToScreen(links.Find(currentScreen).Next.Value);
+        CheckPageButtons();
     }
 }

@@ -11,7 +11,6 @@ public class WindowMoveController : EventTrigger
     private ComputerWindow connectedWindow;
 
     private Vector2 windowSize;
-    private bool cursorInWindow = false;
 
     private Canvas canvas;
     private RectTransform canvasRectTransform;
@@ -67,19 +66,6 @@ public class WindowMoveController : EventTrigger
         cursorOffset = canvasLocalPosition - mousePosition;
 
         base.OnPointerDown(eventData);
-    }
-
-    public override void OnPointerEnter(PointerEventData data)
-    {
-        cursorInWindow = true;
-
-        base.OnPointerEnter(data);
-    }
-    public override void OnPointerExit(PointerEventData data)
-    {
-        cursorInWindow = false;
-
-        base.OnPointerExit(data);
     }
 
     public void BeginMovingWindow()

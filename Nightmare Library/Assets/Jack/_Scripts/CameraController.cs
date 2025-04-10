@@ -52,7 +52,7 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         // Check to make sure the game isn't paused
-        if (!GameController.gamePaused)
+        if (!PauseController.gamePaused)
         {
             // Move the camera
             if(!isLocked)

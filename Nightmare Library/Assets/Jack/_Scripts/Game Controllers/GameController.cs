@@ -9,7 +9,6 @@ public class GameController : MonoBehaviour
 {
     public static GameController instance;
 
-    public static bool gamePaused = false;
     public static bool gameStarted = false;
 
     public const float gameTime = 1000;
@@ -68,27 +67,19 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!gamePaused)
+        if (gameTimer > 0)
         {
-            if (gameTimer > 0)
+            gameTimer -= Time.deltaTime;
+
+            // Tells the other scripts that the game level is increasing, this makes the game more difficult
+            if (gameTime - gameTimer > gameTimeLevel * (gameTime / totalLevels))
             {
-                gameTimer -= Time.deltaTime;
-
-                // Tells the other scripts that the game level is increasing, this makes the game more difficult
-                if (gameTime - gameTimer > gameTimeLevel * (gameTime / totalLevels))
-                {
-                    gameTimeLevel++;
-                    OnLevelChange?.Invoke(gameTimeLevel);
-                }
+                gameTimeLevel++;
+                OnLevelChange?.Invoke(gameTimeLevel);
             }
-            else
-                EndGame();
         }
-
-        if (Input.GetKeyDown(KeyCode.I))
-        {
+        else
             EndGame();
-        }
     }
 
     public static void SetEnemyCount(int e)

@@ -118,9 +118,10 @@ public abstract class LobbyController : NetworkBehaviour
 
     public virtual async void LeaveLobby()
     {
-        //Debug.Log("Leaving Lobby");
         await DisconnectFromLobby();
-        //Debug.Log("Disconnected");
+
+        SceneController.UnloadScene(SceneController.loadedMap.name, true);
+        SceneController.UnloadScene(SceneController.m_Scene.UNIVERSAL, true);
         SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU, true);
     }
     public virtual async Task DisconnectFromLobby()
@@ -128,6 +129,7 @@ public abstract class LobbyController : NetworkBehaviour
         try
         {
             UnRegisterCallbacks();
+
         }
         catch(Exception ex)
         {

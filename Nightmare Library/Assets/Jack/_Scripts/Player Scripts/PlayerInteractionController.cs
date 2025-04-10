@@ -54,7 +54,7 @@ public class PlayerInteractionController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!GameController.gamePaused)
+        if (!PauseController.gamePaused)
         {
             CheckActionBuffer();
             GetInput();

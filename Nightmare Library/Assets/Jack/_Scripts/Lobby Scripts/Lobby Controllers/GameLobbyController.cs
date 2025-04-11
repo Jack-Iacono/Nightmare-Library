@@ -2,9 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
-using UnityEditor.Networking.PlayerConnection;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class GameLobbyController : LobbyController
 {

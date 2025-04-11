@@ -31,7 +31,8 @@ public class TaskStalkWarpBehind : Node
     {
         if (!hasWarped)
         {
-            navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
+            if(owner.currentTargetPlayer != null)
+                navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
             navAgent.speed = 0;
             hasWarped = true;
 

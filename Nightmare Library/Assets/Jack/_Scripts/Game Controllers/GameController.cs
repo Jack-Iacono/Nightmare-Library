@@ -22,7 +22,7 @@ public class GameController : MonoBehaviour
     public static int enemyCount = 1;
     private List<GameObject> spawnedEnemies = new List<GameObject>();
 
-    public static RoundResults roundResults;
+    public static RoundResults roundResults = null;
 
     public static bool isNetworkGame = true;
 
@@ -50,7 +50,7 @@ public class GameController : MonoBehaviour
 
     private void OnMapLoaded(string mapName)
     {
-        if (NetworkConnectionController.HasAuthority)
+        if (NetworkConnectionController.HasAuthority && SceneController.loadedMap.name == SceneController.scenes[SceneController.m_Scene.GAME].name)
         {
             for (int i = 0; i < GameController.enemyCount; i++)
             {

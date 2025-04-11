@@ -120,6 +120,9 @@ public abstract class LobbyController : NetworkBehaviour
     {
         await DisconnectFromLobby();
 
+        if (SceneController.GetSceneLoaded(SceneController.m_Scene.GAME_SYS))
+            SceneController.UnloadScene(SceneController.m_Scene.GAME_SYS, true);
+
         SceneController.UnloadScene(SceneController.loadedMap.name, true);
         SceneController.UnloadScene(SceneController.m_Scene.UNIVERSAL, true);
         SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU, true);

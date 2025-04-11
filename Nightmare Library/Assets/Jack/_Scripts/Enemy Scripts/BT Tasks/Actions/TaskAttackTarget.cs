@@ -8,18 +8,20 @@ using UnityEngine.AI;
 public class TaskAttackTarget : Node
 {
     private bool hasAttacked = false;
+    private aa_Stalk owner;
     private NavMeshAgent agent;
 
-    public TaskAttackTarget(NavMeshAgent agent)
+    public TaskAttackTarget(aa_Stalk owner, NavMeshAgent agent)
     {
         this.agent = agent;
+        this.owner = owner;
     }
     public override Status Check(float dt)
     {
         if(!hasAttacked) 
         {
             agent.speed = 0;
-            Debug.Log("Attack Player");
+            owner.currentTargetPlayer.ChangeAliveState(false);
             hasAttacked = true;
         }
 

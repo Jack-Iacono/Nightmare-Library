@@ -109,8 +109,11 @@ public class pa_Screech : PassiveAttack
 
         foreach (ScreechHeadController h in headControllers.Keys)
         {
-            PrefabHandler.Instance.CleanupGameObject(h.gameObject);
-            PrefabHandler.Instance.DestroyGameObject(h.gameObject);
+            if(h != null)
+            {
+                PrefabHandler.Instance.CleanupGameObject(h.gameObject);
+                PrefabHandler.Instance.DestroyGameObject(h.gameObject);
+            }
         }
     }
 

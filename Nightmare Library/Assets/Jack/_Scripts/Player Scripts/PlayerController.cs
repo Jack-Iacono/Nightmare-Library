@@ -277,7 +277,9 @@ public class PlayerController : MonoBehaviour
     public void Lock(bool b)
     {
         isLocked = b;
-        camCont.Lock(b);
+
+        if(camCont != null)
+            camCont.Lock(b);
     }
     public void Lock(bool b, Transform camTransform)
     {

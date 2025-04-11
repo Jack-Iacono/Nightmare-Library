@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
+#if UNITY_EDITOR
+
 [CustomEditor(typeof(WindowMoveController))]
 public class WindowMoveEditor : Editor
 {
@@ -12,3 +14,5 @@ public class WindowMoveEditor : Editor
         DrawDefaultInspector();
     }
 }
+
+#endif

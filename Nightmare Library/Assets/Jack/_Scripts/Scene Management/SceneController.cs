@@ -96,6 +96,8 @@ public class SceneController : MonoBehaviour
     }
     public static void LoadScene(string scene, bool offlineOverride = false)
     {
+        Debug.Log("Load Scene " + scene);
+
         if (offlineOverride || !NetworkConnectionController.connectedToLobby)
         {
             SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
@@ -122,6 +124,16 @@ public class SceneController : MonoBehaviour
                 break;
             }
         }
+    }
+
+    public static bool GetSceneLoaded(m_Scene scene)
+    {
+        for(int i = 0; i < SceneManager.sceneCount;i++)
+        {
+            if (SceneManager.GetSceneAt(i) == SceneManager.GetSceneByName(scenes[scene].name))
+                return true;
+        }
+        return false;
     }
 
     public static void SetMapActive()

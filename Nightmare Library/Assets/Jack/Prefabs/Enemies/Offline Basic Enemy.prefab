@@ -15,7 +15,9 @@ GameObject:
   - component: {fileID: 6364429912731168215}
   - component: {fileID: 2939300708000621172}
   - component: {fileID: 8230787585620633159}
-  m_Layer: 0
+  - component: {fileID: 4279900071074719339}
+  - component: {fileID: -7140806690920257612}
+  m_Layer: 15
   m_Name: Offline Basic Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -102,7 +104,7 @@ CapsuleCollider:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 16384
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -150,21 +152,14 @@ MonoBehaviour:
   fovRange: 20
   attackRange: 2
   spawnLocation: {x: 20, y: 1, z: 0}
-  aAttack: 3
-  pAttack: 2
-  evidenceList: 000000000100000002000000030000000400000005000000
+  presets:
+  - {fileID: 11400000, guid: c77dbe13533d60f4ba018cc0511215cf, type: 2}
+  aAttack: 0
+  pAttack: 0
   interactionLayers:
     serializedVersion: 2
     m_Bits: 1024
   musicLoverSound: {fileID: 8300000, guid: 8b1299309f3d3f445bb65d62b5352337, type: 3}
-  footprintPrefab: {fileID: 462350817080059154, guid: 59f37b89cd452be47915e99718acc448,
-    type: 3}
-  footprintPrefabOnline: {fileID: 2345499053635289347, guid: 2bb9a175c9e6d7d4ab018ba57ee1e260,
-    type: 3}
-  trapPrefab: {fileID: 2561657698923950872, guid: 8c12e05da9c71f545a58f5d6168b4deb,
-    type: 3}
-  trapPrefabOnline: {fileID: 7623497797212406996, guid: 28064c8535fc40240bc802fcbb36b6ae,
-    type: 3}
   hallucinationMesh: {fileID: 3779147218538898182}
   hallucinationMaterial: {fileID: 2100000, guid: e562bb9e10d7cd648babc2c37b64217c,
     type: 2}
@@ -265,6 +260,39 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &4279900071074719339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289455882946623128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 71532195
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &-7140806690920257612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289455882946623128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d9834633bc923245b8fb60815673418, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _serverAuth: 0
 --- !u!1 &3566560211629083487
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,7 +305,7 @@ GameObject:
   - component: {fileID: 2173416285369175409}
   - component: {fileID: 7634274423522851882}
   - component: {fileID: 658295794213956057}
-  m_Layer: 0
+  m_Layer: 15
   m_Name: Visor
   m_TagString: Untagged
   m_Icon: {fileID: 0}

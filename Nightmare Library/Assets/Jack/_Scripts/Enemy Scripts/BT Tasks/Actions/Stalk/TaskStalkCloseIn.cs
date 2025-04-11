@@ -21,11 +21,19 @@ public class TaskStalkCloseIn : Node
     }
     public override Status Check(float dt)
     {
+        Debug.Log("Closing In");
+
         navAgent.destination = owner.currentTargetDynamic.position;
         navAgent.speed = speed;
         navAgent.acceleration = acceleration;
 
         status = Status.RUNNING;
         return status;
+    }
+
+    public void OnLevelChange(float speed, float accerleration)
+    {
+        this.speed = speed;
+        this.acceleration = accerleration;
     }
 }

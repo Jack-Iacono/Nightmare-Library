@@ -20,9 +20,9 @@ public class CheckPlayerInRange : Node
     public override Status Check(float dt)
     {
         // Checks if any player is in attack range
-        foreach (PlayerController p in PlayerController.playerInstances)
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
         {
-            if(Vector3.Distance(p.transform.position, transform.position) < range)
+            if(p.isAlive && Vector3.Distance(p.transform.position, transform.position) < range)
             {
                 status = Status.SUCCESS;
                 return status;

@@ -1,34 +1,40 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class InventoryController : MonoBehaviour
 {
-    public static InventoryController Instance;
+    public static InventoryController instance;
 
     private const int inventorySize = 3;
-    private InventoryItem[] inventoryItems = new InventoryItem[inventorySize];
+    private HoldableItem[] inventoryItems = new HoldableItem[inventorySize];
 
     private int currentItemIndex = 0;
 
     public static KeyCode keyInventoryUp = KeyCode.Z;
     public static KeyCode keyInventoryDown = KeyCode.X;
 
-    public delegate void OnHeldItemChangedDelegate(InventoryItem heldObject);
+    public static HoldableItem currentHeldItem = null;
+
+    public delegate void OnHeldItemChangedDelegate(HoldableItem holdable);
     public event OnHeldItemChangedDelegate onHeldItemChanged;
 
     private void Awake()
     {
-        if(Instance != null)
-            Destroy(Instance.gameObject);
-        Instance = this;
+        if(instance != null)
+            Destroy(instance.gameObject);
+        instance = this;
+
+        for (int i = 0; i < inventorySize; i++)
+        {
+            inventoryItems[i] = null;
+        }
     }
     private void Start()
     {
-        for(int i = 0; i < inventorySize; i++)
-        {
-            inventoryItems[i] = new InventoryItem();
-        }
+        SetCurrentIndex(0);
     }
 
     private void Update()
@@ -37,47 +43,83 @@ public class InventoryController : MonoBehaviour
         {
             if (Input.GetKeyDown(keyInventoryUp))
             {
-                currentItemIndex = (currentItemIndex + 1) % inventorySize;
-                onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
+                SetCurrentIndex((currentItemIndex + 1) % inventorySize);
             }
             else if (Input.GetKeyDown(keyInventoryDown))
             {
-                currentItemIndex = (currentItemIndex - 1 + inventorySize) % inventorySize;
-                onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
+                SetCurrentIndex((currentItemIndex - 1 + inventorySize) % inventorySize);
             }
         }
     }
 
-    public InventoryItem GetCurrentItem()
+    public void PickupMoveable(HoldableItem moveable)
     {
-        return inventoryItems[currentItemIndex];
+        if (!inventoryItems.Contains(moveable))
+        {
+            for(int i = 0; i < inventorySize; i++)
+            {
+                if (inventoryItems[i] == null)
+                {
+                    inventoryItems[i] = moveable;
+                    break;
+                }
+            }
+        }
     }
-    public bool AddItem(GameObject item)
+
+    public HoldableItem GetCurrentItem()
+    {
+        return currentHeldItem;
+    }
+    public bool AddItem(HoldableItem item)
     {
         int open = GetOpenInventorySlot();
 
         if (open != -1)
         {
-            inventoryItems[open].Set(item);
+            inventoryItems[open] = item;
             currentItemIndex = open;
         }
         else
             return false;
 
+        currentHeldItem = inventoryItems[currentItemIndex];
         onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
 
         return true;
     }
     public bool RemoveCurrentItem()
     {
-        if (!inventoryItems[currentItemIndex].isEmpty)
+        if (inventoryItems[currentItemIndex] != null)
         {
-            inventoryItems[currentItemIndex].Clear();
+            inventoryItems[currentItemIndex] = null;
             onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
+            currentHeldItem = null;
             return true;
         }
 
         return false;
+    }
+
+    public HoldableItem[] GetInventoryItems()
+    {
+        return inventoryItems;
+    }
+    public void ClearInventory()
+    {
+        for(int i = 0; i < inventoryItems.Length; i++)
+        {
+            inventoryItems[i] = null;
+        }
+
+        SetCurrentIndex(0);
+    }
+
+    private void SetCurrentIndex(int index)
+    {
+        currentItemIndex = index;
+        currentHeldItem = inventoryItems[currentItemIndex];
+        onHeldItemChanged?.Invoke(currentHeldItem);
     }
     
     public bool HasOpenSlot()
@@ -88,7 +130,7 @@ public class InventoryController : MonoBehaviour
     {
         for(int i = 0; i < inventoryItems.Length; i++)
         {
-            if (inventoryItems[i].isEmpty)
+            if (inventoryItems[i] == null)
                 return i;
         }
 
@@ -97,6 +139,7 @@ public class InventoryController : MonoBehaviour
 
     private void OnDestroy()
     {
-        Instance = null;
+        if(instance == this)
+            instance = null;
     }
 }

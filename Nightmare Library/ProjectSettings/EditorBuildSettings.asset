@@ -6,12 +6,21 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Jack/Scenes/scn_PersistentUtil.unity
+    guid: f1757e34217a5134c887335f98a6b8ca
+  - enabled: 1
     path: Assets/Jack/Scenes/j_Menu.unity
     guid: ca2a41e7de38f324a89bb4c71f65b1a0
   - enabled: 1
-    path: Assets/Jack/Scenes/j_OfflineGame.unity
-    guid: 720d5639d50aa2a4aa33b67d3e90b24a
+    path: Assets/Jack/Scenes/j_PreGame.unity
+    guid: 33c2848f3c4fd264292ce04c6176ecb5
   - enabled: 1
-    path: Assets/Jack/Scenes/j_OnlineGame.unity
+    path: Assets/Jack/Scenes/j_Game.unity
     guid: 3ead0ef480f5cdc4483c990f1b0a322b
+  - enabled: 1
+    path: Assets/Jack/Scenes/scn_UniversalGameFunction.unity
+    guid: ff01b08a8bd6b0048bfa4d944d998e58
+  - enabled: 1
+    path: Assets/Jack/Scenes/scn_GameSystems.unity
+    guid: 6e877cc08b33f7f448aa95dba61ac954
   m_configObjects: {}

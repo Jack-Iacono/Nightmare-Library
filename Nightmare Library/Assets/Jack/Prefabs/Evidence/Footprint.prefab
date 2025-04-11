@@ -10,6 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7737950019444284046}
   - component: {fileID: 4141415725435081785}
+  - component: {fileID: 827733343639628691}
+  - component: {fileID: 3843337065012075386}
   m_Layer: 0
   m_Name: Footprint
   m_TagString: Untagged
@@ -43,6 +45,48 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6f0550ce63b6b0840b5b9876cfd08c8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  placementTypes: 
+  floorPlacementType: 0
+  wallPlacementType: 0
+  fixPlacement: 1
+  precisePlacement: 0
+  allowPlayerClick: 0
+  allowPlayerPickup: 0
+  allowEnemyHysterics: 0
+  allowEnemyFlicker: 0
+  attachedLight: {fileID: 0}
+--- !u!114 &827733343639628691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 462350817080059154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &3843337065012075386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 462350817080059154}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7aad2f051325e0547835f94383f1f5e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &7439854778297320748

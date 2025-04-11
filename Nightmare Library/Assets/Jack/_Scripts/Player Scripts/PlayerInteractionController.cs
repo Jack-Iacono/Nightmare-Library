@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using Unity.Burst.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
-using static Interactable;
+using UnityEngine.AI;
+using static HoldableItem;
 
 [RequireComponent(typeof(PlayerController))]
 public class PlayerInteractionController : MonoBehaviour
@@ -11,7 +12,7 @@ public class PlayerInteractionController : MonoBehaviour
     private PlayerController playerCont;
 
     [SerializeField]
-    private float interactDistance = 10f;
+    private float interactDistance = 4f;
     [SerializeField]
     private LayerMask interactLayers;
 
@@ -29,7 +30,7 @@ public class PlayerInteractionController : MonoBehaviour
     private bool isPlacePressed = false;
     private bool isPlaceFinish = false;
 
-    private float actionBufferTime = 0.1f;
+    private float actionBufferTime = 0.25f;
     private float actionBufferTimer = 0f;
     private bool actionBuffering = false;
 
@@ -38,8 +39,11 @@ public class PlayerInteractionController : MonoBehaviour
     [SerializeField]
     private Material blockedPlacementMaterial;
     private bool isPlacingItem = false;
-    private Interactable currentHeldItem;
     private bool isPlacementValid = false;
+
+    public bool canSeeItem { get; private set; }
+    public delegate void OnItemSightChangeDelegate(int interactionType);
+    public static event OnItemSightChangeDelegate onItemSightChange;
 
     // Start is called before the first frame update
     void Start()
@@ -83,52 +87,76 @@ public class PlayerInteractionController : MonoBehaviour
         
         isActive = isClick || isPickup || isPlaceFinish || isPlacePressed || isPlaceStart || isThrow;
     }
+
     private void Check()
     {
-        if (!actionBuffering && isActive)
+        // Create the ray that represents where the player is looking
+        Ray ray = playerCont.camCont.GetCameraRay();
+        RaycastHit hit;
+
+        HoldableItem currentHeldItem = InventoryController.currentHeldItem;
+
+        // Process Throwing first since you don't need to raycast for it
+        if (currentHeldItem != null && isThrow)
         {
-            // Create the ray that represents where the player is looking
-            Ray ray = playerCont.camCont.GetCameraRay();
-            RaycastHit hit;
+            // TEMPORARY
+            // Not sure where to throw from or what velocity to have
+            currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
+            InventoryController.instance.RemoveCurrentItem();
+            currentHeldItem = null;
+            actionBuffering = true;
+        }
 
-            // Get the currently held item, if there is one, from the Inventory controller
-            InventoryItem temp = InventoryController.Instance.GetCurrentItem();
-            if (!temp.IsEmpty())
-                currentHeldItem = interactables[temp.realObject];
+        // Used for changing reticle to indicate when player is looking at an interactable
+        if (Physics.Raycast(ray, out hit, interactDistance, interactLayers))
+        {
+            GameObject hitObject = hit.collider.gameObject;
+            int objectType = -1;
 
-            // Check if the player is throwing the current item
-            if (currentHeldItem != null && isThrow)
+            // Determine what kind of object the ray is hitting
+            if (IClickable.instances.ContainsKey(hitObject))
+                objectType = 0;
+            else if (HoldableItem.instances.ContainsKey(hitObject))
+                objectType = 1;
+
+            onItemSightChange?.Invoke(objectType);
+
+            if(!actionBuffering && isActive)
             {
-                // TEMPORARY
-                currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
-                InventoryController.Instance.RemoveCurrentItem();
-                currentHeldItem = null;
-                actionBuffering = true;
-            }
-
-            // Check if the player is looking at a surface
-            if (Physics.Raycast(ray, out hit, interactDistance, interactLayers))
-            {
-                // Check if the player is holding an item
-                if (currentHeldItem != null)
+                if (isClick && objectType == 0)
                 {
-                    Debug.Log(isPlaceStart + " || " + isPlacePressed + " || " + isPlaceFinish);
-                    if (isPlaceStart)
+                    IClickable.instances[hitObject].Click();
+
+                    actionBuffering = true;
+                }
+                else if (isPickup && objectType == 1 && InventoryController.instance.HasOpenSlot())
+                {
+                    InventoryController.instance.AddItem(HoldableItem.instances[hitObject]);
+                    HoldableItem.instances[hitObject].Pickup();
+
+                    actionBuffering = true;
+                }
+                else if (currentHeldItem != null)
+                {
+                    // For starting or resuming the placement
+                    if (isPlaceStart || (isPlacePressed && !isPlacingItem))
                     {
+                        // Working like this as it will not be networked this way
+                        currentHeldItem.gameObject.SetActive(true);
+                        currentHeldItem.EnableColliders(false);
                         currentHeldItem.SetMeshMaterial(clearPlacementMaterial);
                         currentHeldItem.EnableMesh(true);
 
                         if (currentHeldItem.precisePlacement)
                         {
                             PlacementType type = CheckPlacementType(hit);
-
                             SetObjectTransform(type, hit);
-
                             playerCont.Lock(true);
                         }
 
                         isPlacingItem = true;
                     }
+                    // Handles moving the item while it is already being placed
                     else if (isPlacePressed && isPlacingItem)
                     {
                         PlacementType type = CheckPlacementType(hit);
@@ -143,7 +171,7 @@ public class PlayerInteractionController : MonoBehaviour
                                         currentHeldItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         break;
                                     case PlacementType.WALL:
-                                        if(currentHeldItem.wallPlacementType == 0)
+                                        if (currentHeldItem.wallPlacementType == 0)
                                             currentHeldItem.transform.Rotate(Vector3.forward, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         else
                                             currentHeldItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
@@ -176,8 +204,8 @@ public class PlayerInteractionController : MonoBehaviour
 
                             if (currentHeldItem.placementTypes.Contains(type))
                             {
-                                currentHeldItem.Place();
-                                InventoryController.Instance.RemoveCurrentItem();
+                                currentHeldItem.Place(currentHeldItem.trans.position, currentHeldItem.trans.rotation);
+                                InventoryController.instance.RemoveCurrentItem();
                             }
 
                             currentHeldItem = null;
@@ -185,6 +213,8 @@ public class PlayerInteractionController : MonoBehaviour
                         }
                         else
                         {
+                            // Working like this as it will not be networked this way
+                            currentHeldItem.gameObject.SetActive(false);
                             currentHeldItem.EnableMesh(false);
                         }
 
@@ -192,31 +222,43 @@ public class PlayerInteractionController : MonoBehaviour
                         playerCont.Lock(false);
                     }
                 }
-
-                // Check for interactions that aren't placing or throwing
-                if (interactables.ContainsKey(hit.collider.gameObject))
-                {
-                    if(isClick)
-                        interactables[hit.collider.gameObject].Click();
-                    else if (isPickup && InventoryController.Instance.HasOpenSlot())
-                        interactables[hit.collider.gameObject].Pickup();
-
-                    actionBuffering = true;
-                }
-            }
-            else if(isPlacingItem)
-            {
-                // Resets the item if it was being placed and the player is now too far from the placement range
-                currentHeldItem.ResetMeshMaterial();
-                currentHeldItem.EnableMesh(false);
-                isPlacingItem = false;
-                playerCont.Lock(false);
             }
         }
+        else if (isPlacingItem)
+        {
+            // Resets the item if it was being placed and the player is now too far from the placement range
+            currentHeldItem.ResetMeshMaterial();
+            currentHeldItem.EnableMesh(false);
+            isPlacingItem = false;
+            playerCont.Lock(false);
+        }
+        else
+        {
+            onItemSightChange?.Invoke(-1);
+        }
+    }
+
+    public void DropItems()
+    {
+        HoldableItem[] items = InventoryController.instance.GetInventoryItems();
+        for(int i = 0; i < items.Length; i++)
+        {
+            HoldableItem item = items[i];
+
+            if (item != null)
+            {
+                //NavMeshHit hit;
+                //NavMesh.SamplePosition(transform.position + new Vector3(0,i,0), out hit, 10, NavMesh.AllAreas);
+                item.Place(transform.position + new Vector3(0, i, 0), transform.rotation);
+            }
+        }
+        InventoryController.instance.ClearInventory();
     }
 
     private void SetObjectTransform(PlacementType type, RaycastHit hit)
     {
+        HoldableItem currentHeldItem = InventoryController.currentHeldItem;
+
         switch (type)
         {
             case PlacementType.FLOOR:

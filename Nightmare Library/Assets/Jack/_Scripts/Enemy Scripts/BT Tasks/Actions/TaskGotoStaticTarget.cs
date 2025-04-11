@@ -56,4 +56,10 @@ public class TaskGotoStaticTarget : Node
         passCheck = false;
         base.OnResetNode();
     }
+
+    public void OnLevelChange(float speed, float acceleration)
+    {
+        this.speed = speed;
+        this.acceleration = acceleration;
+    }
 }

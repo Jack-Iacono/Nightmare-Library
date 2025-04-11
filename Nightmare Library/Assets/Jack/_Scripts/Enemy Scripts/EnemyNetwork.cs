@@ -2,54 +2,77 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using Unity.Burst.CompilerServices;
 using Unity.Netcode;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 [RequireComponent(typeof(Enemy))]
 public class EnemyNetwork : NetworkBehaviour
 {
     [SerializeField] private bool _serverAuth;
 
-    private Enemy enemyController;
+    public Enemy parent { get; private set; }
 
-    private NetworkVariable<PlayerContinuousNetworkData> contState;
-    private NetworkVariable<PlayerIntermittentNetworkData> intState;
+    private NetworkVariable<TransformData> contState = new NetworkVariable<TransformData>();
+    private NetworkVariable<EnemyTypeData> type = new NetworkVariable<EnemyTypeData>();
+
 
     private void Awake()
     {
-        // Can only be written to by server or owner
-        var permission = _serverAuth ? NetworkVariableWritePermission.Server : NetworkVariableWritePermission.Owner;
-        contState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);
-        intState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
-
-        enemyController = GetComponent<Enemy>();
+        if (!NetworkConnectionController.connectedToLobby)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+        else
+        {
+            parent = GetComponent<Enemy>();
+            parent.OnInitialize += OnInitialize;
+        }
     }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
-        enemyController.Activate(IsOwner);
+        parent.Activate(IsOwner);
 
         if (IsOwner)
         {
-            enemyController.OnPlaySound += OnPlaySound;
-            enemyController.OnHallucination += OnHallucination;
-            enemyController.OnLightFlicker += OnLightFlicker;
+            parent.OnPlaySound += OnPlaySound;
+            parent.OnHallucination += OnHallucination;
+            parent.OnLightFlicker += OnLightFlicker;
 
-            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.FOOTPRINT))
-            {
-                enemyController.OnSpawnFootprint += OnSpawnFootprint;
-                CreateFootprintPool();
-            }
-            if (enemyController.evidenceList.Contains(Enemy.EvidenceEnum.TRAPPER))
-            {
-                enemyController.OnSpawnTrap += OnSpawnTrap;
-                CreateTrapPool();
-            }
-                
+            // Possible Optimize
+            parent.OnSpawnFootprint += OnSpawnFootprint;
+            parent.OnSpawnTrap += OnSpawnTrap;
+        }
+        else
+        {
+            parent.navAgent.enabled = false;
+        }
+            
+    }
+    private void OnInitialize()
+    {
+        if (IsServer)
+        {
+            //OnInitializeClientRpc(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
+            EnemyTypeData data = new EnemyTypeData();
+
+            data.typeIndex = PersistentDataController.Instance.enemyPresets.IndexOf(parent.enemyType);
+            data.activeAttackIndex = (int)parent.aAttack;
+            data.passiveAttackIndex = (int)parent.pAttack;
+
+            type.Value = data;
+        }
+        else
+        {
+            parent.enemyType = PersistentDataController.Instance.enemyPresets[type.Value.typeIndex];
+            parent.aAttack = (EnemyPreset.aAttackEnum)type.Value.activeAttackIndex;
+            parent.pAttack = (EnemyPreset.pAttackEnum)type.Value.passiveAttackIndex;
         }
     }
 
@@ -65,13 +88,6 @@ public class EnemyNetwork : NetworkBehaviour
             ConsumeContinuousState();
         }
     }
-    public void UpdatePlayerIntermittentState()
-    {
-        if (IsOwner)
-        {
-            TransmitIntermittentState();
-        }
-    }
 
     #region Evidence Methods
 
@@ -83,40 +99,16 @@ public class EnemyNetwork : NetworkBehaviour
     private void PlaySoundClientRpc(string sound)
     {
         if (!NetworkManager.IsServer)
-            enemyController.PlaySound(sound);
-    }
-
-    public void CreateFootprintPool()
-    {
-        enemyController.objPool.PoolObject(enemyController.footprintPrefabOnline, 10, true);
-
-        List<GameObject> list = enemyController.objPool.GetPool(enemyController.footprintPrefabOnline);
-
-        foreach(GameObject obj in list)
-        {
-            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-        }
-    }
-    public void CreateTrapPool()
-    {
-        enemyController.objPool.PoolObject(enemyController.trapPrefabOnline, 10, true);
-
-        List<GameObject> list = enemyController.objPool.GetPool(enemyController.trapPrefabOnline);
-
-        foreach (GameObject obj in list)
-        {
-            obj.GetComponent<NetworkObject>().SpawnWithOwnership(OwnerClientId);
-        }
+            parent.PlaySound(sound);
     }
 
     public void OnSpawnFootprint(Vector3 pos)
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = enemyController.objPool.GetObject(enemyController.footprintPrefabOnline);
+            var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceFootprint);
 
-            print.transform.position = pos;
-            print.GetComponent<FootprintController>().Activate();
+            print.GetComponent<FootprintController>().Place(pos, Quaternion.identity);
             print.SetActive(true);
         }
     }
@@ -124,10 +116,9 @@ public class EnemyNetwork : NetworkBehaviour
     {
         if (NetworkConnectionController.HasAuthority)
         {
-            var print = enemyController.objPool.GetObject(enemyController.trapPrefabOnline);
+            var print = parent.objPool.GetObject(PrefabHandler.Instance.e_EvidenceTrap);
 
-            print.transform.position = pos;
-            print.GetComponent<TrapController>().Activate();
+            print.GetComponent<TrapController>().Place(pos, print.transform.rotation);
             print.SetActive(true);
         }
     }
@@ -143,7 +134,7 @@ public class EnemyNetwork : NetworkBehaviour
     private void OnHallucinationClientRpc(bool b)
     {
         if (!NetworkManager.IsServer)
-            enemyController.SetHallucinating(b, false);
+            parent.SetHallucinating(b, false);
     }
 
     private void OnLightFlicker(object sender, EventArgs e)
@@ -156,7 +147,7 @@ public class EnemyNetwork : NetworkBehaviour
     [ClientRpc]
     private void OnLightFlickerClientRpc()
     {
-        enemyController.FlickerLights(false);
+        parent.FlickerLights(false);
     }
 
     #endregion
@@ -164,7 +155,7 @@ public class EnemyNetwork : NetworkBehaviour
     #region Server Data Transfers
     private void TransmitContinuousState()
     {
-        var state = new PlayerContinuousNetworkData
+        var state = new TransformData
         {
             Position = transform.position,
             Rotation = transform.rotation.eulerAngles
@@ -184,36 +175,11 @@ public class EnemyNetwork : NetworkBehaviour
             TransmitContinuousStateServerRpc(state);
         }
     }
-    private void TransmitIntermittentState()
-    {
-        var state = new PlayerIntermittentNetworkData();
-
-        if (IsServer || !_serverAuth)
-        {
-            intState.Value = state;
-        }
-        else
-        {
-            TransmitIntermittentStateServerRpc(state);
-        }
-
-        CallIntermittentDataServerRpc();
-    }
 
     [ServerRpc]
-    private void TransmitContinuousStateServerRpc(PlayerContinuousNetworkData state)
+    private void TransmitContinuousStateServerRpc(TransformData state)
     {
         contState.Value = state;
-    }
-    [ServerRpc]
-    private void TransmitIntermittentStateServerRpc(PlayerIntermittentNetworkData state)
-    {
-        intState.Value = state;
-    }
-    [ServerRpc]
-    private void CallIntermittentDataServerRpc()
-    {
-        ConsumeIntermittentStateClientRpc();
     }
 
     private void ConsumeContinuousState()
@@ -238,7 +204,7 @@ public class EnemyNetwork : NetworkBehaviour
 
     #region Data Types
 
-    private struct PlayerContinuousNetworkData : INetworkSerializable
+    private struct TransformData : INetworkSerializable
     {
         private float _x, _y, _z;
         private short _yRot;
@@ -268,18 +234,18 @@ public class EnemyNetwork : NetworkBehaviour
             serializer.SerializeValue(ref _yRot);
         }
     }
-    private struct PlayerIntermittentNetworkData : INetworkSerializable
-    {
-        public float health;
 
-        public PlayerIntermittentNetworkData(float health)
-        {
-            this.health = health;
-        }
+    private class EnemyTypeData: INetworkSerializable
+    {
+        public int typeIndex;
+        public int activeAttackIndex;
+        public int passiveAttackIndex;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            serializer.SerializeValue(ref health);
+            serializer.SerializeValue(ref typeIndex);
+            serializer.SerializeValue(ref activeAttackIndex);
+            serializer.SerializeValue(ref passiveAttackIndex);
         }
     }
 

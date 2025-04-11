@@ -1,7 +1,6 @@
 using BehaviorTree;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -36,8 +35,11 @@ public class CheckInPlayerSight : Node
         }
         else if(owner.currentTargetDynamic != null)
         {
-            foreach(PlayerController p in PlayerController.playerInstances)
+            foreach(PlayerController p in PlayerController.playerInstances.Values)
             {
+                if (!p.isAlive)
+                    continue;
+
                 Transform player = p.transform;
 
                 RaycastHit hit;

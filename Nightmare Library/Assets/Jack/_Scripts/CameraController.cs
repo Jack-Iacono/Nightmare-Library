@@ -7,7 +7,11 @@ public class CameraController : MonoBehaviour
 {
     [Header("GameObjects")]
     public PlayerController playerCont;
-    public Camera cam;
+
+    // Using 2 different camera for post processing effects later on, could change to layermasks
+    public Camera normalCam;
+    public Camera ghostCam;
+
     public AudioListener audioListener;
 
     //Static instance of this camera
@@ -24,26 +28,80 @@ public class CameraController : MonoBehaviour
     private float xRotation = 0;
     private float yRotation = 0;
 
+    private Vector3 normalPosition = Vector3.zero;
+
+    private bool isLocked = false;
+
+    public delegate void CameraMoveDelegate(CameraController cam);
+    public static CameraMoveDelegate OnCameraMoveFinish;
+
+    private void Awake()
+    {
+        // Sets the normal position that the camera should be in
+        normalPosition = transform.localPosition;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
         camCont = this;
-
         Cursor.lockState = CursorLockMode.Locked;
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Check to make sure the game isn't paused
         if (!GameController.gamePaused)
         {
-            MoveCamera();
+            // Move the camera
+            if(!isLocked)
+                MoveCamera();
+        }
+    }
 
-            // TEMPORARY!!!!
-            if (Input.GetKeyDown(KeyCode.R))
-            {
-                Cursor.lockState = Cursor.lockState == CursorLockMode.Locked ? CursorLockMode.None : CursorLockMode.Locked;
-            }
+    public void Lock(bool locked)
+    {
+        if(!locked)
+        {
+            //transform.localPosition = normalPosition;
+            //transform.localRotation = Quaternion.identity;
+            StopAllCoroutines();    
+            StartCoroutine(ResetCamera());
+        }
+
+        isLocked = locked;
+    }
+    public void Lock(bool locked, Transform camTransform)
+    {
+        //transform.position = camTransform.position;
+        //transform.rotation = camTransform.rotation;
+        StopAllCoroutines();
+        StartCoroutine(MoveCamera(camTransform));
+
+        Lock(locked);
+    }
+
+    private IEnumerator MoveCamera(Transform movePoint)
+    {
+        while (Vector3.SqrMagnitude(movePoint.position - transform.position) > 0.00005f)
+        {
+            transform.position = Vector3.Slerp(transform.position, movePoint.position, 8 * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, movePoint.rotation, 8 * Time.deltaTime);
+
+            yield return null;
+        }
+
+        OnCameraMoveFinish?.Invoke(this); 
+    }
+    private IEnumerator ResetCamera()
+    {
+        while(Vector3.SqrMagnitude(normalPosition - transform.localPosition) > 0.00005f)
+        {
+            transform.localPosition = Vector3.Slerp(transform.localPosition, normalPosition, 8 * Time.deltaTime);
+            transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.identity, 8 * Time.deltaTime);
+
+            yield return null;
         }
     }
 
@@ -68,51 +126,53 @@ public class CameraController : MonoBehaviour
         //Rotates the player to always be facing the direction of the camera
         playerCont.transform.localRotation = Quaternion.Euler(0f, yRotation, 0f);
     }
+    public void SetGhost(bool b)
+    {
+        // Switches the active camera, ghosts see different layers than players
+        normalCam.enabled = !b;
+        ghostCam.enabled = b;
+    }
     public void SetEnabled(bool b)
     {
-        cam.enabled = b;
+        // Sets whether the camera is in use, not being used much anymore since spectate rework
+        if (!b)
+        {
+            normalCam.enabled = false;
+            ghostCam.enabled = false;
+        }
+        else
+        {
+            // Checks if the plaeyr is alive to determine which camera to use
+            if (playerCont.isAlive)
+            {
+                normalCam.enabled = true;
+                ghostCam.enabled = false;
+            }
+            else
+            {
+                normalCam.enabled = false;
+                ghostCam.enabled = true;
+            }
+        }
+
         audioListener.enabled = b;
         enabled = b;
-    }
-    public void Spectate(bool b)
-    {
-        cam.enabled = b;
-        audioListener.enabled = b;
     }
 
     #endregion
 
     #region Get Methods
 
-    public bool GetCameraSight(Collider col, float dist)
-    {
-        float distance = Vector3.SqrMagnitude(col.transform.position - (transform.position - transform.up * -0.15f));
-
-        if (distance <= dist * dist)
-        {
-            Ray ray = new Ray(cam.transform.position, cam.transform.forward);
-            RaycastHit hit;
-
-            float range = 50;
-
-            if (Physics.Raycast(ray, out hit, range, collideLayers))
-            {
-                if (hit.collider == col)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
     public bool GetCameraSight(Collider col)
     {
-        Ray ray = new Ray(cam.transform.position, cam.transform.forward);
+        // Get a ray from the camera's position in a straight line forward
+        Ray ray = new Ray(normalCam.transform.position, normalCam.transform.forward);
         RaycastHit hit;
 
+        // Check if the ray hits any layers that we are interested in
         if (Physics.Raycast(ray, out hit, 1000, collideLayers))
         {
+            // If the collider is the one we are looking for, return true
             if (hit.collider == col)
             {
                 return true;
@@ -122,6 +182,10 @@ public class CameraController : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Gets a ray straight forward from the camera's position
+    /// </summary>
+    /// <returns>The ray representing the camera's sightline</returns>
     public Ray GetCameraRay()
     {
         return new Ray(transform.position, transform.forward);

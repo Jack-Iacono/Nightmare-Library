@@ -63,8 +63,6 @@ public class TaskWander : Node
 
     private Vector3 GetNewTarget()
     {
-        Debug.Log("Getting New Target");
-
         isWaiting = false;
         pointWaitTimer = Random.Range(pointWaitTimeMin, pointWaitTimeMax);
 

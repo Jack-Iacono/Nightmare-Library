@@ -1,32 +1,28 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using Unity.Netcode;
-using Unity.VisualScripting;
-using UnityEditor.PackageManager;
 using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 
 public class PlayerController : MonoBehaviour
 {
-    public static PlayerController ownerInstance;
-
-    public static List<PlayerController> playerInstances = new List<PlayerController>();
-
-    private static int currentlySpectating;
-    private int myPlayerIndex;
+    public static PlayerController mainPlayerInstance;
+    public static Dictionary<GameObject, PlayerController> playerInstances = new Dictionary<GameObject, PlayerController>();
 
     public static LayerMask playerLayerMask;
 
+    private const int playerLayer = 6;
+    private const int ghostLayer = 14;
+
     public CameraController camCont;
+    public AudioSourceController audioSource;
     private PlayerInteractionController interactionCont;
 
-    private Collider playerCollider;
+    [Header("Mesh / Material")]
     [SerializeField]
-    private List<MeshRenderer> playerMeshes;
+    private List<MeshMaterialLink> meshMaterials;
 
-    [SerializeField]
+    [NonSerialized]
     public bool isAlive = true;
 
     [Header("Movement Variables")]
@@ -37,6 +33,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     [Tooltip("Negative values will pull player downward, Positive value will push them up")]
     private float gravity = -0.98f;
+
+    private bool isLocked = false;
 
     [Header("Acceleration Variables", order = 2)]
     [SerializeField]
@@ -62,30 +60,36 @@ public class PlayerController : MonoBehaviour
     private KeyCode keySprint = KeyCode.LeftShift;
     private bool isSprinting = false;
 
-    public event EventHandler OnPlayerAttacked;
-    public static event EventHandler OnPlayerKilled;
+    public delegate void OnPlayerAliveChangedDelegate(PlayerController player, bool b);
+    public static event OnPlayerAliveChangedDelegate OnPlayerAliveChanged;
 
     private bool isTrapped = false;
     private float trapTimer = 0;
 
     private void Awake()
     {
-        playerInstances.Add(this);
-        myPlayerIndex = playerInstances.Count - 1;
+        playerInstances.Add(gameObject, this);
 
         charCont = GetComponent<CharacterController>();
-        playerCollider = GetComponent<Collider>();
         interactionCont = GetComponent<PlayerInteractionController>();
 
-        // TEMPORARY
-        charCont.enabled = false;
-        transform.position = new Vector3(-20, 1, 0);
-        charCont.enabled = true;
+        for (int i = 0; i < meshMaterials.Count; i++)
+        {
+            meshMaterials[i].renderer.material = meshMaterials[i].normal;
+        }
 
-        if (!NetworkConnectionController.IsOnline)
-            ownerInstance = this;
+        if (!NetworkConnectionController.connectedToLobby)
+            mainPlayerInstance = this;
+
+        Warp(MapDataController.Instance.playerSpawnPoint);
 
         playerLayerMask = gameObject.layer;
+    }
+    public void Warp(Vector3 pos)
+    {
+        charCont.enabled = false;
+        transform.position = pos;
+        charCont.enabled = true;
     }
 
     // Update is called once per frame
@@ -96,8 +100,11 @@ public class PlayerController : MonoBehaviour
             if (!isTrapped)
             {
                 GetInput();
-                CalculateNormalMove();
-                Move();
+                if (!isLocked)
+                {
+                    CalculateNormalMove();
+                    Move();
+                }
             }
             else
             {
@@ -123,6 +130,11 @@ public class PlayerController : MonoBehaviour
                 Input.GetAxis("Vertical")
             );
         isSprinting = Input.GetKey(keySprint);
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            interactionCont.DropItems();
+        }
     }
     private void CalculateNormalMove()
     {
@@ -140,14 +152,21 @@ public class PlayerController : MonoBehaviour
         {
             if (currentInput.y != 0)
             {
+                audioSource.Play(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP));
                 currentMove.y = jumpHeight;
             }
 
+            // Decide whether to use the accel or decel for the player given the presence of input
             float accelX = moveX == 0 ? groundDeceleration : groundAcceleration;
             float accelZ = moveZ == 0 ? groundDeceleration : groundAcceleration;
 
-            currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
-            currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+            // Old movement didn't move numbers at equal rates
+            //currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
+            //currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+
+            // Change the player's current movement vector to reflect the changes made through input
+            currentMove.x = Mathf.Lerp(currentMove.x, moveX, accelX);
+            currentMove.z = Mathf.Lerp(currentMove.z, moveZ, accelZ);
         }
         else
         {
@@ -157,11 +176,17 @@ public class PlayerController : MonoBehaviour
 
             currentMove.y -= gravity * -2 * Time.deltaTime;
 
+            // Decide whether to use the accel or decel for the player given the presence of input
             float accelX = moveX == 0 ? airDeceleration : airAcceleration;
             float accelZ = moveZ == 0 ? airDeceleration : airAcceleration;
 
-            currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
-            currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+            // Old movement didn't move numbers at equal rates
+            //currentMove.x = Mathf.MoveTowards(currentMove.x, moveX, accelX * Time.deltaTime);
+            //currentMove.z = Mathf.MoveTowards(currentMove.z, moveZ, accelZ * Time.deltaTime);
+
+            // Change the player's current movement vector to reflect the changes made through input
+            currentMove.x = Mathf.Lerp(currentMove.x, moveX, accelX);
+            currentMove.z = Mathf.Lerp(currentMove.z, moveZ, accelZ);
         }
     }
     private void Move()
@@ -172,7 +197,8 @@ public class PlayerController : MonoBehaviour
     public void OnDestroy()
     {
         //Takes itself out of the player array
-        playerInstances.Remove(this);
+        OnPlayerAliveChanged?.Invoke(this, false);
+        playerInstances.Remove(gameObject);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -184,34 +210,48 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void ReceiveAttack()
+    public void ChangeAliveState(bool alive)
     {
-        if (!NetworkConnectionController.IsOnline)
+        isAlive = alive;
+
+        if(!alive)
         {
-            Kill();
+            // Kill
+            for (int i = 0; i < meshMaterials.Count; i++)
+            {
+                meshMaterials[i].renderer.material = meshMaterials[i].ghost;
+                meshMaterials[i].renderer.gameObject.layer = ghostLayer;
+            }
+
+            gameObject.layer = ghostLayer;
+
+            // Exectue only if this is the main player instance for this machine
+            if (mainPlayerInstance == this)
+            {
+                camCont.SetGhost(true);
+                interactionCont.enabled = false;
+                interactionCont.DropItems();
+            }
         }
-        OnPlayerAttacked?.Invoke(this, EventArgs.Empty);
-    }
-    public void Kill()
-    {
-        Activate(false);
-        isAlive = false;
-
-        playerCollider.enabled = false;
-        charCont.enabled = false;
-        foreach(MeshRenderer r in playerMeshes)
-        {
-            r.enabled = false;
-        }
-
-        OnPlayerKilled?.Invoke(this, EventArgs.Empty);
-
-        int aliveIndex = GetAlivePlayer();
-
-        if (aliveIndex != -1)
-            SpectatePlayer(aliveIndex);
         else
-            camCont.SetEnabled(true);
+        {
+            // Resurrect
+            for (int i = 0; i < meshMaterials.Count; i++)
+            {
+                meshMaterials[i].renderer.material = meshMaterials[i].normal;
+                meshMaterials[i].renderer.gameObject.layer = playerLayer;
+            }
+
+            gameObject.layer = playerLayer;
+
+            if (mainPlayerInstance == this)
+            {
+                camCont.SetGhost(false);
+                interactionCont.enabled = true;
+            }
+        }
+
+        OnPlayerAliveChanged?.Invoke(this, alive);
     }
 
     public void Trap(float duration)
@@ -224,38 +264,38 @@ public class PlayerController : MonoBehaviour
     {
         enabled = b;
         camCont.SetEnabled(b);
-        //charCont.enabled = b;
         interactionCont.enabled = b;
 
         if (b)
         {
             name = "My Player";
-            ownerInstance = this;
+            mainPlayerInstance = this;
         }
     }
+
     public void Lock(bool b)
     {
-        enabled = !b;
-        camCont.enabled = !b;
+        isLocked = b;
+        camCont.Lock(b);
+    }
+    public void Lock(bool b, Transform camTransform)
+    {
+        isLocked = b;
+        camCont.Lock(b, camTransform);
     }
 
-    public static void SpectatePlayer(int index)
+    public bool CheckMoveInput()
     {
-        if (playerInstances[index].isAlive)
-        {
-            playerInstances[currentlySpectating].camCont.Spectate(false);
-            playerInstances[index].camCont.Spectate(true);
-            currentlySpectating = index;
-        }
+        // Checks whether there is move input for this frame
+        return currentInput != Vector3.zero;
     }
-    private int GetAlivePlayer()
-    {
-        for(int i = 0; i < playerInstances.Count; i++)
-        {
-            if (playerInstances[i].isAlive)
-                return i;
-        }
 
-        return -1;
+    [Serializable]
+    public class MeshMaterialLink
+    {
+        public MeshRenderer renderer;
+        public Material normal;
+        public Material ghost;
     }
+    
 }

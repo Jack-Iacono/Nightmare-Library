@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
-using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
 public class MainMenuLobbyController : LobbyController
 {
-    public async void Connect()
+    public async void PlayOnlineCreate()
     {
+        await AuthenticationController.SignInAnonymously();
+
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.CREATE;
 
         if (!await StartConnection())
@@ -16,31 +17,18 @@ public class MainMenuLobbyController : LobbyController
             await NetworkConnectionController.StopConnection();
         }
 
-        TextEditor te = new TextEditor();
-        te.text = NetworkConnectionController.joinCode;
-        te.SelectAll();
-        te.Copy();
-    }
-
-    public override async void LeaveLobby()
-    {
-        await DisconnectFromLobby();
-        UIController.instance.ChangeToScreen(0);
-    }
-
-    public void PlayOnlineCreate()
-    {
         GameController.isNetworkGame = true;
-        SceneController.LoadScene(SceneController.m_Scene.ONLINE_GAME);
-    }
-    public void PlayOffline()
-    {
-        GameController.isNetworkGame = false;
-        SceneController.LoadScene(SceneController.m_Scene.OFFLINE_GAME);
+
+        SceneController.UnloadScene(SceneController.m_Scene.MAIN_MENU);
+
+        SceneController.LoadScene(SceneController.m_Scene.PREGAME);
+        SceneController.LoadScene(SceneController.m_Scene.UNIVERSAL);
     }
     public async void PlayOnlineJoin(string joinCode)
     {
         GameController.isNetworkGame = true;
+
+        await AuthenticationController.SignInAnonymously();
 
         NetworkConnectionController.connectionType = NetworkConnectionController.ConnectionType.JOIN;
         NetworkConnectionController.joinCode = joinCode;
@@ -51,5 +39,18 @@ public class MainMenuLobbyController : LobbyController
             await NetworkConnectionController.StopConnection();
         }
     }
+    public void PlayOffline()
+    {
+        GameController.isNetworkGame = false;
+        SceneController.UnloadScene(SceneController.m_Scene.MAIN_MENU);
 
+        SceneController.LoadScene(SceneController.m_Scene.PREGAME);
+        SceneController.LoadScene(SceneController.m_Scene.UNIVERSAL);
+    }
+
+    public override async void LeaveLobby()
+    {
+        await DisconnectFromLobby();
+        UIController.mainInstance.ChangeToScreen(0);
+    }
 }

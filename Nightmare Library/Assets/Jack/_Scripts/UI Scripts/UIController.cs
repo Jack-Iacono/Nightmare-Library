@@ -3,18 +3,24 @@ using UnityEngine;
 
 public abstract class UIController : MonoBehaviour
 {
-    public static UIController instance;
+    public static UIController mainInstance;
 
     public List<ScreenController> screens = new List<ScreenController>();
-    protected int currentScreen = 0;
+    protected int currentScreen = -1;
     protected int nextScreen;
+
+    public delegate void OnScreenIndexChangeDelegate(int index);
+    public event OnScreenIndexChangeDelegate OnScreenIndexChange;
+
+    public delegate void OnStartFinishDelegate();
+    public event OnStartFinishDelegate OnStartFinish;
 
     protected virtual void Awake()
     {
-        if (instance != null)
-            Destroy(instance);
+        if (mainInstance != null)
+            Destroy(mainInstance);
 
-        instance = this;
+        mainInstance = this;
     }
     protected virtual void Start()
     {
@@ -29,22 +35,16 @@ public abstract class UIController : MonoBehaviour
                 screens[i].HideScreen();
         }
 
-        screens[0].ShowScreen();
+        ChangeToScreen(0);
 
-        // Registers this script with the OnGamePause event
-        GameController.OnGamePause += OnGamePause;
-    }
-
-    private void OnDestroy()
-    {
-        GameController.OnGamePause -= OnGamePause;
+        OnStartFinish?.Invoke();
     }
 
     /// <summary>
     /// Changes the currently active UI screen
     /// </summary>
     /// <param name="i">The index of the screen to change to</param>
-    public void ChangeToScreen(int i)
+    public virtual void ChangeToScreen(int i)
     {
         nextScreen = i;
 
@@ -55,11 +55,24 @@ public abstract class UIController : MonoBehaviour
             screens[currentScreen].HideScreen();
         }
 
-        screens[nextScreen].ShowScreen();
+        // Used to hide all screens
+        if(i != -1)
+            screens[nextScreen].ShowScreen();
 
         // sets the current screen to the new screen
         currentScreen = nextScreen;
         nextScreen = -1;
+
+        OnScreenIndexChange?.Invoke(currentScreen);
+    }
+    public void NextScreen()
+    {
+        ChangeToScreen((currentScreen + 1) % screens.Count);
+    }
+    public void PreviousScreen()
+    {
+        int index = (currentScreen - 1) % screens.Count;
+        ChangeToScreen(index < 0 ? screens.Count - 1 : index);
     }
 
     #region Events

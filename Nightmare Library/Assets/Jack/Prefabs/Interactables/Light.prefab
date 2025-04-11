@@ -93,7 +93,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1001269749584157908}
   - component: {fileID: 4815113352088458451}
-  - component: {fileID: 458709219159805155}
+  - component: {fileID: 4094503534835153139}
   m_Layer: 10
   m_Name: Light
   m_TagString: Untagged
@@ -139,7 +139,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &458709219159805155
+--- !u!114 &4094503534835153139
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -148,17 +148,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 5606470593144871516}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a720d3b5dcd5afe4db3e95d7c8a51dc1, type: 3}
+  m_Script: {fileID: 11500000, guid: 557c36b41504588499941c586af56eee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  placementTypes: 
-  floorPlacementType: 0
-  wallPlacementType: 0
-  precisePlacement: 0
-  allowPlayerClick: 0
-  allowPlayerPickup: 0
-  allowEnemyHysterics: 0
-  allowEnemyFlicker: 1
   attachedLight: {fileID: 2387114679293393926}
 --- !u!1 &8759124631110718374
 GameObject:

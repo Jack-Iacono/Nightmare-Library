@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FootprintController : MonoBehaviour
+public class FootprintController : HoldableItem
 {
     private float avgDuration = 10;
     private float dev = 1;
@@ -11,12 +11,9 @@ public class FootprintController : MonoBehaviour
     private bool isRunning;
     private float currentLifeTimer;
 
-    public event EventHandler OnFootprintSpawn;
-    public event EventHandler OnFootprintDespawn;
-
     private void Start()
     {
-        if(!NetworkConnectionController.IsRunning)
+        if(!NetworkConnectionController.connectedToLobby)
             gameObject.SetActive(false);
     }
 
@@ -31,22 +28,23 @@ public class FootprintController : MonoBehaviour
             }
             else
             {
-                Deactivate();
+                Pickup();
             }
         }
     }
 
-    public void Activate()
+    public override void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
-        currentLifeTimer = UnityEngine.Random.Range(avgDuration - dev, avgDuration + dev);  isRunning = true;
+        currentLifeTimer = UnityEngine.Random.Range(avgDuration - dev, avgDuration + dev); 
+        isRunning = true;
 
-        OnFootprintSpawn?.Invoke(this, EventArgs.Empty);
+        base.Place(pos, rot, fromNetwork);
     }
-    public void Deactivate()
+    public override GameObject Pickup(bool fromNetwork = false)
     {
         isRunning = false;
         gameObject.SetActive(false);
 
-        OnFootprintDespawn?.Invoke(this, EventArgs.Empty);
+        return base.Pickup(fromNetwork);
     }
 }

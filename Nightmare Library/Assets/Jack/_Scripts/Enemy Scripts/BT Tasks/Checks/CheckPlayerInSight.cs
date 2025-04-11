@@ -47,11 +47,12 @@ public class CheckPlayerInSight : Node
         PriorityQueue<Transform> queue = new PriorityQueue<Transform>();
 
         // Eliminate the players that are too far from the scan range and place them in closest to furtherst order
-        foreach (PlayerController p in PlayerController.playerInstances)
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
         {
             float dist = Vector3.Distance(p.transform.position, transform.position);
 
-            if (dist <= fovRange)
+            // Check to see if the player is not at the desk, is alive and is in the fovRange
+            if (!DeskController.playersAtDesk.Contains(p) && p.isAlive && dist <= fovRange)
             {
                 queue.Insert(new PriorityQueue<Transform>.Element(p.transform, (int)dist));
             }
@@ -76,6 +77,9 @@ public class CheckPlayerInSight : Node
                         if (hit.collider.transform == player)
                         {
                             SetPlayerPosition(player);
+
+                            status = Status.SUCCESS;
+                            return status;
                         }
                     }
                 }

@@ -14,11 +14,6 @@ public class TaskStalkWarpBehind : Node
     private float speed;
     private float acceleration;
 
-    private float warpDistMin = 10;
-    private float warpDistMax = 15;
-
-    private float blindSpotAngle = 45;
-
     private bool hasWarped = false;
 
     private AudioClip warpSound;
@@ -34,32 +29,17 @@ public class TaskStalkWarpBehind : Node
     }
     public override Status Check(float dt)
     {
-        if (owner.stalkAttemptCounter > 0)
+        if (!hasWarped)
         {
-            if (!hasWarped)
-            {
-                float pAng = owner.currentTargetPlayer.transform.rotation.eulerAngles.y;
-                float randAng = Random.Range(pAng + blindSpotAngle, pAng + (360 - blindSpotAngle)) % 360;
-                float randDist = Random.Range(warpDistMin, warpDistMax);
-                Vector3 loc = new Vector3(Mathf.Sin(randAng) * randDist, 0, Mathf.Cos(randAng) * randDist) + owner.currentTargetPlayer.transform.position;
+            navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
+            navAgent.speed = 0;
+            hasWarped = true;
 
-                NavMeshHit hit;
-                if (NavMesh.SamplePosition(loc, out hit, 10, NavMesh.AllAreas))
-                    navAgent.Warp(hit.position);
-
-                navAgent.speed = 0;
-
-                hasWarped = true;
-
-                // TEMPORARY
-                enemy.PlaySound("musicLover");
-            }
-
-            status = Status.SUCCESS;
-            return status;
+            // Play the sound to alert the player
+            AudioManager.PlaySoundAtPoint(AudioManager.GetAudioData(AudioManager.SoundType.e_STALK_APPEAR), owner.currentTargetPlayer.transform.position);
         }
 
-        status = Status.FAILURE;
+        status = Status.SUCCESS;
         return status;
     }
 

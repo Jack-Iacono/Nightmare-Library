@@ -3,23 +3,38 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
     public static GameController instance;
 
     public static bool gamePaused = false;
+    public static bool gameStarted = false;
 
-    public float gameTimer = 480;
+    public const float gameTime = 1000;
+    public float gameTimer { get; set; } = gameTime;
 
-    // Local Events
-    public static event EventHandler<bool> OnGamePause;
+    private const int totalLevels = 5;
+    private int gameTimeLevel = 1;
+    public delegate void OnLevelChangeDelegate(int theshold);
+    public static OnLevelChangeDelegate OnLevelChange;
+
+    public static int enemyCount = 1;
+    private List<GameObject> spawnedEnemies = new List<GameObject>();
+
+    public static RoundResults roundResults;
 
     public static bool isNetworkGame = true;
 
-    // Multiplayer Events
-    public static event EventHandler<bool> OnNetworkGamePause;
-    public static event EventHandler OnGameEnd;
+    public delegate void OnGameEndDelegate();
+    public static event OnGameEndDelegate OnGameEnd;
+
+    public delegate void OnGameStartDelegate();
+    public static event OnGameStartDelegate OnGameStart;
+
+    public delegate void OnEnemyCountChangedDelegate(int count);
+    public static event OnEnemyCountChangedDelegate OnEnemyCountChanged;
 
     private void Awake()
     {
@@ -28,22 +43,27 @@ public class GameController : MonoBehaviour
         else
             Destroy(this);
 
-        PlayerController.OnPlayerKilled += OnPlayerKilled;
+        roundResults = new RoundResults(enemyCount);
+        SceneController.OnMapLoaded += OnMapLoaded;
+
+        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 
-    private void Start()
+    private void OnMapLoaded(string mapName)
     {
-        if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsServer)
-            SpawnPrefabs();
-        PauseGame(false);
-    }
+        if (NetworkConnectionController.HasAuthority)
+        {
+            for (int i = 0; i < GameController.enemyCount; i++)
+            {
+                GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+                ePrefab.name = "Basic Enemy";
+                spawnedEnemies.Add(ePrefab);
+            }
+        }
 
-    private void SpawnPrefabs()
-    {
-        PrefabHandler.Instance.InstantiatePrefabOffline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity);
-        PrefabHandler.Instance.InstantiatePrefabOffline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+        gameStarted = true;
+        OnGameStart?.Invoke();
     }
-
 
     // Update is called once per frame
     void Update()
@@ -51,16 +71,36 @@ public class GameController : MonoBehaviour
         if (!gamePaused)
         {
             if (gameTimer > 0)
+            {
                 gameTimer -= Time.deltaTime;
+
+                // Tells the other scripts that the game level is increasing, this makes the game more difficult
+                if (gameTime - gameTimer > gameTimeLevel * (gameTime / totalLevels))
+                {
+                    gameTimeLevel++;
+                    OnLevelChange?.Invoke(gameTimeLevel);
+                }
+            }
             else
                 EndGame();
         }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            EndGame();
+        }
     }
 
-    private void OnPlayerKilled(object sender, EventArgs e)
+    public static void SetEnemyCount(int e)
+    {
+        enemyCount = e;
+        OnEnemyCountChanged?.Invoke(enemyCount);
+    }
+
+    public void OnPlayerAliveChanged(PlayerController player, bool b)
     {
         bool allPlayersDead = true;
-        foreach(PlayerController p in PlayerController.playerInstances)
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
         {
             if (p.isAlive)
             {
@@ -71,35 +111,25 @@ public class GameController : MonoBehaviour
 
         if (allPlayersDead && NetworkConnectionController.HasAuthority)
         {
-            PauseGame(true);
-            StartCoroutine(EndGameCoroutine());
+            EndGame();
         }
     }
 
-    public IEnumerator EndGameCoroutine()
+    public static void MakeGuess(int index, EnemyPreset preset)
     {
-        yield return new WaitForSeconds(5);
-        EndGame();
+        roundResults.SetGuess(index, preset);
     }
-    public void EndGame()
+
+    public static void EndGame()
     {
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        if(NetworkConnectionController.HasAuthority)
         {
-            OnGameEnd?.Invoke(this, EventArgs.Empty);
+            OnGameEnd?.Invoke();
         }
-        else
-        {
-            SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
-        }
-    }
 
-    public void PauseGame(bool b)
-    {
-        if (isNetworkGame && NetworkConnectionController.HasAuthority)
-            OnNetworkGamePause?.Invoke(this, b);
+        roundResults.SetPresentEnemies(Enemy.enemyInstances);
 
-        gamePaused = b;
-        OnGamePause?.Invoke(this, b);
+        ((GameLobbyController)LobbyController.instance).GoToPreGame();
     }
 
     private void OnDestroy()
@@ -107,7 +137,49 @@ public class GameController : MonoBehaviour
         if (instance == this)
             instance = null;
 
-        PlayerController.OnPlayerKilled -= OnPlayerKilled;
+        foreach(GameObject g in spawnedEnemies)
+        {
+            Destroy(g);
+        }
+
+        foreach (PlayerController p in PlayerController.playerInstances.Values)
+        {
+            p.ChangeAliveState(true);
+        }
+
+        gameStarted = false;
+        SceneController.OnMapLoaded -= OnMapLoaded;
+        PlayerController.OnPlayerAliveChanged -= OnPlayerAliveChanged;
     }
 
+    public class RoundResults
+    {
+        public List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(enemyCount);
+        public List<EnemyPreset> presentEnemies = new List<EnemyPreset>(enemyCount);
+
+        public RoundResults(int enemyCount)
+        {
+            for (int i = 0; i < enemyCount; i++)
+            {
+                enemyGuesses.Add(null);
+                presentEnemies.Add(null);
+            }
+        }
+
+        public void SetGuess(int i, EnemyPreset e)
+        {
+            enemyGuesses[i] = e;    
+        }
+        public void SetPresentEnemies(Dictionary<GameObject, Enemy> enemies)
+        {
+            List<Enemy> e = new List<Enemy>(enemies.Values);
+            for(int i = 0; i < e.Count; i++)
+            {
+                if (presentEnemies.Count > i)
+                    presentEnemies[i] = e[i].enemyType;
+                else
+                    presentEnemies.Add(e[i].enemyType);
+            }
+        }
+    }
 }

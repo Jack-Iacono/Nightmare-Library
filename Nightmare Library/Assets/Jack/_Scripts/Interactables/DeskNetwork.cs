@@ -8,8 +8,15 @@ using UnityEngine;
 public class DeskNetwork : NetworkBehaviour
 {
     DeskController parent;
-    [SerializeField]
-    private GameObject onlineIdolPrefab;
+
+    private void Awake()
+    {
+        if (!NetworkConnectionController.connectedToLobby)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+    }
 
     public override void OnNetworkSpawn()
     {
@@ -21,16 +28,8 @@ public class DeskNetwork : NetworkBehaviour
             parent.enabled = false;
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    private void TransmitClickServerRpc(ulong sender)
+    public override void OnDestroy()
     {
-        Debug.Log("Clicked");
-        //ConsumeClickClientRpc(sender);
-    }
-    [ClientRpc]
-    private void ConsumeClickClientRpc(ulong sender)
-    {
-        if (NetworkManager.LocalClientId != sender)
-            Debug.Log("Click on client " + sender);
+        base.OnDestroy();
     }
 }

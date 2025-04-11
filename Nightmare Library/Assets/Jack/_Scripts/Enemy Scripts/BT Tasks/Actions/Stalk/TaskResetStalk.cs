@@ -16,7 +16,6 @@ public class TaskResetStalk : Node
     {
         Debug.Log("Reset Stalk");
 
-        owner.EmptyStalkAttempts();
         owner.RemoveTarget();
 
         status = Status.SUCCESS;

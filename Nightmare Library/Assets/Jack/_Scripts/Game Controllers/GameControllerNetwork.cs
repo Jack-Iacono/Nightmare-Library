@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -15,41 +14,45 @@ public class GameControllerNetwork : NetworkBehaviour
     // Network Variables
     private NetworkVariable<ContinuousData> contState;
     public static NetworkVariable<bool> gamePaused;
-
-    public List<GameObject> spawnedPrefabs = new List<GameObject>();
-
-    private int connectedPlayers = 0;
+    private static NetworkVariable<int> enemyCount = new NetworkVariable<int>();
 
     private void Awake()
     {
+        if (!NetworkConnectionController.connectedToLobby)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+
         if (instance == null)
             instance = this;
         else
             Destroy(this);
 
-        GameController.OnNetworkGamePause += OnParentPause;
-        GameController.OnGameEnd += OnGameEnd;
-        LobbyController.OnLobbyEnter += OnLobbyEnter;
+        parent = GetComponent<GameController>();
 
-        var permission = NetworkVariableWritePermission.Owner;
+        var permission = NetworkVariableWritePermission.Server;
 
         contState = new NetworkVariable<ContinuousData>(writePerm: permission);
         gamePaused = new NetworkVariable<bool>(writePerm: permission);
+        enemyCount = new NetworkVariable<int>(writePerm: permission);
+
+        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-
-        parent = GetComponent<GameController>();
-
-        if (!IsOwner)
-            parent.enabled = false;
-
         // Changes the gameController data for all versions of this gameobject
         if (!IsOwner)
         {
             parent.enabled = false;
+            enemyCount.OnValueChanged += OnEnemyCountValueChanged;
+        }
+        else
+        {
+            GameController.OnEnemyCountChanged += OnEnemyCountChanged;
+            GameController.OnGameEnd += OnGameEnd;
         }
     }
 
@@ -62,62 +65,58 @@ public class GameControllerNetwork : NetworkBehaviour
             ConsumeContinuousState();
     }
 
-    private void OnParentPause(object sender, bool e)
-    {
-        ConsumePauseStateClientRpc(e);
-    }
-    private void OnGameEnd(object sender, EventArgs e)
-    {
-        // Unload Spawned Objects
-        PrefabHandlerNetwork.Instance.DespawnPrefabs();
+    #region Enemy Count
 
-        GameController.OnGameEnd -= OnGameEnd;
-        SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU);
-    }
-
-    private void OnLobbyEnter(ulong clientId, bool isServer)
+    private void OnEnemyCountChanged(int count)
     {
-        if (NetworkManager.Singleton.IsServer)
-            ServerConnected();
-        else
-            ClientConnected();
+        enemyCount.Value = count;
+    }
+    private void OnEnemyCountValueChanged(int previousValue, int newValue)
+    {
+        if(!IsServer)
+            GameController.SetEnemyCount(newValue);
     }
 
-    private void ServerConnected()
-    {
-        connectedPlayers++;
-        CheckAllConnected();
-    }
-    private void ClientConnected()
-    {
-        ClientConnectedServerRpc(NetworkManager.LocalClientId);
-    }
-    [ServerRpc(RequireOwnership = false)]
-    private void ClientConnectedServerRpc(ulong clientId)
-    {
-        connectedPlayers++;
-        CheckAllConnected();
-    }
+    #endregion
 
-    private void CheckAllConnected()
+    #region Player Death / Resurrection
+
+    private void OnPlayerAliveChanged(PlayerController player, bool b)
     {
-        // Wait until all players are connected and then load the prefabs
-        if(connectedPlayers == NetworkManager.ConnectedClients.Count)
+        if(IsServer)
+            OnPlayerAliveChangedClientRpc(player.GetComponent<PlayerNetwork>().OwnerClientId, b);
+    }
+    [ClientRpc]
+    private void OnPlayerAliveChangedClientRpc(ulong id, bool b)
+    {
+        if(id != NetworkManager.LocalClientId)
         {
-            foreach(ulong id in NetworkManager.ConnectedClients.Keys)
-            {
-                GameObject pPrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.p_Player, new Vector3(-20, 1, 0), Quaternion.identity, id);
-                pPrefab.name = "Player " + id;
-
-                spawnedPrefabs.Add(pPrefab);
-            }
-
-            GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefabOnline(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
-            ePrefab.name = "Basic Enemy " + instance.OwnerClientId;
-
-            spawnedPrefabs.Add(ePrefab);
+            Debug.Log("Muting Player " + id + ": " + !b);
+            VoiceChatController.MutePlayer(id, !b);
         }
     }
+
+    #endregion
+
+    #region Game Ending
+
+    private void OnGameEnd()
+    {
+        if (NetworkManager.IsServer)
+            OnGameEndClientRpc();
+    }
+    [ClientRpc]
+    private void OnGameEndClientRpc()
+    {
+        if (!NetworkManager.IsServer)
+        {
+            GameController.EndGame();
+        }
+    }
+
+    #endregion
+
+    #region Continuous Data
 
     private void TransmitContinuousState()
     {
@@ -142,13 +141,6 @@ public class GameControllerNetwork : NetworkBehaviour
         contState.Value = state;
     }
 
-    [ClientRpc]
-    private void ConsumePauseStateClientRpc(bool b)
-    {
-        if (NetworkConnectionController.IsRunning && !IsOwner)
-            parent.PauseGame(b);
-    }
-
     private struct ContinuousData : INetworkSerializable
     {
         public float timer;
@@ -164,15 +156,18 @@ public class GameControllerNetwork : NetworkBehaviour
         }
     }
 
-    
+    #endregion
+
     public override void OnDestroy()
     {
         // Should never not be this, but just better to check
         if (instance == this)
             instance = null;
 
-        GameController.OnNetworkGamePause -= OnParentPause;
+        if(NetworkConnectionController.connectedToLobby)
+            VoiceChatController.UnMuteAll();
+
         GameController.OnGameEnd -= OnGameEnd;
-        LobbyController.OnLobbyEnter -= OnLobbyEnter;
+        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 }

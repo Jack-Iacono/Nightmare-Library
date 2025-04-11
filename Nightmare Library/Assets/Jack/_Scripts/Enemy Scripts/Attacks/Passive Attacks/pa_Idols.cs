@@ -6,14 +6,16 @@ using UnityEngine;
 
 public class pa_Idols : PassiveAttack
 {
-    protected int maxIdolCount = 7;
+    protected int maxIdolCount = 3;
     protected static int currentIdolCount = 0;
 
     private List<IdolController> idolObjects = new List<IdolController>();
     protected int activeIdolObjects = 0;
 
-    private float spawnTimeAvg = 4;
-    private float spawnTimeDev = 1;
+    private const float baseSpawnTimeMin = 5;
+    private const float baseSpawnTimeMax = 7;
+    private float spawnTimeMin = baseSpawnTimeMin;
+    private float spawnTimeMax = baseSpawnTimeMax;  
     private float spawnTimer = 0;
 
     public delegate void OnIdolCountChangeDelegate(int idolCount);
@@ -21,14 +23,16 @@ public class pa_Idols : PassiveAttack
 
     public pa_Idols(Enemy owner) : base(owner)
     {
+        name = "Idols";
+        toolTip = "It spawns stuff somewhere, not sure that letting them stay around is a good idea";
     }
 
-    public override void Initialize()
+    public override void Initialize(int level = 1)
     {
         base.Initialize();
 
         idolObjects = IdolController.GetAllIdols();
-        spawnTimer = UnityEngine.Random.Range(spawnTimeAvg - spawnTimeDev, spawnTimeAvg + spawnTimeDev);
+        spawnTimer = UnityEngine.Random.Range(spawnTimeMin, spawnTimeMax);
     }
 
     public override void Update(float dt)
@@ -44,7 +48,7 @@ public class pa_Idols : PassiveAttack
                 else
                 {
                     SpawnIdol();
-                    spawnTimer = UnityEngine.Random.Range(spawnTimeAvg - spawnTimeDev, spawnTimeAvg + spawnTimeDev);
+                    spawnTimer = UnityEngine.Random.Range(spawnTimeMin, spawnTimeMax);
                 }
             }
             else
@@ -62,7 +66,7 @@ public class pa_Idols : PassiveAttack
         {
             if (!idolObjects[i].isActive)
             {
-                idolObjects[i].Activate();
+                idolObjects[i].Activate(true);
                 OnIdolCountChanged?.Invoke(currentIdolCount);
                 break;
             }
@@ -78,18 +82,20 @@ public class pa_Idols : PassiveAttack
         currentIdolCount = 0;
         foreach(IdolController i in idolObjects)
         {
-            i.Deactivate();
+            i.Activate(false);
         }
     }
 
     protected void AttackPlayer()
     {
-        foreach (PlayerController player in DeskController.playersAtDesk)
+        // This ensures that the list cannot be changed once this method starts
+        List<PlayerController> playerList = new List<PlayerController>(DeskController.playersAtDesk);
+        foreach (PlayerController player in playerList)
         {
-            player.ReceiveAttack();
+            player.ChangeAliveState(false);
         }
 
-        spawnTimer = UnityEngine.Random.Range(spawnTimeAvg - spawnTimeDev, spawnTimeAvg + spawnTimeDev);
+        spawnTimer = UnityEngine.Random.Range(baseSpawnTimeMin - baseSpawnTimeMax, baseSpawnTimeMin + baseSpawnTimeMax);
         ClearIdols();
     }
 
@@ -97,5 +103,13 @@ public class pa_Idols : PassiveAttack
     {
         currentIdolCount = 0;
         base.OnDestroy();
+    }
+
+    protected override void OnLevelChange(int level)
+    {
+        base.OnLevelChange(level);
+
+        spawnTimeMax = baseSpawnTimeMax / level;
+        spawnTimeMin = baseSpawnTimeMin / level;
     }
 }

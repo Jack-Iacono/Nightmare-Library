@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 using BehaviorTree;
+using System.IO;
 
 public class TaskRushTarget : Node
 {
@@ -34,7 +35,7 @@ public class TaskRushTarget : Node
     public override Status Check(float dt)
     {
         if (currentTargetNode == null)
-            currentTargetNode = owner.GetNextNode();
+            currentTargetNode = GetNextNodeInPath();
 
         if (atNodeWait)
         {
@@ -50,13 +51,13 @@ public class TaskRushTarget : Node
         {
             navAgent.destination = currentTargetNode.position;
             navAgent.speed = speed;
-            navAgent.acceleration = 1000;
+            navAgent.acceleration = speed * 5;
 
             // Is the player close enough to the target node
-            if (Vector3.SqrMagnitude(transform.position - currentTargetNode.position) < 1)
+            if (Vector3.SqrMagnitude(transform.position - currentTargetNode.position) < 9)
             {
                 atNodeWait = true;
-                currentTargetNode = owner.GetNextNode();
+                currentTargetNode = GetNextNodeInPath();
             }
         }
         else
@@ -67,5 +68,22 @@ public class TaskRushTarget : Node
 
         status = Status.RUNNING;
         return status;
+    }
+
+    public void OnLevelChange(float nodeWaitTime, float speed)
+    {
+        this.nodeWaitTime = nodeWaitTime;
+        this.speed = speed;
+    }
+
+    public EnemyNavNode GetNextNodeInPath()
+    {
+        if (owner.path.Count > 0)
+        {
+            EnemyNavNode node = owner.path[0];
+            owner.path.RemoveAt(0);
+            return node;
+        }
+        return null;
     }
 }

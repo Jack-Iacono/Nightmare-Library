@@ -11,7 +11,7 @@ public class GameController : MonoBehaviour
 
     public static bool gameStarted = false;
 
-    public const float gameTime = 1000;
+    public const float gameTime = 360;
     public float gameTimer { get; set; } = gameTime;
 
     private const int totalLevels = 5;

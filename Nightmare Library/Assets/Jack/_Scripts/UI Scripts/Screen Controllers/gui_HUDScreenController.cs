@@ -8,11 +8,6 @@ using UnityEngine.UI;
 public class gui_HUDScreenController : ScreenController
 {
     [SerializeField]
-    private TMP_Text timerText;
-    [SerializeField]
-    private TMP_Text inventoryText;
-
-    [SerializeField]
     private Image reticle;
     [SerializeField]
     private Sprite normalReticle;
@@ -23,19 +18,9 @@ public class gui_HUDScreenController : ScreenController
 
     private void Start()
     {
-        InventoryController.instance.onHeldItemChanged += OnInventoryHeldItemChanged;
         PlayerInteractionController.onItemSightChange += OnItemSightChanged;
 
-        inventoryText.text = "Empty";
         reticle.sprite = normalReticle;
-    }
-
-    
-
-    private void Update()
-    {
-        if (GameController.instance != null)
-            timerText.text = FloatToTime(GameController.instance.gameTimer);
     }
 
     private string FloatToTime(float time)
@@ -68,13 +53,6 @@ public class gui_HUDScreenController : ScreenController
     private void OnInventoryHeldItemChanged(InventoryItem item)
     {
         
-    }
-    private void OnInventoryHeldItemChanged(HoldableItem holdable)
-    {
-        if (holdable != null)
-            inventoryText.text = holdable.name;
-        else
-            inventoryText.text = "Empty";
     }
 
     private void OnItemSightChanged(int interactionType)

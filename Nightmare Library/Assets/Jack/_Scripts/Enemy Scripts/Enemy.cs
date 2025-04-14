@@ -265,6 +265,13 @@ public class Enemy : MonoBehaviour
         return passiveAttackTree;
     }
 
+    public void RemoveEnemy()
+    {
+        Debug.Log("Removing Enemy");
+        PrefabHandler.Instance.CleanupGameObject(gameObject);
+        PrefabHandler.Instance.DestroyGameObject(gameObject);
+    }
+
     protected virtual void OnGamePause(object sender, bool e)
     {
         if(navAgent.isOnNavMesh)

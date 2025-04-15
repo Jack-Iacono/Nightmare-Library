@@ -10,6 +10,10 @@ public class SceneController : MonoBehaviour
 {
     public static SceneController instance { get; private set; }
 
+    public GameObject loadingScreen;
+    private static List<Scene> busyScenes = new List<Scene>();
+    private static bool loadBusy = false;
+
     public enum m_Scene { MAIN_MENU, GAME, PREGAME, UNIVERSAL, GAME_SYS };
     public readonly static Dictionary<m_Scene, SceneData> scenes = new Dictionary<m_Scene, SceneData>
         {
@@ -30,6 +34,10 @@ public class SceneController : MonoBehaviour
     public delegate void OnMapLoadedDelegate(string mapName);
     public static event OnMapLoadedDelegate OnMapLoaded;
     public static Scene loadedMap;
+
+    public delegate void OnLoadDelegate();
+    public static event OnLoadDelegate OnBeginLoad;
+    public static event OnLoadDelegate OnEndLoad;
 
     private void Awake()
     {
@@ -64,11 +72,44 @@ public class SceneController : MonoBehaviour
         if(mapScenes.Contains(s.name))
             SceneManager.SetActiveScene(s);
 
+        RemoveBusyScene(s);
         CheckMapLoaded();
     }
     private void OnSceneUnloaded(Scene s)
     {
-        //Debug.Log($"Scene {s.name} unloaded");
+        RemoveBusyScene(s);
+    }
+
+    public static void AddBusyScene(Scene s)
+    {
+        busyScenes.Add(s);
+        CheckBusyScenes();
+    }
+    public static void RemoveBusyScene(Scene s)
+    {
+        busyScenes.Remove(s);
+        CheckBusyScenes();
+    }
+    private static void CheckBusyScenes()
+    {
+        if(busyScenes.Count > 0)
+        {
+            instance.loadingScreen.SetActive(true);
+            if (!loadBusy)
+            {
+                loadBusy = true;
+                OnBeginLoad?.Invoke();
+            }
+        }
+        else
+        {
+            instance.loadingScreen.SetActive(false);
+            if (loadBusy)
+            {
+                loadBusy = false;
+                OnEndLoad?.Invoke();
+            }
+        } 
     }
 
     public static void UnloadScene(m_Scene scene, bool offlineOverride = false)
@@ -87,6 +128,8 @@ public class SceneController : MonoBehaviour
             {
                 OnAsyncUnload?.Invoke(scene);
             }
+
+            AddBusyScene(SceneManager.GetSceneByName(scene));
         }
     }
 
@@ -96,8 +139,6 @@ public class SceneController : MonoBehaviour
     }
     public static void LoadScene(string scene, bool offlineOverride = false)
     {
-        Debug.Log("Load Scene " + scene);
-
         if (offlineOverride || !NetworkConnectionController.connectedToLobby)
         {
             SceneManager.LoadSceneAsync(scene, LoadSceneMode.Additive);
@@ -106,6 +147,8 @@ public class SceneController : MonoBehaviour
         {
             OnAsyncLoad?.Invoke(scene);
         }
+
+        AddBusyScene(SceneManager.GetSceneByName(scene));
     }
 
     /// <summary>

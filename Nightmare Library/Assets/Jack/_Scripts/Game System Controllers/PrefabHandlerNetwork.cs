@@ -66,7 +66,7 @@ public class PrefabHandlerNetwork : NetworkBehaviour
             NetworkObject obj;
             if (g.TryGetComponent<NetworkObject>(out obj))
             {
-                if (obj != null)
+                if (obj != null && obj.IsSpawned)
                     obj.Despawn();
             }
         }

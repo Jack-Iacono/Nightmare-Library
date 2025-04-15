@@ -71,6 +71,7 @@ public class SceneControllerNetwork : NetworkBehaviour
         {
             case SceneEventType.LoadComplete:
                 //Debug.Log($"Loaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
+                Debug.Log("Scene Loaded");
                 break;
             case SceneEventType.UnloadComplete:
                 //Debug.Log($"Unloaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
@@ -79,6 +80,7 @@ public class SceneControllerNetwork : NetworkBehaviour
                 //Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
                 if (clientOrServer == 1)
                 {
+                    SceneController.RemoveBusyScene(sceneEvent.Scene);
                     CheckSceneBuffer();
                 }
                 break;
@@ -86,6 +88,7 @@ public class SceneControllerNetwork : NetworkBehaviour
                 //Debug.Log($"Unload event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
                 if (clientOrServer == 1)
                 {
+                    SceneController.RemoveBusyScene(sceneEvent.Scene);
                     CheckSceneBuffer();
                 }
                 break;
@@ -149,6 +152,15 @@ public class SceneControllerNetwork : NetworkBehaviour
         }
         else
             eventInProgress = false;
+    }
+
+    public void BeginSceneLoad()
+    {
+
+    }
+    public void EndSceneLoad()
+    {
+
     }
 
     public override void OnDestroy()

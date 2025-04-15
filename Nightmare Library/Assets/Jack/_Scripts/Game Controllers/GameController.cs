@@ -19,7 +19,8 @@ public class GameController : MonoBehaviour
     public delegate void OnLevelChangeDelegate(int theshold);
     public static OnLevelChangeDelegate OnLevelChange;
 
-    public static int enemyCount = 1;
+    public static int startingEnemyCount = 1;
+    public static int currentEnemyCount = 0;
     private List<GameObject> spawnedEnemies = new List<GameObject>();
 
     public static RoundResults roundResults = null;
@@ -42,21 +43,24 @@ public class GameController : MonoBehaviour
         else
             Destroy(this);
 
-        roundResults = new RoundResults(enemyCount);
+        roundResults = new RoundResults(startingEnemyCount);
         SceneController.OnMapLoaded += OnMapLoaded;
 
         PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
+        Enemy.OnEnemyRemoved += OnEnemyRemoved;
     }
 
     private void OnMapLoaded(string mapName)
     {
         if (NetworkConnectionController.HasAuthority && SceneController.loadedMap.name == SceneController.scenes[SceneController.m_Scene.GAME].name)
         {
-            for (int i = 0; i < GameController.enemyCount; i++)
+            for (int i = 0; i < GameController.startingEnemyCount; i++)
             {
                 GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
                 ePrefab.name = "Basic Enemy";
                 spawnedEnemies.Add(ePrefab);
+
+                currentEnemyCount++;
             }
         }
 
@@ -84,8 +88,8 @@ public class GameController : MonoBehaviour
 
     public static void SetEnemyCount(int e)
     {
-        enemyCount = e;
-        OnEnemyCountChanged?.Invoke(enemyCount);
+        startingEnemyCount = e;
+        OnEnemyCountChanged?.Invoke(startingEnemyCount);
     }
 
     public void OnPlayerAliveChanged(PlayerController player, bool b)
@@ -102,7 +106,18 @@ public class GameController : MonoBehaviour
 
         if (allPlayersDead && NetworkConnectionController.HasAuthority)
         {
-            EndGame();
+            StartCoroutine(BeginEndGame());
+        }
+    }
+    private void OnEnemyRemoved(Enemy enemy)
+    {
+        currentEnemyCount--;
+
+        // TEMPORARY!!!!
+        // Will be removed after demo
+        if(currentEnemyCount <= 0)
+        {
+            StartCoroutine(BeginEndGame());
         }
     }
 
@@ -111,14 +126,17 @@ public class GameController : MonoBehaviour
         roundResults.SetGuess(index, preset);
     }
 
+    private IEnumerator BeginEndGame()
+    {
+        yield return new WaitForSecondsRealtime(5);
+        EndGame();
+    }
     public static void EndGame()
     {
         if(NetworkConnectionController.HasAuthority)
         {
             OnGameEnd?.Invoke();
         }
-
-        roundResults.SetPresentEnemies(Enemy.enemyInstances);
 
         ((GameLobbyController)LobbyController.instance).GoToPreGame();
     }
@@ -145,8 +163,8 @@ public class GameController : MonoBehaviour
 
     public class RoundResults
     {
-        public List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(enemyCount);
-        public List<EnemyPreset> presentEnemies = new List<EnemyPreset>(enemyCount);
+        public List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(startingEnemyCount);
+        public List<EnemyPreset> presentEnemies = new List<EnemyPreset>(startingEnemyCount);
 
         public RoundResults(int enemyCount)
         {

@@ -8,7 +8,7 @@ using UnityEngine;
 public class PlayerNetwork : NetworkBehaviour
 {
     public static PlayerNetwork ownerInstance;
-    public static BiDict<PlayerController, PlayerNetwork> playerNetworkReference = new BiDict<PlayerController, PlayerNetwork>();
+    public static BiDict<PlayerController, NetworkObject> playerNetworkReference = new BiDict<PlayerController, NetworkObject>();
 
     [SerializeField] private bool _serverAuth;
 
@@ -36,7 +36,7 @@ public class PlayerNetwork : NetworkBehaviour
         playerCont = GetComponent<PlayerController>();
         PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
 
-        playerNetworkReference.Add(playerCont, this);
+        playerNetworkReference.Add(playerCont, GetComponent<NetworkObject>());
     }
 
     public override void OnNetworkSpawn()

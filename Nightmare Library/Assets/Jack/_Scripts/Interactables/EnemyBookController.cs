@@ -36,6 +36,7 @@ public class EnemyBookController : MonoBehaviour, IClickable
     public static void ChangeAppliedBook(PlayerController player, EnemyPreset preset)
     {
         appliedBooks[player] = preset;
+        Debug.Log(player.name + " set to enemy " + preset.name);
     }
 
     public void Hover(bool enterExit)

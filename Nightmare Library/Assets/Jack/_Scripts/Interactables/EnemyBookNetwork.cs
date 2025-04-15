@@ -10,9 +10,18 @@ public class EnemyBookNetwork : NetworkBehaviour
     private EnemyBookController parent;
     private void Awake()
     {
-        parent = GetComponent<EnemyBookController>();
-        parent.OnAppliedBookChanged += OnAppliedBookChanged;
+        if (!NetworkConnectionController.connectedToLobby)
+        {
+            Destroy(this);
+            Destroy(GetComponent<NetworkObject>());
+        }
+        else
+        {
+            parent = GetComponent<EnemyBookController>();
+            parent.OnAppliedBookChanged += OnAppliedBookChanged;
+        }
     }
+
 
     private void OnAppliedBookChanged(PlayerController controller, EnemyPreset preset)
     {
@@ -22,15 +31,15 @@ public class EnemyBookNetwork : NetworkBehaviour
         }
         else
         {
+            Debug.Log("Sending Server Rpc");
+
             // Send the data over that can be decoded later
-            PlayerNetwork network = PlayerNetwork.playerNetworkReference[controller];
-            OnAppliedBookChangedServerRpc(network.NetworkObjectId, PersistentDataController.Instance.enemyPresets.IndexOf(preset));
+            OnAppliedBookChangedServerRpc(PlayerNetwork.playerNetworkReference[controller].NetworkObjectId, PersistentDataController.Instance.enemyPresets.IndexOf(preset));
         }
     }
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     private void OnAppliedBookChangedServerRpc(ulong networkObjectId, int enemyPreset)
     {
-        PlayerNetwork network = GetNetworkObject(networkObjectId).GetComponent<PlayerNetwork>();
-        OnAppliedBookChanged(PlayerNetwork.playerNetworkReference[network], PersistentDataController.Instance.enemyPresets[enemyPreset]);
+        OnAppliedBookChanged(PlayerNetwork.playerNetworkReference[GetNetworkObject(networkObjectId)], PersistentDataController.Instance.enemyPresets[enemyPreset]);
     }
 }

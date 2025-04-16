@@ -26,7 +26,7 @@ public class SceneControllerNetwork : NetworkBehaviour
         parent = GetComponent<SceneController>();
 
         SceneController.OnAsyncLoad += OnLoadScene;
-        SceneController.OnAsyncUnload += OnUnloadScene; 
+        SceneController.OnAsyncUnload += OnUnloadScene;
     }
 
     public override void OnNetworkSpawn()
@@ -40,6 +40,9 @@ public class SceneControllerNetwork : NetworkBehaviour
         {
             m.SetClientSynchronizationMode(LoadSceneMode.Additive);
             m.ActiveSceneSynchronizationEnabled = true;
+
+            SceneController.OnBeginLoad += OnBeginLoad;
+            SceneController.OnEndLoad += OnEndLoad;
         }
         else
         {
@@ -154,13 +157,30 @@ public class SceneControllerNetwork : NetworkBehaviour
             eventInProgress = false;
     }
 
-    public void BeginSceneLoad()
+    private void OnBeginLoad()
     {
-
+        if (NetworkConnectionController.IsRunning && NetworkConnectionController.HasAuthority)
+        {
+            OnBeginLoadClientRpc();
+        }
     }
-    public void EndSceneLoad()
+    private void OnEndLoad()
     {
+        if (NetworkConnectionController.IsRunning && NetworkConnectionController.HasAuthority)
+        {
+            OnEndLoadClientRpc();
+        }
+    }
 
+    [ClientRpc]
+    private void OnBeginLoadClientRpc()
+    {
+        SceneController.SetLoadScreen(true);
+    }
+    [ClientRpc]
+    private void OnEndLoadClientRpc()
+    {
+        SceneController.SetLoadScreen(false);
     }
 
     public override void OnDestroy()

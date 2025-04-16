@@ -43,15 +43,11 @@ public class GameLobbyController : LobbyController
 
     public void GoToGame()
     {
-        SceneController.UnloadScene(SceneController.m_Scene.PREGAME);
-        SceneController.LoadScene(SceneController.m_Scene.GAME);
-        SceneController.LoadScene(SceneController.m_Scene.GAME_SYS);
+        SceneController.LoadGameScene();
     }
     public void GoToPreGame()
     {
-        SceneController.UnloadScene(SceneController.m_Scene.GAME_SYS);
-        SceneController.UnloadScene(SceneController.m_Scene.GAME);
-        SceneController.LoadScene(SceneController.m_Scene.PREGAME);
+        SceneController.LoadPregameScene();
     }
 
     #region Spawning

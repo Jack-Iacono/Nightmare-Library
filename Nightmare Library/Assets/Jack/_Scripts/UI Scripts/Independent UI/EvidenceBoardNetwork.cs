@@ -66,11 +66,11 @@ public class EvidenceBoardNetwork : NetworkBehaviour
 
         public EvidenceBoardData()
         {
-            data = new bool[EvidenceTypeCount * GameController.enemyCount];
+            data = new bool[EvidenceTypeCount * GameController.startingEnemyCount];
         }
         public EvidenceBoardData(EvidenceBoardData eDataS, int index, bool[] eData)
         {
-            data = new bool[EvidenceTypeCount * GameController.enemyCount];
+            data = new bool[EvidenceTypeCount * GameController.startingEnemyCount];
 
             // Replace the given index range
             for (int i = 0; i < data.Length; i++)

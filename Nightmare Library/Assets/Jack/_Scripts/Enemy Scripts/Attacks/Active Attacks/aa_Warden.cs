@@ -61,7 +61,7 @@ public class aa_Warden : ActiveAttack
             new Sequence(new List<Node>()
             {
                 new CheckPlayerInRange(owner, 3),
-                new TaskAttackPlayersInRange(owner.navAgent, 3)
+                new TaskAttackPlayersInRange(owner, 3)
             }),
             // Makes the agent wait if a new target is found
             new Sequence(new List<Node>()

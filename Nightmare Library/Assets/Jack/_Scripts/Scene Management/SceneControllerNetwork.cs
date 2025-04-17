@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static SceneController;
 
 public class SceneControllerNetwork : NetworkBehaviour
 {
@@ -26,7 +27,7 @@ public class SceneControllerNetwork : NetworkBehaviour
         parent = GetComponent<SceneController>();
 
         SceneController.OnAsyncLoad += OnLoadScene;
-        SceneController.OnAsyncUnload += OnUnloadScene; 
+        SceneController.OnAsyncUnload += OnUnloadScene;
     }
 
     public override void OnNetworkSpawn()
@@ -40,6 +41,8 @@ public class SceneControllerNetwork : NetworkBehaviour
         {
             m.SetClientSynchronizationMode(LoadSceneMode.Additive);
             m.ActiveSceneSynchronizationEnabled = true;
+
+            SceneController.OnSceneTargetChange += OnSceneTargetChanged;
         }
         else
         {
@@ -48,6 +51,8 @@ public class SceneControllerNetwork : NetworkBehaviour
 
         base.OnNetworkSpawn();
     }
+
+    
 
     private void CheckStatus(SceneEventProgressStatus status, bool isLoading = true)
     {
@@ -71,6 +76,7 @@ public class SceneControllerNetwork : NetworkBehaviour
         {
             case SceneEventType.LoadComplete:
                 //Debug.Log($"Loaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
+                Debug.Log("Scene Loaded");
                 break;
             case SceneEventType.UnloadComplete:
                 //Debug.Log($"Unloaded the {sceneEvent.SceneName} scene on {clientOrServer}-({sceneEvent.ClientId}).");
@@ -151,6 +157,32 @@ public class SceneControllerNetwork : NetworkBehaviour
             eventInProgress = false;
     }
 
+    private void OnSceneTargetChanged(List<m_Scene> list, bool fromNetwork = false)
+    {
+        if (!fromNetwork)
+        {
+            int[] scenes = new int[list.Count];
+            for (int i = 0; i < scenes.Length; i++)
+            {
+                scenes[i] = (int)list[i];
+            }
+            OnSceneTargetChangedClientRpc(scenes);
+        }
+    }
+    [ClientRpc]
+    private void OnSceneTargetChangedClientRpc(int[] list)
+    {
+        if (!NetworkManager.IsServer)
+        {
+            List<m_Scene> scenes = new List<m_Scene>();
+            foreach (int i in list)
+            {
+                scenes.Add((m_Scene)i);
+            }
+            SceneController.SetSceneTarget(scenes, true);
+        }
+    }
+
     public override void OnDestroy()
     {
         base.OnDestroy();
@@ -158,7 +190,6 @@ public class SceneControllerNetwork : NetworkBehaviour
         SceneController.OnAsyncLoad -= OnLoadScene;
         SceneController.OnAsyncUnload -= OnUnloadScene;
     }
-
     private class BufferItem
     {
         public string scene;

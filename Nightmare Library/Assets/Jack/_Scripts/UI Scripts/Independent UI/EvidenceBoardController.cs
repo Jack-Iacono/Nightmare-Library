@@ -38,7 +38,7 @@ public class EvidenceBoardController : MonoBehaviour
             OnGameStart();
 
         // Add the spots for the various presets
-        evidenceData = new EvidenceData[GameController.enemyCount];
+        evidenceData = new EvidenceData[GameController.startingEnemyCount];
         for (int i = 0; i < evidenceData.Length; i++)
         {
             evidenceData[i] = new EvidenceData();
@@ -53,7 +53,7 @@ public class EvidenceBoardController : MonoBehaviour
         // Goes through all the note gameobjects and decides which are going to be used
         for (int i = 0; i < noteObjects.Count; i++)
         {
-            if (i < GameController.enemyCount)
+            if (i < GameController.startingEnemyCount)
                 enemyNotes.Add(new EnemyNoteLink(noteObjects[i]));
             else
                 noteObjects[i].SetActive(false);
@@ -85,9 +85,9 @@ public class EvidenceBoardController : MonoBehaviour
         }
 
         // This deactivates any index markers that won't be used to represent enemy indexes. This is used when altering the enemy count
-        if(GameController.enemyCount < enemyIndexObjects.Count)
+        if(GameController.startingEnemyCount < enemyIndexObjects.Count)
         {
-            for (int i = enemyIndexObjects.Count - 1; i > GameController.enemyCount - 1; i--)
+            for (int i = enemyIndexObjects.Count - 1; i > GameController.startingEnemyCount - 1; i--)
             {
                 enemyIndexObjects[i].gameObject.SetActive(false);
                 enemyIndexObjects.RemoveAt(i);

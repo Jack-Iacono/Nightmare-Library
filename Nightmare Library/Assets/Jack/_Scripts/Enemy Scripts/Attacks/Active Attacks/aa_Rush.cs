@@ -62,7 +62,7 @@ public class aa_Rush : ActiveAttack
             new Sequence(new List<Node>()
             {
                 new CheckPlayerInRange(owner, 3),
-                new TaskAttackPlayersInRange(owner.navAgent, 3)
+                new TaskAttackPlayersInRange(owner, 3)
             }),
             new Sequence(new List<Node>()
             {

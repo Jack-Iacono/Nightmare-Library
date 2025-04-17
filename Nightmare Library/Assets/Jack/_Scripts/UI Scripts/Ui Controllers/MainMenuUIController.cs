@@ -51,6 +51,11 @@ public class MainMenuUIController : UIController
         blockerText.text = "Signing In";
     }
 
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
+
     private void OnDestroy()
     {
         NetworkConnectionController.OnProcessActive -= OnNetworkProcessActive;

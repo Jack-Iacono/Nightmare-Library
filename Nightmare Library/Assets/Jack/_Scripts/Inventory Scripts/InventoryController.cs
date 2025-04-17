@@ -39,7 +39,7 @@ public class InventoryController : MonoBehaviour
 
     private void Update()
     {
-        if (!GameController.gamePaused)
+        if (!PauseController.gamePaused)
         {
             if (Input.GetKeyDown(keyInventoryUp))
             {

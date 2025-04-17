@@ -48,8 +48,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fbafe0d98bd7b894f9a85203486bf6a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPresets:
-  - {fileID: 11400000, guid: c77dbe13533d60f4ba018cc0511215cf, type: 2}
 --- !u!114 &6770962120794520299
 MonoBehaviour:
   m_ObjectHideFlags: 0

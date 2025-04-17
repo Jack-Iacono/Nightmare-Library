@@ -194,7 +194,7 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
         return mainColliderSize;
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         HoldableItem.instances.Remove(gameObject);
         IEnemyHystericObject.instances.Remove(gameObject);

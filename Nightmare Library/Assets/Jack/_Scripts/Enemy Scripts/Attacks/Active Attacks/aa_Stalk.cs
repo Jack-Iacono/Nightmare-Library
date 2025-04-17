@@ -95,7 +95,7 @@ public class aa_Stalk : ActiveAttack
                     new Sequence(new List<Node>()
                     {
                         new CheckTargetInRange(this, owner.transform, 4),
-                        new TaskAttackTarget(owner.navAgent),
+                        new TaskAttackTarget(owner, this),
                         new TaskWait(3),
                         new TaskResetStalk(this),
                         new TaskChangeCounter(n_StalkCounter, TaskChangeCounter.ChangeType.SET, -1),

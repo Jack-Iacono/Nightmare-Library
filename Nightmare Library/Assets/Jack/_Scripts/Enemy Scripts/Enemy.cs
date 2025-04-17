@@ -73,6 +73,9 @@ public class Enemy : MonoBehaviour
     public delegate void OnInitializeDelegate();
     public event OnInitializeDelegate OnInitialize;
 
+    public delegate void OnEnemyRemovedDelegate(Enemy enemy);
+    public static event OnEnemyRemovedDelegate OnEnemyRemoved;
+
     #region Initialization
 
     private void Awake()
@@ -263,6 +266,14 @@ public class Enemy : MonoBehaviour
     public PassiveAttack GetPassiveAttack()
     {
         return passiveAttackTree;
+    }
+
+    public void RemoveEnemy()
+    {
+        PrefabHandler.Instance.CleanupGameObject(gameObject);
+        PrefabHandler.Instance.DestroyGameObject(gameObject);
+
+        OnEnemyRemoved?.Invoke(this);
     }
 
     protected virtual void OnGamePause(object sender, bool e)

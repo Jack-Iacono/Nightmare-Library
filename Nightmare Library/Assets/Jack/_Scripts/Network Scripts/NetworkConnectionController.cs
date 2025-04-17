@@ -50,7 +50,7 @@ public class NetworkConnectionController : NetworkBehaviour
     [SerializeField]
     public static bool HasAuthority
     {
-        get => !connectedToLobby || NetworkManager.Singleton.IsServer;
+        get => !connectedToLobby || (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer);
     }
     [SerializeField]
     public static bool IsRunning

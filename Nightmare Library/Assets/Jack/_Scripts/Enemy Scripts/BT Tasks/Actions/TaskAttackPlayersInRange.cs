@@ -5,7 +5,7 @@ using UnityEngine;
 using BehaviorTree;
 using UnityEngine.AI;
 
-public class TaskAttackPlayersInRange : Node
+public class TaskAttackPlayersInRange : TaskAttack
 {
     private bool hasAttacked = false;
 
@@ -16,9 +16,9 @@ public class TaskAttackPlayersInRange : Node
     // Checks the player, static world
     private LayerMask attackLayers = 1 << 6 | 1 << 9;
 
-    public TaskAttackPlayersInRange(NavMeshAgent agent, float range = 5)
+    public TaskAttackPlayersInRange(Enemy enemy, float range = 5) : base(enemy)
     {
-        this.agent = agent;
+        this.agent = enemy.navAgent;
         this.range = range;
         transform = agent.transform;
     }
@@ -41,7 +41,7 @@ public class TaskAttackPlayersInRange : Node
                         {
                             if (p.isAlive)
                             {
-                                p.ChangeAliveState(false);
+                                Attack(p);
                             }
                             
                             hasAttacked = true;

@@ -294,6 +294,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: SceneController
       objectReference: {fileID: 0}
+    - target: {fileID: 7368097981795521424, guid: 96a4a0ca94a706d4da0c4f0b7f95892d,
+        type: 3}
+      propertyPath: loadingScreen
+      value: 
+      objectReference: {fileID: 59318794}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

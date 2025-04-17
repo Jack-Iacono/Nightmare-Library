@@ -95,7 +95,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!GameController.gamePaused)
+        if (!PauseController.gamePaused)
         {
             if (!isTrapped)
             {
@@ -106,13 +106,14 @@ public class PlayerController : MonoBehaviour
                     Move();
                 }
             }
+        }
+
+        if (isTrapped)
+        {
+            if (trapTimer > 0)
+                trapTimer -= Time.deltaTime;
             else
-            {
-                if (trapTimer > 0)
-                    trapTimer -= Time.deltaTime;
-                else
-                    isTrapped = false;
-            }
+                isTrapped = false;
         }
     }
     private void FixedUpdate()
@@ -276,7 +277,9 @@ public class PlayerController : MonoBehaviour
     public void Lock(bool b)
     {
         isLocked = b;
-        camCont.Lock(b);
+
+        if(camCont != null)
+            camCont.Lock(b);
     }
     public void Lock(bool b, Transform camTransform)
     {

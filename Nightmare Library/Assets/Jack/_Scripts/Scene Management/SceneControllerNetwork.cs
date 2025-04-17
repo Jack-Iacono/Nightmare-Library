@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static SceneController;
 
 public class SceneControllerNetwork : NetworkBehaviour
 {
@@ -41,8 +42,7 @@ public class SceneControllerNetwork : NetworkBehaviour
             m.SetClientSynchronizationMode(LoadSceneMode.Additive);
             m.ActiveSceneSynchronizationEnabled = true;
 
-            SceneController.OnBeginLoad += OnBeginLoad;
-            SceneController.OnEndLoad += OnEndLoad;
+            SceneController.OnSceneTargetChange += OnSceneTargetChanged;
         }
         else
         {
@@ -51,6 +51,8 @@ public class SceneControllerNetwork : NetworkBehaviour
 
         base.OnNetworkSpawn();
     }
+
+    
 
     private void CheckStatus(SceneEventProgressStatus status, bool isLoading = true)
     {
@@ -83,7 +85,6 @@ public class SceneControllerNetwork : NetworkBehaviour
                 //Debug.Log($"Load event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
                 if (clientOrServer == 1)
                 {
-                    SceneController.RemoveBusyScene(sceneEvent.Scene);
                     CheckSceneBuffer();
                 }
                 break;
@@ -91,7 +92,6 @@ public class SceneControllerNetwork : NetworkBehaviour
                 //Debug.Log($"Unload event completed for the following client identifiers:({sceneEvent.ClientsThatCompleted})");
                 if (clientOrServer == 1)
                 {
-                    SceneController.RemoveBusyScene(sceneEvent.Scene);
                     CheckSceneBuffer();
                 }
                 break;
@@ -157,30 +157,30 @@ public class SceneControllerNetwork : NetworkBehaviour
             eventInProgress = false;
     }
 
-    private void OnBeginLoad()
+    private void OnSceneTargetChanged(List<m_Scene> list, bool fromNetwork = false)
     {
-        if (NetworkConnectionController.IsRunning && NetworkConnectionController.HasAuthority)
+        if (!fromNetwork)
         {
-            OnBeginLoadClientRpc();
+            int[] scenes = new int[list.Count];
+            for (int i = 0; i < scenes.Length; i++)
+            {
+                scenes[i] = (int)list[i];
+            }
+            OnSceneTargetChangedClientRpc(scenes);
         }
     }
-    private void OnEndLoad()
+    [ClientRpc]
+    private void OnSceneTargetChangedClientRpc(int[] list)
     {
-        if (NetworkConnectionController.IsRunning && NetworkConnectionController.HasAuthority)
+        if (!NetworkManager.IsServer)
         {
-            OnEndLoadClientRpc();
+            List<m_Scene> scenes = new List<m_Scene>();
+            foreach (int i in list)
+            {
+                scenes.Add((m_Scene)i);
+            }
+            SceneController.SetSceneTarget(scenes, true);
         }
-    }
-
-    [ClientRpc]
-    private void OnBeginLoadClientRpc()
-    {
-        SceneController.SetLoadScreen(true);
-    }
-    [ClientRpc]
-    private void OnEndLoadClientRpc()
-    {
-        SceneController.SetLoadScreen(false);
     }
 
     public override void OnDestroy()
@@ -190,7 +190,6 @@ public class SceneControllerNetwork : NetworkBehaviour
         SceneController.OnAsyncLoad -= OnLoadScene;
         SceneController.OnAsyncUnload -= OnUnloadScene;
     }
-
     private class BufferItem
     {
         public string scene;

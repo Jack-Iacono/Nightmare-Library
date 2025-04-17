@@ -11,8 +11,8 @@ public class SceneController : MonoBehaviour
     public static SceneController instance { get; private set; }
 
     public GameObject loadingScreen;
-    private static List<Scene> busyScenes = new List<Scene>();
-    private static bool loadBusy = false;
+    private static List<m_Scene> sceneTarget;
+    public static bool loading { get; private set; } = false;
 
     public enum m_Scene { MAIN_MENU, GAME, PREGAME, UNIVERSAL, GAME_SYS };
     public readonly static Dictionary<m_Scene, SceneData> scenes = new Dictionary<m_Scene, SceneData>
@@ -35,9 +35,8 @@ public class SceneController : MonoBehaviour
     public static event OnMapLoadedDelegate OnMapLoaded;
     public static Scene loadedMap;
 
-    public delegate void OnLoadDelegate();
-    public static event OnLoadDelegate OnBeginLoad;
-    public static event OnLoadDelegate OnEndLoad;
+    public delegate void OnTargetChangeDelegate(List<m_Scene> list, bool fromNetwork = false);
+    public static event OnTargetChangeDelegate OnSceneTargetChange;
 
     private void Awake()
     {
@@ -67,55 +66,55 @@ public class SceneController : MonoBehaviour
 
     private void OnSceneLoaded(Scene s, LoadSceneMode loadMode)
     {
-        Debug.Log($"Scene {s.name} loaded");
         // If the scene loaded was a map scene, set it as active
         if(mapScenes.Contains(s.name))
             SceneManager.SetActiveScene(s);
 
-        RemoveBusyScene(s);
+        CheckLoading();
         CheckMapLoaded();
     }
     private void OnSceneUnloaded(Scene s)
     {
-        RemoveBusyScene(s);
+        CheckLoading();
     }
 
-    public static void AddBusyScene(Scene s)
+    private static void CheckLoading()
     {
-        busyScenes.Add(s);
-        CheckBusyScenes();
-    }
-    public static void RemoveBusyScene(Scene s)
-    {
-        busyScenes.Remove(s);
-        CheckBusyScenes();
-    }
-    private static void CheckBusyScenes()
-    {
-        if(busyScenes.Count > 0)
+        if(sceneTarget != null)
         {
-            SetLoadScreen(true);
-            if (!loadBusy)
+            List<string> loadedNames = GetLoadedScenes();
+            bool check = true;
+
+            // run through the scenes and decide which ones to load vs unload
+            foreach (m_Scene s in sceneTarget)
             {
-                loadBusy = true;
-                OnBeginLoad?.Invoke();
+                // Load the scene if not present in loaded names, but is present in the list provided
+                if (!loadedNames.Contains(scenes[s].name))
+                {
+                    check = false;
+                    loading = true;
+                    instance.loadingScreen.SetActive(true);
+                    break;
+                }
+            }
+
+            // See if all scenes match the desired loading scenes
+            if (check)
+            {
+                loading = false;
+                instance.loadingScreen.SetActive(false);
             }
         }
-        else
-        {
-            SetLoadScreen(false);
-            if (loadBusy)
-            {
-                loadBusy = false;
-                OnEndLoad?.Invoke();
-            }
-        } 
     }
-
     public static void SetLoadScreen(bool b)
     {
-        Debug.Log("Show Screen " + b);
         instance.loadingScreen.SetActive(b);
+    }
+    public static void SetSceneTarget(List<m_Scene> list, bool fromNetwork = false)
+    {
+        sceneTarget = list;
+        OnSceneTargetChange?.Invoke(sceneTarget, fromNetwork);
+        CheckLoading();
     }
 
     protected static void UnloadScene(m_Scene scene, bool offlineOverride = false)
@@ -135,7 +134,7 @@ public class SceneController : MonoBehaviour
                 OnAsyncUnload?.Invoke(scene);
             }
 
-            AddBusyScene(SceneManager.GetSceneByName(scene));
+            CheckLoading();
         }
     }
 
@@ -154,27 +153,34 @@ public class SceneController : MonoBehaviour
             OnAsyncLoad?.Invoke(scene);
         }
 
-        AddBusyScene(SceneManager.GetSceneByName(scene));
+        CheckLoading();
+    }
+
+    protected static List<string> GetLoadedScenes()
+    {
+        List<string> loadedNames = new List<string>();
+        // Get the list of loaded scenes for easier use
+        for (int i = 0; i < SceneManager.loadedSceneCount; i++)
+        {
+            loadedNames.Add(SceneManager.GetSceneAt(i).name);
+        }
+        return loadedNames;
     }
 
     public static void SetScenes(List<m_Scene> list)
     {
+        SetSceneTarget(list);
+
         List<string> unloadScenes = new List<string>();
         List<string> loadScenes = new List<string>();
 
-        List<string> loadedNames = new List<string>();
-
-        // Get the list of loaded scenes for easier use
-        for(int i = 0; i < SceneManager.loadedSceneCount; i++)
-        {
-            loadedNames.Add(SceneManager.GetSceneAt(i).name);
-        }
+        List<string> loadedNames = GetLoadedScenes();
 
         // run through the scenes and decide which ones to load vs unload
         foreach(m_Scene s in scenes.Keys)
         {
             // Load the scene if not present in loaded names, but is present in the list provided
-            if(list.Contains(s) && !loadedNames.Contains(scenes[s].name))
+            if(sceneTarget.Contains(s) && !loadedNames.Contains(scenes[s].name))
             {
                 // Load the map first
                 if (scenes[s].type == SceneData.Type.MAP)
@@ -183,7 +189,7 @@ public class SceneController : MonoBehaviour
                     loadScenes.Add(scenes[s].name);
             }
             // Unload the scene if present in the loaded names, but not present in the list provided
-            else if (!list.Contains(s) && loadedNames.Contains(scenes[s].name))
+            else if (!sceneTarget.Contains(s) && loadedNames.Contains(scenes[s].name))
             {
                 unloadScenes.Add(scenes[s].name);
             }
@@ -240,7 +246,6 @@ public class SceneController : MonoBehaviour
             }
         }
     }
-
     public static bool GetSceneLoaded(m_Scene scene)
     {
         for(int i = 0; i < SceneManager.sceneCount;i++)

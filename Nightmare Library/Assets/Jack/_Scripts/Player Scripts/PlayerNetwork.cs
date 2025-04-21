@@ -22,21 +22,18 @@ public class PlayerNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
+            playerCont = GetComponent<PlayerController>();
+            PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
+
+            playerNetworkReference.Add(playerCont, GetComponent<NetworkObject>());
         }
 
         // Can only be written to by server or owner
         var permission = _serverAuth ? NetworkVariableWritePermission.Server : NetworkVariableWritePermission.Owner;
         playerContinuousState = new NetworkVariable<PlayerContinuousNetworkData>(writePerm: permission);
         playerIntermittentState = new NetworkVariable<PlayerIntermittentNetworkData>(writePerm: permission);
-
-        playerCont = GetComponent<PlayerController>();
-        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
-
-        playerNetworkReference.Add(playerCont, GetComponent<NetworkObject>());
     }
 
     public override void OnNetworkSpawn()

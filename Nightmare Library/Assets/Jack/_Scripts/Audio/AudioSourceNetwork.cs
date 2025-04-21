@@ -10,12 +10,7 @@ public class AudioSourceNetwork : NetworkBehaviour
     private AudioSourceController parent;
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
-        {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
-        else
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
             parent = GetComponent<AudioSourceController>();
             parent.OnPlay += OnPlay;

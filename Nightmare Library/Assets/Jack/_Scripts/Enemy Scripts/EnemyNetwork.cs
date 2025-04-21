@@ -21,12 +21,7 @@ public class EnemyNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
-        {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
-        else
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
             parent = GetComponent<Enemy>();
             parent.OnInitialize += OnInitialize;

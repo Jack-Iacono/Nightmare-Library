@@ -10,12 +10,7 @@ public class EnemyBookNetwork : NetworkBehaviour
     private EnemyBookController parent;
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
-        {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
-        else
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
             parent = GetComponent<EnemyBookController>();
             parent.OnAppliedBookChanged += OnAppliedBookChanged;

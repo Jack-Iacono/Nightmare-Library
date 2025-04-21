@@ -68,25 +68,32 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        // Add the player to the list of player instances present in the game
         playerInstances.Add(gameObject, this);
 
+        // Get components on the player
         charCont = GetComponent<CharacterController>();
         interactionCont = GetComponent<PlayerInteractionController>();
 
+        // Make all meshes on the player normal
         for (int i = 0; i < meshMaterials.Count; i++)
         {
             meshMaterials[i].renderer.material = meshMaterials[i].normal;
         }
 
+        // Set this instance to the main instance if the game is not networked
         if (!NetworkConnectionController.connectedToLobby)
             mainPlayerInstance = this;
 
+        // Teleport the player to the spawn point of the map
         Warp(MapDataController.Instance.playerSpawnPoint);
 
+        // Get the player's layer from the editor
         playerLayerMask = gameObject.layer;
     }
     public void Warp(Vector3 pos)
     {
+        // Disabling the character controller allows the player to be warped, otherwise it doesn't work
         charCont.enabled = false;
         transform.position = pos;
         charCont.enabled = true;

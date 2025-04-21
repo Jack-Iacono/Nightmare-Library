@@ -17,12 +17,7 @@ public class EvidenceBoardNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
-        {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
-        else
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
             parent = GetComponent<EvidenceBoardController>();
             parent.OnEvidenceDataChange += OnEvidenceDataChange;

@@ -11,11 +11,7 @@ public class DeskNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
-        {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
+        NetworkConnectionController.CheckNetworkConnected(this);
     }
 
     public override void OnNetworkSpawn()

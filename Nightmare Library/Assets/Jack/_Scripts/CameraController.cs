@@ -62,11 +62,12 @@ public class CameraController : MonoBehaviour
 
     public void Lock(bool locked)
     {
+        // If the camera is being unlocked
         if(!locked)
         {
-            //transform.localPosition = normalPosition;
-            //transform.localRotation = Quaternion.identity;
+            // Stop the other movement coroutine
             StopAllCoroutines();    
+            // Begin the reset camera coroutine
             StartCoroutine(ResetCamera());
         }
 
@@ -74,8 +75,6 @@ public class CameraController : MonoBehaviour
     }
     public void Lock(bool locked, Transform camTransform)
     {
-        //transform.position = camTransform.position;
-        //transform.rotation = camTransform.rotation;
         StopAllCoroutines();
         StartCoroutine(MoveCamera(camTransform));
 
@@ -84,8 +83,10 @@ public class CameraController : MonoBehaviour
 
     private IEnumerator MoveCamera(Transform movePoint)
     {
+        // Check if the camera is close to where it needs to be, if not, keep moving
         while (Vector3.SqrMagnitude(movePoint.position - transform.position) > 0.00005f)
         {
+            // Slerp the camera towards it's new position
             transform.position = Vector3.Slerp(transform.position, movePoint.position, 8 * Time.deltaTime);
             transform.rotation = Quaternion.Slerp(transform.rotation, movePoint.rotation, 8 * Time.deltaTime);
 
@@ -96,8 +97,10 @@ public class CameraController : MonoBehaviour
     }
     private IEnumerator ResetCamera()
     {
+        // Check if the camera is near where it is supposed to be. if not, keep moving
         while(Vector3.SqrMagnitude(normalPosition - transform.localPosition) > 0.00005f)
         {
+            // Slerp the camera toward the correct location / rotation
             transform.localPosition = Vector3.Slerp(transform.localPosition, normalPosition, 8 * Time.deltaTime);
             transform.localRotation = Quaternion.Slerp(transform.localRotation, Quaternion.identity, 8 * Time.deltaTime);
 

@@ -30,23 +30,19 @@ public class HoldableItemNetwork : NetworkBehaviour
 
     protected virtual void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
-        else if (NetworkManager.IsServer)
-        {
-            PrefabHandlerNetwork.AddSpawnedPrefab(GetComponent<NetworkObject>());
-        }
+            if (NetworkManager.IsServer)
+            {
+                PrefabHandlerNetwork.AddSpawnedPrefab(GetComponent<NetworkObject>());
+                isPhysical.Value = true;
+            }
+            else
+                ConsumeEnabledData(true, true);
 
-        parent = GetComponent<HoldableItem>();
-        previousPosition = transform.position;
-
-        if (IsServer)
-            isPhysical.Value = true;
-        else
-            ConsumeEnabledData(true, true);
+            parent = GetComponent<HoldableItem>();
+            previousPosition = transform.position;
+        }
     }
 
     public override void OnNetworkSpawn()

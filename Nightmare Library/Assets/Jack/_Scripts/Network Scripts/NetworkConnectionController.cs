@@ -58,16 +58,37 @@ public class NetworkConnectionController : NetworkBehaviour
         get => NetworkManager.Singleton != null && NetworkManager.Singleton.IsConnectedClient;
     }
 
+    public static bool CheckNetworkConnected(NetworkBehaviour networkBehaviour)
+    {
+        if (!connectedToLobby)
+        {
+            Destroy(networkBehaviour);
+            Destroy(networkBehaviour.GetComponent<NetworkObject>());
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Connects the player to a lobby based on the connection type that they have previously set
+    /// </summary>
+    /// <returns></returns>
     public static async Task<bool> ConnectToLobby()
     {
         bool connected = false;
 
+        // Tell the game that a connection process is active
         OnProcessActive?.Invoke(true);
 
+        // Initialize the UnityServices (i.e. Relay and Netcode)
         await UnityServices.InitializeAsync();
 
+        // Check to see if the player is not already connected to the server in any capacity
         if(!NetworkManager.Singleton.IsConnectedClient && !NetworkManager.Singleton.IsServer)
         {
+            // Either create or join a lobby based on the player's connection type selected previously
             switch (connectionType)
             {
                 case ConnectionType.CREATE:
@@ -82,13 +103,20 @@ public class NetworkConnectionController : NetworkBehaviour
             }
         }
 
+        // Tell other scripts that the connection process is finished
         OnProcessActive?.Invoke(false);
 
         connectedToLobby = connected;
         return connected;
     }
+
+    /// <summary>
+    /// Begins the Network Manager as either a Client or Host depending on the connectionType variable
+    /// </summary>
+    /// <returns></returns>
     public static async Task StartNetworkManager()
     {
+        // Check to make sure the user is not already connected 
         if (!NetworkManager.Singleton.IsConnectedClient && !NetworkManager.Singleton.IsHost)
         {
             switch (connectionType)
@@ -105,8 +133,13 @@ public class NetworkConnectionController : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Checks the connection to the lobby and retrys if necessary
+    /// </summary>
+    /// <returns></returns>
     private static async Task CheckConnectionStart()
     {
+        // If the player is connected, this script is done
         if(NetworkManager.Singleton.IsConnectedClient)
         {
             OnProcessActive?.Invoke(false);
@@ -117,10 +150,12 @@ public class NetworkConnectionController : NetworkBehaviour
 
             return;
         }
+        // If the player is not connected yet
         else
         {
             OnProcessActive?.Invoke(false);
 
+            // Check if the max number of connection attempts has been made and, if so, end the connection attempts
             if (currentConnectionTimer <= ConnectionTimeoutTimer)
             {
                 Debug.Log("Connection Not Started, Trying Again in 1 Second");
@@ -138,19 +173,27 @@ public class NetworkConnectionController : NetworkBehaviour
         currentConnectionTimer = 0;
     }
 
+    /// <summary>
+    /// Stops all connection the network
+    /// </summary>
+    /// <returns></returns>
     public static async Task StopConnection()
     {
+        // Stop the background processes
         instance.StopAllCoroutines();
 
+        // Disconnect the voice chat, lobby and the network manager
         await VoiceChatController.LeaveChannel();
         await StopLobby();
         StopNetworkManager();
 
+        // Clear all previously selected options from connection
         allocation = null;
         connectedToLobby = false;
     }
     public static void StopNetworkManager()
     {
+        // What do you think it does genius?
         try
         {
             NetworkManager.Singleton.Shutdown();
@@ -188,18 +231,27 @@ public class NetworkConnectionController : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Creates a new relay session with this machine as the host
+    /// </summary>
+    /// <returns></returns>
     private static async Task<bool> CreateLobby()
     {
         try
         {
+            // If the allocation has not yet been set, get a new allocation from the Relay Service
             if(allocation == null)
                 allocation = await RelayService.Instance.CreateAllocationAsync(MAX_PLAYERS);
+            // Get the join code for the current allocation
             joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 
+            // Set this allocation as the host transform for the room
             SetTransformAsHost(allocation);
 
+            // Alert other scripts that the join code has been changed
             OnJoinCodeChanged?.Invoke(instance, joinCode);
 
+            // Automatically copy the join code to the clipboard
             TextEditor te = new TextEditor();
             te.text = NetworkConnectionController.joinCode;
             te.SelectAll();
@@ -213,16 +265,19 @@ public class NetworkConnectionController : NetworkBehaviour
             return false;
         }
     }
+    /// <summary>
+    /// Joins a lobby with the code from joinCode
+    /// </summary>
+    /// <returns></returns>
     private static async Task<bool> JoinLobby()
     {
         try
         {
+            // Get the allocation related to the given join code
             var a = await RelayService.Instance.JoinAllocationAsync(joinCode);
 
-            // Set the details to the transform
+            // Set this machine as a client on the allocation
             SetTransformAsClient(a);
-
-            Debug.Log("Joined Lobby: " + joinCode);
 
             return true;
         }
@@ -233,10 +288,18 @@ public class NetworkConnectionController : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Sends the necessary allocation data from the Client to the Relay Server for binding
+    /// </summary>
+    /// <param name="a">The allocation that is being used</param>
     protected static void SetTransformAsClient(JoinAllocation a)
     {
         transport.SetClientRelayData(a.RelayServer.IpV4, (ushort)a.RelayServer.Port, a.AllocationIdBytes, a.Key, a.ConnectionData, a.HostConnectionData);
     }
+    /// <summary>
+    /// Sends the necessary allocation data from the Host to the Relay Server for binding
+    /// </summary>
+    /// <param name="a">The allocation that is being used</param>
     protected static void SetTransformAsHost(Allocation a)
     {
         transport.SetHostRelayData(a.RelayServer.IpV4, (ushort)a.RelayServer.Port, a.AllocationIdBytes, a.Key, a.ConnectionData);

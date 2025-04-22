@@ -87,6 +87,7 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
             colliders.Add(col);
         }
 
+        // Get the size of the main collider for the object
         if (colliders.Count > 0)
             mainColliderSize = colliders[0].bounds.size;
         else
@@ -98,25 +99,32 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
 
     public virtual GameObject Pickup(bool fromNetwork = false)
     {
+        // Make the object intangible
         SetPhysical(false);
 
+        // If the object has a rigid body, stop it from moving
         if (hasRigidBody)
             rb.isKinematic = true;
 
+        // Alert that this object has been picked up (used mostly for network decoupling)
         OnPickup?.Invoke(fromNetwork);
 
         return gameObject;
     }
     public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
+        // Place the object at the desired position
         trans.position = pos;
         trans.rotation = rot;
 
+        // Make the object tangible
         SetPhysical(true);
 
+        // make kinematic if the object has the fixPlacement modifier
         if (fixPlacement && hasRigidBody)
             rb.isKinematic = true;
 
+        // Alert that this object has been placed
         OnPlace?.Invoke(fromNetwork);
     }
     public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)

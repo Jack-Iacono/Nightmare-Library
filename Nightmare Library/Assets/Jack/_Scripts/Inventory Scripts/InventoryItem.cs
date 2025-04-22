@@ -1,37 +1,58 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryItem
 {
-    public bool isEmpty { get; private set; } = true;
+    private bool isEmpty = true;
 
-    public GameObject realObject;
+    public HoldableItem holdable;
+    public IUseable useable;
 
     public InventoryItem()
     {
-        realObject = null;
+        holdable = null;
+        useable = null;
         isEmpty = true;
     }
-    public InventoryItem(GameObject g)
+    public InventoryItem(HoldableItem h)
     {
-        realObject = g;
+        holdable = h;
+        if (IUseable.Instances.ContainsKey(h.gameObject))
+            useable = IUseable.Instances[h.gameObject];
+        else
+            useable = null;
         isEmpty = false;
     }
 
-    public void Set(GameObject g)
+    public void Set(HoldableItem h)
     {
-        realObject = g;
+        holdable = h;
+        if (IUseable.Instances.ContainsKey(h.gameObject))
+            useable = IUseable.Instances[h.gameObject];
+        else
+            useable = null;
         isEmpty = false;
     }
     public void Clear()
     {
-        realObject = null;
+        holdable = null;
+        useable = null;
         isEmpty = true;
     }
 
     public bool IsEmpty()
     {
         return isEmpty; 
+    }
+
+    public bool Equals(HoldableItem item)
+    {
+        return holdable == item;
+    }
+    public bool Equals(InventoryItem other)
+    {
+        return other.holdable == holdable;
     }
 }

@@ -50,10 +50,6 @@ public class gui_HUDScreenController : ScreenController
 
         return timeString;
     }
-    private void OnInventoryHeldItemChanged(InventoryItem item)
-    {
-        
-    }
 
     private void OnItemSightChanged(int interactionType)
     {

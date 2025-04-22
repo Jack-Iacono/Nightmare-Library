@@ -93,8 +93,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7495189837440931203}
   - component: {fileID: 6558250158126377683}
-  - component: {fileID: 6429067527399651727}
   - component: {fileID: 3764771010268449280}
+  - component: {fileID: 7584100786244534529}
   m_Layer: 10
   m_Name: Test Interactable
   m_TagString: Untagged
@@ -139,24 +139,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6429067527399651727
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7528276726502955846}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d54018939fc4a6418505fa9aa2d67a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  itemName: Fortnite
-  placementTypes: 0000000001000000
-  floorPlacementType: 0
-  wallPlacementType: 0
-  fixPlacement: 1
-  precisePlacement: 0
 --- !u!54 &3764771010268449280
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -184,3 +166,22 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &7584100786244534529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7528276726502955846}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ea12cfbc8483ff4081fd9957900afb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemName: Poop Fart
+  gameobjectOverride: {fileID: 0}
+  placementTypes: 00000000
+  floorPlacementType: 0
+  wallPlacementType: 0
+  fixPlacement: 0
+  precisePlacement: 0

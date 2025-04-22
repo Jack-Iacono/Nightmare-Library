@@ -27,8 +27,10 @@ public class AuthenticationController : MonoBehaviour
 
     public async static Task Authenticate()
     {
+        // Retrieve the initialization options
         var options = new InitializationOptions();
 
+        // Handle intitialization for parrel sync (this is for testing only)
         #if UNITY_EDITOR
         options.SetProfile(ClonesManager.IsClone() ? ClonesManager.GetArgument() : "Primary");
         #endif
@@ -40,27 +42,38 @@ public class AuthenticationController : MonoBehaviour
     {
         try
         {
+            // Let other scripts know that this process is active
             OnProcessActive?.Invoke(true);
 
+            // Authenticate, it literally says it right there
             await Authenticate();
 
+            // If the player is not signed in, sign them in
             if (!AuthenticationService.Instance.IsSignedIn)
             {
+                // This may be changed later to use Steam
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                // Set the player info to the signed in player
                 playerInfo = AuthenticationService.Instance.PlayerInfo;
 
+                // Login to the Vivox voice controller service
                 await VivoxService.Instance.InitializeAsync();
                 await VoiceChatController.Login();
             }
+            // If the player is already signed in, don't sign them in
             else
             {
                 Debug.Log("Already Signed In");
+
+                // Set the player info to the currently signed in player
                 playerInfo = AuthenticationService.Instance.PlayerInfo;
             }
 
+            // Alert that the player is now signed in
             signedIn = true;
             OnSignInStatusChanged?.Invoke(true);
 
+            // Tell other scripts that this process is finished
             OnProcessActive?.Invoke(false);
 
             return true;
@@ -70,6 +83,7 @@ public class AuthenticationController : MonoBehaviour
             Debug.Log("Failed Sign In: " + e.Message);
         }
 
+        // Tell other scripts that this process is finished
         OnProcessActive?.Invoke(false);
 
         return false;
@@ -78,9 +92,11 @@ public class AuthenticationController : MonoBehaviour
     {
         try
         {
+            // If signed in, sign out
             if (!AuthenticationService.Instance.IsSignedIn)
                 AuthenticationService.Instance.SignOut();
 
+            // Remove the signed in player Info
             playerInfo = null;
 
             signedIn = false;

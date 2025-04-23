@@ -180,6 +180,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Poop Fart
   gameobjectOverride: {fileID: 0}
+  mainMeshFilter: {fileID: 6175125135437729615}
   placementTypes: 00000000
   floorPlacementType: 0
   wallPlacementType: 0

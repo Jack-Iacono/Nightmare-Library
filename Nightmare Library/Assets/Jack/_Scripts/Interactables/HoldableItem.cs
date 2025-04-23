@@ -13,6 +13,8 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
 
     [SerializeField]
     private GameObject gameobjectOverride = null;
+    [SerializeField]
+    public MeshFilter mainMeshFilter = null;
 
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
@@ -165,6 +167,9 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     }
     public void EnableColliders(bool b)
     {
+        if (b)
+            gameObject.SetActive(true);
+
         foreach (Collider c in colliders)
         {
             c.enabled = b;
@@ -174,9 +179,11 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
 
         isPhysical = b;
     }
-
     public void EnableMesh(bool b)
     {
+        if(b)
+            gameObject.SetActive(true);
+
         foreach (MeshRenderer r in renderMaterialList.Keys)
         {
             r.enabled = b;

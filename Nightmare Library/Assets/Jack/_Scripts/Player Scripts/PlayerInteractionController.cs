@@ -10,6 +10,11 @@ using static HoldableItem;
 public class PlayerInteractionController : MonoBehaviour
 {
     private PlayerController playerCont;
+    // Yes, I am aware of the prefab handler, no I am not using it for this, I know what I'm doing
+
+    [SerializeField]
+    private GameObject placementGuideprefab;
+    private PlacementGuideController placementGuideController;
 
     [SerializeField]
     private float interactDistance = 4f;
@@ -34,12 +39,9 @@ public class PlayerInteractionController : MonoBehaviour
     private float actionBufferTimer = 0f;
     private bool actionBuffering = false;
 
-    [SerializeField]
-    private Material clearPlacementMaterial;
-    [SerializeField]
-    private Material blockedPlacementMaterial;
     private bool isPlacingItem = false;
     private bool isPlacementValid = false;
+    private bool isPlacementVisible = false;
 
     public bool canSeeItem { get; private set; }
     public delegate void OnItemSightChangeDelegate(int interactionType);
@@ -49,6 +51,9 @@ public class PlayerInteractionController : MonoBehaviour
     void Start()
     {
         playerCont = GetComponent<PlayerController>();
+
+        GameObject guide = Instantiate(placementGuideprefab, playerCont.transform);
+        placementGuideController = guide.GetComponent<PlacementGuideController>();
     }
 
     // Update is called once per frame
@@ -99,10 +104,12 @@ public class PlayerInteractionController : MonoBehaviour
         HoldableItem currentHoldableItem = null;
         IUseable currentUsableItem = null;
 
-        if (!currentInventoryItem.IsEmpty())
+        if (currentInventoryItem != null)
         {
             currentHoldableItem = currentInventoryItem.holdable;
             currentUsableItem = currentInventoryItem.useable;
+
+            placementGuideController.SetMeshFilter(currentHoldableItem.mainMeshFilter);
         }
 
         // Process Throwing first since you don't need to raycast for it
@@ -166,11 +173,8 @@ public class PlayerInteractionController : MonoBehaviour
                     // For starting or resuming the placement
                     if (isPlaceStart || (isPlacePressed && !isPlacingItem))
                     {
-                        // Working like this as it will not be networked this way
-                        currentHoldableItem.gameObject.SetActive(true);
-                        currentHoldableItem.EnableColliders(false);
-                        currentHoldableItem.SetMeshMaterial(clearPlacementMaterial);
-                        currentHoldableItem.EnableMesh(true);
+                        placementGuideController.SetMaterial(true);
+                        placementGuideController.SetVisibility(true);
 
                         if (currentHoldableItem.precisePlacement)
                         {
@@ -193,13 +197,13 @@ public class PlayerInteractionController : MonoBehaviour
                                 switch (type)
                                 {
                                     case PlacementType.FLOOR:
-                                        currentHoldableItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                        placementGuideController.trans.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         break;
                                     case PlacementType.WALL:
                                         if (currentHoldableItem.wallPlacementType == 0)
-                                            currentHoldableItem.transform.Rotate(Vector3.forward, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                            placementGuideController.trans.Rotate(Vector3.forward, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         else
-                                            currentHoldableItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                            placementGuideController.trans.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         break;
                                 }
                             }
@@ -207,18 +211,24 @@ public class PlayerInteractionController : MonoBehaviour
                             {
                                 SetObjectTransform(type, hit);
                             }
-                        }
 
-                        // Check if the object is colliding with other stuff
-                        if (!Physics.CheckBox(currentHoldableItem.transform.position, currentHoldableItem.GetColliderSize() * 0.45f, currentHoldableItem.transform.rotation, interactLayers))
-                        {
-                            currentHoldableItem.SetMeshMaterial(clearPlacementMaterial);
-                            isPlacementValid = true;
+                            // Check if the object is colliding with other stuff
+                            if (!Physics.CheckBox(placementGuideController.trans.position, currentHoldableItem.GetColliderSize() * 0.45f, placementGuideController.trans.rotation, interactLayers))
+                            {
+                                placementGuideController.SetMaterial(true);
+                                isPlacementValid = true;
+                            }
+                            else
+                            {
+                                placementGuideController.SetMaterial(false);
+                                isPlacementValid = false;
+                            }
+
+                            isPlacementVisible = true;
                         }
                         else
                         {
-                            currentHoldableItem.SetMeshMaterial(blockedPlacementMaterial);
-                            isPlacementValid = false;
+                            isPlacementVisible = false;
                         }
                     }
                     else if (isPlaceFinish && isPlacingItem)
@@ -229,19 +239,15 @@ public class PlayerInteractionController : MonoBehaviour
 
                             if (currentHoldableItem.placementTypes.Contains(type))
                             {
-                                currentHoldableItem.Place(currentHoldableItem.trans.position, currentHoldableItem.trans.rotation);
+                                currentHoldableItem.Place(placementGuideController.trans.position, placementGuideController.trans.rotation);
                                 InventoryController.instance.RemoveCurrentItem();
                             }
 
                             currentHoldableItem = null;
                             actionBuffering = true;
                         }
-                        else
-                        {
-                            // Working like this as it will not be networked this way
-                            currentHoldableItem.gameObject.SetActive(false);
-                            currentHoldableItem.EnableMesh(false);
-                        }
+                        
+                        placementGuideController.SetVisibility(false);
 
                         isPlacingItem = false;
                         playerCont.Lock(false);
@@ -252,8 +258,7 @@ public class PlayerInteractionController : MonoBehaviour
         else if (isPlacingItem)
         {
             // Resets the item if it was being placed and the player is now too far from the placement range
-            currentHoldableItem.ResetMeshMaterial();
-            currentHoldableItem.EnableMesh(false);
+            placementGuideController.SetVisibility(false);
             isPlacingItem = false;
             playerCont.Lock(false);
         }
@@ -308,8 +313,8 @@ public class PlayerInteractionController : MonoBehaviour
                 float xRot = Mathf.Cos((yRot - hitAngle) * Mathf.Deg2Rad) * slope;
                 float zRot = Mathf.Sin((yRot - hitAngle) * Mathf.Deg2Rad) * slope;
 
-                currentHeldItem.transform.position = hit.point + MultiplyVector(hit.normal, currentHeldItem.GetColliderSize()) / 2;
-                currentHeldItem.transform.rotation = Quaternion.Euler(xRot, yRot, zRot);
+                placementGuideController.trans.position = hit.point + MultiplyVector(hit.normal, currentHeldItem.GetColliderSize()) / 2;
+                placementGuideController.trans.rotation = Quaternion.Euler(xRot, yRot, zRot);
                 break;
             case PlacementType.WALL:
                 float wallAngleY = Mathf.Atan2(hit.normal.x, hit.normal.z) * Mathf.Rad2Deg;
@@ -318,13 +323,13 @@ public class PlayerInteractionController : MonoBehaviour
                 {
                     case 0:
                         // Back against wall, facing perpendicular
-                        currentHeldItem.transform.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().z / 2;
-                        currentHeldItem.transform.rotation = Quaternion.Euler(0, wallAngleY, 0);
+                        placementGuideController.trans.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().z / 2;
+                        placementGuideController.trans.rotation = Quaternion.Euler(0, wallAngleY, 0);
                         break;
                     case 1:
                         // Have bottom against the wall
-                        currentHeldItem.transform.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().y / 2;
-                        currentHeldItem.transform.rotation = Quaternion.Euler(90, wallAngleY, 0);
+                        placementGuideController.trans.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().y / 2;
+                        placementGuideController.trans.rotation = Quaternion.Euler(90, wallAngleY, 0);
                         break;
                 }
                 break;
@@ -347,6 +352,11 @@ public class PlayerInteractionController : MonoBehaviour
             case < 0:
                 return PlacementType.CEILING;
         }
+    }
+
+    public bool CheckItemPlacing()
+    {
+        return isPlacementVisible;
     }
 
 }

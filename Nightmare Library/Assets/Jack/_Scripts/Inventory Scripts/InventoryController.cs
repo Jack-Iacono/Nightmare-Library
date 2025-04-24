@@ -10,7 +10,7 @@ public class InventoryController : MonoBehaviour
     public static InventoryController instance;
     private PlayerInteractionController interactionController;
     [SerializeField]
-    private Transform handPosition;
+    private PlayerHoldItemController handItem;
 
     private const int inventorySize = 3;
     private InventoryItem[] inventoryItems = new InventoryItem[inventorySize];
@@ -24,9 +24,10 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
-        if(instance != null)
-            Destroy(instance.gameObject);
-        instance = this;
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(this);
 
         interactionController = GetComponent<PlayerInteractionController>();    
 
@@ -52,13 +53,6 @@ public class InventoryController : MonoBehaviour
             {
                 SetCurrentIndex((currentItemIndex - 1 + inventorySize) % inventorySize);
             }
-        }
-
-        if (currentHeldItem != null && !interactionController.CheckItemPlacing())
-        {
-            currentHeldItem.holdable.EnableMesh(true);
-            currentHeldItem.holdable.trans.position = handPosition.position;
-            currentHeldItem.holdable.trans.rotation = handPosition.rotation;
         }
     }
 
@@ -102,6 +96,8 @@ public class InventoryController : MonoBehaviour
 
         currentHeldItem = inventoryItems[currentItemIndex];
 
+        CheckHeldItem();
+
         return true;
     }
     public bool RemoveCurrentItem()
@@ -110,6 +106,9 @@ public class InventoryController : MonoBehaviour
         {
             inventoryItems[currentItemIndex] = null;
             currentHeldItem = null;
+
+            CheckHeldItem();
+
             return true;
         }
 
@@ -125,7 +124,8 @@ public class InventoryController : MonoBehaviour
         HoldableItem[] items = new HoldableItem[inventoryItems.Length];
         for(int i = 0; i < inventoryItems.Length; i++)
         {
-            items[i] = inventoryItems[i].holdable;
+            if (inventoryItems[i] != null)
+                items[i] = inventoryItems[i].holdable;
         }
         return items;
     }
@@ -137,27 +137,29 @@ public class InventoryController : MonoBehaviour
         }
 
         SetCurrentIndex(0);
+        CheckHeldItem();
     }
 
     private void SetCurrentIndex(int index)
     {
         currentItemIndex = index;
-
-        // Remove the current item from the player's hands
-        if (currentHeldItem != null)
-        {
-            currentHeldItem.holdable.EnableMesh(false);
-            currentHeldItem.holdable.gameObject.SetActive(false);
-        }
-
         currentHeldItem = inventoryItems[currentItemIndex];
 
+        CheckHeldItem();
+    }
+
+    private void CheckHeldItem()
+    {
         // Show the item in the player's hands if there is one
+        Debug.Log(currentHeldItem == null);
         if (currentHeldItem != null)
         {
-            currentHeldItem.holdable.EnableMesh(true);
-            currentHeldItem.holdable.trans.position = handPosition.position;
-            currentHeldItem.holdable.trans.rotation = handPosition.rotation;
+            handItem.SetMesh(currentHeldItem.holdable.mainMeshFilter, currentHeldItem.holdable.mainMaterial);
+            handItem.SetVisible(true);
+        }
+        else
+        {
+            handItem.SetVisible(false);
         }
     }
     

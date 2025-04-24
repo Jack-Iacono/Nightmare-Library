@@ -124,6 +124,8 @@ public class aa_Warden : ActiveAttack
     {
         // Bypasses the typical hearing range check
         // Check that the sound is within the warden's area of partol
+
+        Debug.Log("Dist: " + Vector3.Distance(data.transform.position, areaCenter.position).ToString() + " || Range: " + wanderRange);
         if (Vector3.Distance(data.transform.position, areaCenter.position) < wanderRange)
         {
             alertQueue.Clear();

@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68ad0aec4f73f674a95390616d9a3ca2, type: 3}
+  m_Name: p_Jump
+  m_EditorClassIdentifier: 
+  audioClip: {fileID: 8300000, guid: 2097b5968697ca54b9dbbda343f5f79a, type: 3}
+  playOnAwake: 0
+  loop: 0
+  priority: 128
+  volume: 0.294
+  pitch: 1
+  stereoPan: 0
+  spatialBlend: 1
+  reverbZoneMix: 1
+  dopplerLevel: 1
+  spread: 0
+  rolloffMode: 1
+  minDistance: 0
+  maxDistance: 20
+  rollOffCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

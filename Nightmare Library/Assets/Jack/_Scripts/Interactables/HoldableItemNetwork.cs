@@ -26,7 +26,7 @@ public class HoldableItemNetwork : NetworkBehaviour
     private int currentUpdateFrame = 0;
 
     private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>();
-    private NetworkVariable<bool> isPhysical = new NetworkVariable<bool>();
+    private NetworkVariable<bool> isActive = new NetworkVariable<bool>();
 
     protected virtual void Awake()
     {
@@ -35,10 +35,7 @@ public class HoldableItemNetwork : NetworkBehaviour
             if (NetworkManager.IsServer)
             {
                 PrefabHandlerNetwork.AddSpawnedPrefab(GetComponent<NetworkObject>());
-                isPhysical.Value = true;
             }
-            else
-                ConsumeEnabledData(true, true);
 
             parent = GetComponent<HoldableItem>();
             previousPosition = transform.position;
@@ -53,20 +50,20 @@ public class HoldableItemNetwork : NetworkBehaviour
         parent.OnPlace += OnPlace;
         parent.OnThrow += OnThrow;
 
-        parent.OnSetPhysical += OnAllEnabled;
         canUpdateRigidbody = parent.hasRigidBody;
 
         if (!IsOwner)
         {
             transformData.OnValueChanged += ConsumeTransformData;
-            isPhysical.OnValueChanged += ConsumeEnabledData;
+            isActive.OnValueChanged += ConsumeEnabledData;
 
             ConsumeTransformData(transformData.Value, transformData.Value);
+            ConsumeEnabledData(isActive.Value, isActive.Value);
         }
         else
         {
             TransmitTransformData();
-            OnAllEnabled(parent.isPhysical);
+            isActive.Value = false;
         }
     }
 
@@ -75,7 +72,7 @@ public class HoldableItemNetwork : NetworkBehaviour
         // Check to make sure the network is running to avoid calls going out without being connected and that this is on the server/owner
         if (NetworkConnectionController.IsRunning)
         {
-            if (IsOwner && canUpdateRigidbody && isPhysical.Value)
+            if (IsOwner && canUpdateRigidbody && isActive.Value)
             {
                 // ensures the update only runs every few frames
                 if (currentUpdateFrame >= updateTransformFrequency)
@@ -121,7 +118,7 @@ public class HoldableItemNetwork : NetworkBehaviour
 
     private void ConsumeEnabledData(bool previousValue, bool newValue)
     {
-        parent.SetPhysical(newValue);
+        parent.gameObject.SetActive(newValue);
     }
 
     #region Transform
@@ -232,7 +229,7 @@ public class HoldableItemNetwork : NetworkBehaviour
             if (IsOwner)
             {
                 TransmitTransformData();
-                isPhysical.Value = true;
+                isActive.Value = true;
                 PlaceClientRpc(new TransformData(parent.trans.position, parent.trans.rotation), NetworkManager.LocalClientId);
             }
             else
@@ -247,7 +244,7 @@ public class HoldableItemNetwork : NetworkBehaviour
         PlaceClientRpc(data, sender);
 
         TransmitTransformData();
-        isPhysical.Value = true;
+        isActive.Value = true;
     }
     [ClientRpc]
     protected virtual void PlaceClientRpc(TransformData data, ulong sender)
@@ -290,10 +287,4 @@ public class HoldableItemNetwork : NetworkBehaviour
     }
 
     #endregion
-
-    private void OnAllEnabled(bool enabled)
-    {
-        if (IsServer)
-            isPhysical.Value = enabled;
-    }
 }

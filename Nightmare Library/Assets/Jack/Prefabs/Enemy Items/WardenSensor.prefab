@@ -74,15 +74,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a09d19bccb199845a587e2cbed06f01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemName: Warden Sensor
+  gameobjectOverride: {fileID: 0}
+  mainMeshFilter: {fileID: 2569434489981476113}
   placementTypes: 
   floorPlacementType: 0
   wallPlacementType: 0
+  fixPlacement: 1
   precisePlacement: 0
-  allowPlayerClick: 0
-  allowPlayerPickup: 0
-  allowEnemyHysterics: 0
-  allowEnemyFlicker: 0
-  attachedLight: {fileID: 0}
 --- !u!114 &1624714415527308566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -224,6 +223,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isPooled: 0
+  checkListeners: 1
 --- !u!114 &6473351765471956210
 MonoBehaviour:
   m_ObjectHideFlags: 0

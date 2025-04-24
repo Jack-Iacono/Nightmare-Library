@@ -28,7 +28,6 @@ public class PlacementGuideController : MonoBehaviour
 
     public void SetMeshFilter(MeshFilter meshFilter)
     {
-        Debug.Log("Setting Mesh Filter");
         this.meshFilter.mesh = meshFilter.mesh;
         this.meshFilter.transform.localScale = meshFilter.transform.localScale;
     }

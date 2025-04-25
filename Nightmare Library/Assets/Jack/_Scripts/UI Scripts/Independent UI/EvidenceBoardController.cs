@@ -38,7 +38,7 @@ public class EvidenceBoardController : MonoBehaviour
             OnGameStart();
 
         // Add the spots for the various presets
-        evidenceData = new EvidenceData[GameController.startingEnemyCount];
+        evidenceData = new EvidenceData[PersistentDataController.Instance.activeEnemyPresets.Count];
         for (int i = 0; i < evidenceData.Length; i++)
         {
             evidenceData[i] = new EvidenceData();
@@ -47,13 +47,13 @@ public class EvidenceBoardController : MonoBehaviour
 
     private void OnGameStart()
     {
-        List<EnemyPreset> presets = PersistentDataController.Instance.enemyPresets;
+        List<EnemyPreset> presets = PersistentDataController.Instance.activeEnemyPresets;
         List<EvidenceEnum> evidenceEnums = Enum.GetValues(typeof(EvidenceEnum)).Cast<EvidenceEnum>().ToList(); ;
 
         // Goes through all the note gameobjects and decides which are going to be used
         for (int i = 0; i < noteObjects.Count; i++)
         {
-            if (i < GameController.startingEnemyCount)
+            if (i < PersistentDataController.Instance.activeEnemyPresets.Count)
                 enemyNotes.Add(new EnemyNoteLink(noteObjects[i]));
             else
                 noteObjects[i].SetActive(false);

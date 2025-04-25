@@ -14,8 +14,8 @@ public class TaskRushTarget : Node
 
     private float speed = 50;
 
-    private float nodeWaitTime = 1;
-    private float nodeWaitTimer = 1;
+    private float nodeWaitTime = 0.25f;
+    private float nodeWaitTimer = 0.25f;
 
     private bool atNodeWait = false;
 

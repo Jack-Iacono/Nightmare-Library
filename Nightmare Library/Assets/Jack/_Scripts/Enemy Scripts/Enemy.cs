@@ -97,7 +97,7 @@ public class Enemy : MonoBehaviour
         navAgent.Warp(spawnLocation);
 
         // Gets the enemy preset that this will follow, does not pick one which is already in use
-        List<EnemyPreset> validPresets = new List<EnemyPreset>(PersistentDataController.Instance.enemyPresets);
+        List<EnemyPreset> validPresets = new List<EnemyPreset>(PersistentDataController.Instance.activeEnemyPresets);
         foreach (EnemyPreset preset in inUsePresets)
         {
             validPresets.Remove(preset);

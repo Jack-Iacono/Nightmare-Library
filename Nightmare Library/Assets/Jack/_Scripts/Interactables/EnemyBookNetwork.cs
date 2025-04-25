@@ -29,12 +29,12 @@ public class EnemyBookNetwork : NetworkBehaviour
             Debug.Log("Sending Server Rpc");
 
             // Send the data over that can be decoded later
-            OnAppliedBookChangedServerRpc(PlayerNetwork.playerNetworkReference[controller].NetworkObjectId, PersistentDataController.Instance.enemyPresets.IndexOf(preset));
+            OnAppliedBookChangedServerRpc(PlayerNetwork.playerNetworkReference[controller].NetworkObjectId, PersistentDataController.Instance.activeEnemyPresets.IndexOf(preset));
         }
     }
     [ServerRpc(RequireOwnership = false)]
     private void OnAppliedBookChangedServerRpc(ulong networkObjectId, int enemyPreset)
     {
-        OnAppliedBookChanged(PlayerNetwork.playerNetworkReference[GetNetworkObject(networkObjectId)], PersistentDataController.Instance.enemyPresets[enemyPreset]);
+        OnAppliedBookChanged(PlayerNetwork.playerNetworkReference[GetNetworkObject(networkObjectId)], PersistentDataController.Instance.activeEnemyPresets[enemyPreset]);
     }
 }

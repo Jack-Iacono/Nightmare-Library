@@ -6,7 +6,7 @@ public class PersistentDataController : MonoBehaviour
 {
     public static PersistentDataController Instance;
 
-    public List<EnemyPreset> enemyPresets = new List<EnemyPreset>();
+    public List<EnemyPreset> activeEnemyPresets = new List<EnemyPreset>();
 
     private void Awake()
     {

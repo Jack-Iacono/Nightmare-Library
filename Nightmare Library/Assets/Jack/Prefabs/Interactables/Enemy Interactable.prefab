@@ -118,7 +118,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemName: Stupid Item
-  gameobjectOverride: {fileID: 0}
+  gameobjectOverride: {fileID: 9005950701217598113}
+  mainMeshFilter: {fileID: 9208442971139297789}
   placementTypes: 0000000001000000
   floorPlacementType: 0
   wallPlacementType: 0

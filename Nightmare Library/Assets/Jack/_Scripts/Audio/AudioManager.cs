@@ -55,6 +55,7 @@ public class AudioManager : NetworkBehaviour
     }
     private void Start()
     {
+        // Assigns the Audio Source Object from the Prefab Handler
         audioSourceObject = PrefabHandler.Instance.a_AudioSource;
 
         SceneController.SetSceneActive(SceneController.m_Scene.UNIVERSAL);
@@ -72,6 +73,11 @@ public class AudioManager : NetworkBehaviour
         PlaySoundAtPointOffline(sound, pos);
         OnSoundPlay?.Invoke(sound, pos);
     }
+    /// <summary>
+    /// Plays a sound at the given position while overriding to play only on the local client
+    /// </summary>
+    /// <param name="sound">The sound to play</param>
+    /// <param name="pos">The location that this sound should originate from</param>
     public static void PlaySoundAtPointOffline(AudioData sound, Vector3 pos)
     {
         AudioSourceController source = AudioSourceController.sourceAccess[soundSourcePool.GetObject(audioSourceObject)];
@@ -80,11 +86,22 @@ public class AudioManager : NetworkBehaviour
         source.Play();
     }
 
+    /// <summary>
+    /// Returns a random audio data from given sound type collection
+    /// </summary>
+    /// <param name="type">The type of sound to select from</param>
+    /// <returns>An AudioData containing the data for a sound within the requested type</returns>
     public static AudioData GetAudioData(SoundType type)
     {
         AudioData[] s = Instance.sounds[(int)type].sounds;
         return s[UnityEngine.Random.Range(0, s.Length)];
     }
+    /// <summary>
+    /// Returns a specific audio data via their indexes (This is mostly used for networking purposes)
+    /// </summary>
+    /// <param name="i">The index of the SoundType</param>
+    /// <param name="j">The index of the AudioData</param>
+    /// <returns>The AudioData with the given indexes</returns>
     public static AudioData GetAudioData(int i, int j)
     {
         return Instance.sounds[i].sounds[j];

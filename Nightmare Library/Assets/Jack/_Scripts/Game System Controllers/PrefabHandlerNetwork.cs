@@ -14,17 +14,14 @@ public class PrefabHandlerNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
+            if (Instance != null)
+                Destroy(Instance);
+            Instance = this;
+
+            parent = GetComponent<PrefabHandler>();
         }
-
-        if (Instance != null)
-            Destroy(Instance);
-        Instance = this;
-
-        parent = GetComponent<PrefabHandler>();
     }
     public void InstantiatePrefab(GameObject obj, ulong owner = ulong.MaxValue)
     {

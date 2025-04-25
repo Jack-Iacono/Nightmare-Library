@@ -15,14 +15,11 @@ public class UINetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
+            parent = GetComponent<UIController>();
+            parent.OnStartFinish += OnParentStartFinish;
         }
-
-        parent = GetComponent<UIController>();
-        parent.OnStartFinish += OnParentStartFinish;
     }
 
     private void OnParentStartFinish()

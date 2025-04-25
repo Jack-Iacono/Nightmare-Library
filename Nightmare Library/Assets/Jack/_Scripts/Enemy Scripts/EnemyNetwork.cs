@@ -21,12 +21,7 @@ public class EnemyNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
-        {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
-        else
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
             parent = GetComponent<Enemy>();
             parent.OnInitialize += OnInitialize;
@@ -62,7 +57,7 @@ public class EnemyNetwork : NetworkBehaviour
             //OnInitializeClientRpc(GameController.instance.enemyPresets.IndexOf(parent.enemyType), (int)parent.aAttack, (int)parent.pAttack);
             EnemyTypeData data = new EnemyTypeData();
 
-            data.typeIndex = PersistentDataController.Instance.enemyPresets.IndexOf(parent.enemyType);
+            data.typeIndex = PersistentDataController.Instance.activeEnemyPresets.IndexOf(parent.enemyType);
             data.activeAttackIndex = (int)parent.aAttack;
             data.passiveAttackIndex = (int)parent.pAttack;
 
@@ -70,7 +65,7 @@ public class EnemyNetwork : NetworkBehaviour
         }
         else
         {
-            parent.enemyType = PersistentDataController.Instance.enemyPresets[type.Value.typeIndex];
+            parent.enemyType = PersistentDataController.Instance.activeEnemyPresets[type.Value.typeIndex];
             parent.aAttack = (EnemyPreset.aAttackEnum)type.Value.activeAttackIndex;
             parent.pAttack = (EnemyPreset.pAttackEnum)type.Value.passiveAttackIndex;
         }

@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Burst.CompilerServices;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public static class EnemyNavGraph
 {
     public static List<EnemyNavNode> enemyNavPoints = new List<EnemyNavNode>();
-    private static List<NeighborPair> neighborPairs = new List<NeighborPair>();
     
     public static void Add(EnemyNavNode point)
     {
@@ -22,33 +23,11 @@ public static class EnemyNavGraph
 
             // Check the new point against all previous points
             bool added = point.CheckNeighbor(enemyNavPoints[i]);
-
-            if(added)
-                AddNeighborPair(enemyNavPoints[i], point);
         }
     }
     public static void Remove(EnemyNavNode point)
     {
-        RemoveNeighborPairs(point);
         enemyNavPoints.Remove(point);
-    }
-
-    private static void AddNeighborPair(EnemyNavNode node1 ,EnemyNavNode node2)
-    {
-        // Adds this pair if it not already present
-        NeighborPair pair = new NeighborPair(node1, node2);
-        if (!neighborPairs.Contains(pair))
-        {
-            neighborPairs.Add(pair);
-        }
-    }
-    private static void RemoveNeighborPairs(EnemyNavNode node)
-    {
-        for(int i = neighborPairs.Count - 1; i > 0; i--)
-        {
-            if (neighborPairs[i].Contains(node))
-                neighborPairs.RemoveAt(i);
-        }
     }
 
     public static EnemyNavNode GetClosestNavPoint(Vector3 pos)
@@ -67,6 +46,34 @@ public static class EnemyNavGraph
         }
         return closest;
     }
+
+    public static EnemyNavNode GetClosestNavPointRay(Vector3 pos, EnemyNavNode[] exclude)
+    {
+        float minDistance = float.MaxValue;
+        EnemyNavNode closest = null;
+
+        foreach (EnemyNavNode e in enemyNavPoints)
+        {
+            if (!exclude.Contains(e))
+            {
+                float dist = Vector3.Distance(e.position, pos);
+                Ray ray = new Ray(pos, (e.position - pos));
+
+                // May need to change this later to accomodate for layer shifting
+                if (dist < minDistance && !Physics.Raycast(ray.origin, ray.direction, dist, 1 << 9))
+                {
+                    closest = e;
+                    minDistance = dist;
+                }
+            }
+        }
+        return closest;
+    }
+    public static EnemyNavNode GetClosestNavPointRay(Vector3 pos)
+    {
+        return GetClosestNavPointRay(pos, new EnemyNavNode[0]);
+    }
+
     public static EnemyNavNode GetFarthestNavPoint(Vector3 pos)
     {
         // TEMPORARY!!! using this method to save memory, I do know that this isn't the distance formula
@@ -153,25 +160,35 @@ public static class EnemyNavGraph
         // If no nodes are valid, just return a random neighbor
         return closest.GetRandomNeighbor(null);
     }
-    public static NeighborPair GetClosestNodePair(Vector3 pos)
+    public static EnemyNavNode[] GetClosestNodePair(Vector3 pos)
     {
-        NeighborPair closestPair = null;
-        float minDistance = 10000;
+        EnemyNavNode[] closest = new EnemyNavNode[2];
 
-        foreach(NeighborPair pair in neighborPairs)
+        // Get the closest node to the player
+        closest[0] = GetClosestNavPointRay(pos);
+
+        Vector3 closeDirection = (pos - closest[0].position).normalized;
+
+        float lowAngle = -1;
+        EnemyNavNode closestNode = null;
+
+        // Run through that node's neighbors and check which is closest
+        foreach(EnemyNavNode checkNode in closest[0].neighbors.Keys)
         {
-            Ray ray = pair.GetRay();
-            Vector3 closestPointOnRay = ray.origin + Vector3.Dot(pos - ray.origin, ray.direction) * ray.direction;
-            float distanceToRay = Vector3.Distance(pos, closestPointOnRay);
+            // Get the dot product of the ray pointing toward the player and the ray from the closest node to the current candidate
+            float dotProd = Vector3.Dot(closeDirection, (checkNode.position - closest[0].position).normalized);
 
-            if(distanceToRay < minDistance)
+            // If this angle is more shallow than the prior, make it the new goal
+            if (dotProd >= lowAngle)
             {
-                minDistance = distanceToRay;
-                closestPair = pair;
+                lowAngle = dotProd;
+                closestNode = checkNode;
             }
         }
 
-        return closestPair;
+        closest[1] = closestNode;
+
+        return closest;
     }
 
     /// <summary>
@@ -182,6 +199,9 @@ public static class EnemyNavGraph
     /// <returns>A list of EnemyNavPoints that will get the user from the starting point to the goal point</returns>
     public static List<EnemyNavNode> GetPathToPoint(EnemyNavNode start, EnemyNavNode goal)
     {
+        // Ooh look at me, I used an A* search algo for no real reason
+        // It's because I wanted to bitch
+
         // Create a Priority Queue to hold the nodes
         PriorityQueue<EnemyNavNode> nodes = new PriorityQueue<EnemyNavNode>();
         nodes.Insert(new PriorityQueue<EnemyNavNode>.Element(start, 0));
@@ -236,53 +256,5 @@ public static class EnemyNavGraph
         }
 
         return path;
-    }
-
-    public class NeighborPair
-    {
-        public EnemyNavNode node1;
-        public EnemyNavNode node2;
-
-        private Ray ray;
-        private float length;
-
-        public bool Contains(EnemyNavNode node)
-        {
-            return node1 == node || node2 == node;
-        }
-
-        public NeighborPair(EnemyNavNode node1, EnemyNavNode node2)
-        {
-            this.node1 = node1;
-            this.node2 = node2;
-
-            ray = new Ray(node1.position, node2.position - node1.position);
-            length = Vector3.Distance(node1.position, node2.position);
-
-            Debug.DrawRay(ray.origin, ray.direction * length, Color.cyan, 10);
-        }
-
-        public Ray GetRay() { return ray; }
-
-        public override bool Equals(object obj)
-        {
-            NeighborPair other = obj as NeighborPair;
-
-            if((other.node1 == node1 && other.node2 == node2) || (other.node2 == node1 && other.node1 == node2))
-            {
-                return true;
-            }
-
-            return false;
-        }
-        public override int GetHashCode()
-        {
-            return node1.GetHashCode() + node2.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return "Node 1: " + node1.ToString() + " || Node 2: " + node2.ToString();
-        }
     }
 }

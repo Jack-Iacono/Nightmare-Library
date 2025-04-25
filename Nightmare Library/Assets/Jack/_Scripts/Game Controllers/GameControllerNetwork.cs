@@ -18,26 +18,23 @@ public class GameControllerNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
+            if (instance == null)
+                instance = this;
+            else
+                Destroy(this);
+
+            parent = GetComponent<GameController>();
+
+            var permission = NetworkVariableWritePermission.Server;
+
+            contState = new NetworkVariable<ContinuousData>(writePerm: permission);
+            gamePaused = new NetworkVariable<bool>(writePerm: permission);
+            enemyCount = new NetworkVariable<int>(writePerm: permission);
+
+            PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
         }
-
-        if (instance == null)
-            instance = this;
-        else
-            Destroy(this);
-
-        parent = GetComponent<GameController>();
-
-        var permission = NetworkVariableWritePermission.Server;
-
-        contState = new NetworkVariable<ContinuousData>(writePerm: permission);
-        gamePaused = new NetworkVariable<bool>(writePerm: permission);
-        enemyCount = new NetworkVariable<int>(writePerm: permission);
-
-        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 
     public override void OnNetworkSpawn()

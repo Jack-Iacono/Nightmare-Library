@@ -12,14 +12,11 @@ public class CameraMonitorNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
+            parent = GetComponent<CameraMonitorController>();
+            parent.OnStartFinish += OnParentStartFinish;
         }
-
-        parent = GetComponent<CameraMonitorController>();
-        parent.OnStartFinish += OnParentStartFinish;
     }
 
     private void OnParentStartFinish()

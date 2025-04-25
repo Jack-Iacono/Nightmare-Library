@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4396617629476131479}
-  - component: {fileID: 4475538241714868911}
   - component: {fileID: 1130992851967975794}
   - component: {fileID: 8691475150876414070}
   - component: {fileID: 3563164948738852297}
@@ -37,18 +36,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4475538241714868911
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3257430371133698127}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83b2bea92fa683a44ba1374332da525b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1130992851967975794
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125,7 +112,7 @@ MonoBehaviour:
     - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
   - name: p_JUMP
     sounds:
-    - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
+    - {fileID: 11400000, guid: c6b48a61c34cd2d41a085eecaef6f380, type: 2}
 --- !u!114 &9201799052545353948
 MonoBehaviour:
   m_ObjectHideFlags: 0

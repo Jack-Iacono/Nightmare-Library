@@ -63,7 +63,7 @@ public class HoldableItemNetwork : NetworkBehaviour
         else
         {
             TransmitTransformData();
-            isActive.Value = false;
+            isActive.Value = gameObject.activeInHierarchy;
         }
     }
 

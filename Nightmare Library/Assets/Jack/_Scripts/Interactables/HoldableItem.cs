@@ -61,9 +61,6 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     public delegate void OnThrowDelegate(Vector3 force, bool fromNetwork = false);
     public event OnThrowDelegate OnThrow;
 
-    public delegate void OnAllEnabledDelegate(bool enabled);
-    public event OnAllEnabledDelegate OnSetPhysical;
-
     protected virtual void Awake()
     {
         if(mainMeshFilter != null)

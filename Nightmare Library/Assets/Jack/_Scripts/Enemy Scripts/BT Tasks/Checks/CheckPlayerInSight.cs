@@ -20,6 +20,11 @@ public class CheckPlayerInSight : Node
     private Vector3 areaCenter = Vector3.zero;
     private float areaRange;
 
+    private float sightBreakTime = 5;
+    private float sightBreakTimer = 0;
+
+    private PlayerController lastSeenPlayer;
+
     public CheckPlayerInSight(ActiveAttack owner, NavMeshAgent navAgent, float fovRange, float sightAngle)
     {
         this.owner = owner;
@@ -29,7 +34,7 @@ public class CheckPlayerInSight : Node
         this.fovRange = fovRange;
         this.sightAngle = sightAngle;
     }
-    public CheckPlayerInSight(ActiveAttack owner, NavMeshAgent navAgent, float fovRange, float sightAngle, Vector3 areaCenter, float areaRange)
+    public CheckPlayerInSight(ActiveAttack owner, NavMeshAgent navAgent, float fovRange, float sightAngle, Vector3 areaCenter, float areaRange, float sightBreakTime = 5)
     {
         this.owner = owner;
         this.navAgent = navAgent;
@@ -39,6 +44,9 @@ public class CheckPlayerInSight : Node
         this.sightAngle = sightAngle;
         this.areaCenter = areaCenter;
         this.areaRange = areaRange;
+
+        this.sightBreakTime = sightBreakTime;
+        sightBreakTimer = sightBreakTime;
     }
 
     public override Status Check(float dt)
@@ -78,10 +86,22 @@ public class CheckPlayerInSight : Node
                         {
                             SetPlayerPosition(player);
 
+                            sightBreakTimer = sightBreakTime;
+
                             status = Status.SUCCESS;
                             return status;
                         }
                     }
+                }
+                
+                if(lastSeenPlayer == player && sightBreakTimer > 0)
+                {
+                    sightBreakTimer -= dt;
+
+                    SetPlayerPosition(player);
+
+                    status = Status.SUCCESS;
+                    return status;
                 }
             }
         }
@@ -94,5 +114,11 @@ public class CheckPlayerInSight : Node
     public void SetPlayerPosition(Transform p)
     {
         owner.SetCurrentTarget(p);
+    }
+
+    protected override void OnResetNode()
+    {
+        base.OnResetNode();
+        sightBreakTimer = sightBreakTime;
     }
 }

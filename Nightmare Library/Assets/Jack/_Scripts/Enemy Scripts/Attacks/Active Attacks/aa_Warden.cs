@@ -124,8 +124,6 @@ public class aa_Warden : ActiveAttack
     {
         // Bypasses the typical hearing range check
         // Check that the sound is within the warden's area of partol
-
-        Debug.Log("Dist: " + Vector3.Distance(data.transform.position, areaCenter.position).ToString() + " || Range: " + wanderRange);
         if (Vector3.Distance(data.transform.position, areaCenter.position) < wanderRange)
         {
             alertQueue.Clear();
@@ -184,8 +182,11 @@ public class aa_Warden : ActiveAttack
 
         foreach(GameObject g in spawnedSensors)
         {
-            PrefabHandler.Instance.CleanupGameObject(g);
-            PrefabHandler.Instance.DestroyGameObject(g);
+            if(PrefabHandler.Instance != null)
+            {
+                PrefabHandler.Instance.CleanupGameObject(g);
+                PrefabHandler.Instance.DestroyGameObject(g);
+            }
         }
     }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
+using static AudioManager;
+
 [RequireComponent(typeof(AudioSource))]
 public class AudioSourceController : MonoBehaviour
 {
@@ -30,7 +32,7 @@ public class AudioSourceController : MonoBehaviour
     {
         sourceAccess.Add(gameObject, this);
         audioSource = GetComponent<AudioSource>();
-        sourceData = new SourceData(gameObject);
+        sourceData = new SourceData(gameObject, SoundType.e_SCREECH_APPEAR);
         trans = transform;
     }
     public void Initialize()
@@ -121,17 +123,14 @@ public class AudioSourceController : MonoBehaviour
         public Transform transform;
         public float radius;
 
-        public SourceData(GameObject gameObject, float radius = 10)
+        public SoundType soundType;
+
+        public SourceData(GameObject gameObject, SoundType type, float radius = 10)
         {
             this.gameObject = gameObject;
             transform = gameObject.transform;
             this.radius = radius;
-        }
-        public SourceData(GameObject gameObject, Transform transform, float radius = 10)
-        {
-            this.gameObject = gameObject;
-            this.transform = transform;
-            this.radius = radius;
+            soundType = type;
         }
     }
 }

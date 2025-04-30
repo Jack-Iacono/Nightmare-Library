@@ -30,6 +30,9 @@ public class IdolNetwork : NetworkBehaviour
             {
                 isActive.OnValueChanged += OnActiveValueChanged;
                 parent.OnClick += OnClick;
+
+                if(isActive != null)
+                    OnActiveValueChanged(isActive.Value, isActive.Value);
             }
 
             PrefabHandlerNetwork.AddSpawnedPrefab(GetComponent<NetworkObject>());

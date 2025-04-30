@@ -88,7 +88,6 @@ public class GameControllerNetwork : NetworkBehaviour
     {
         if(id != NetworkManager.LocalClientId)
         {
-            Debug.Log("Muting Player " + id + ": " + !b);
             VoiceChatController.MutePlayer(id, !b);
         }
     }
@@ -165,6 +164,6 @@ public class GameControllerNetwork : NetworkBehaviour
             VoiceChatController.UnMuteAll();
 
         GameController.OnGameEnd -= OnGameEnd;
-        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
+        PlayerController.OnPlayerAliveChanged -= OnPlayerAliveChanged;
     }
 }

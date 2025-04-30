@@ -57,6 +57,7 @@ public class HoldableItemNetwork : NetworkBehaviour
             transformData.OnValueChanged += ConsumeTransformData;
             isActive.OnValueChanged += ConsumeEnabledData;
 
+            // Moves the item to the correct location according to the server
             ConsumeTransformData(transformData.Value, transformData.Value);
             ConsumeEnabledData(isActive.Value, isActive.Value);
         }

@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 205830423482295758}
   - component: {fileID: 2638872502163122913}
   - component: {fileID: 7706876371356341439}
+  - component: {fileID: 3017759156182049950}
   m_Layer: 0
   m_Name: Lecturn
   m_TagString: Untagged
@@ -83,3 +84,24 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!65 &3017759156182049950
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3746295080011150600}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.53975123, y: 1.5098817, z: 0.5878053}
+  m_Center: {x: -0.000002861023, y: 0.754941, z: 0}

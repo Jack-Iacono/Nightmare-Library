@@ -62,7 +62,9 @@ public class GameController : MonoBehaviour
             {
                 for (int i = 0; i < GameController.startingEnemyCount; i++)
                 {
-                    GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
+                    Vector3 pos = MapDataController.GetRandomEnemySpawnPoint();
+                    Debug.Log(pos);
+                    GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, pos, Quaternion.identity);
                     ePrefab.name = "Basic Enemy";
                     spawnedEnemies.Add(ePrefab);
 
@@ -90,7 +92,10 @@ public class GameController : MonoBehaviour
             }
         }
         else
+        {
+            Debug.Log("End Game Due to Time");
             EndGame();
+        }
     }
 
     public static void SetEnemyCount(int e)
@@ -113,6 +118,7 @@ public class GameController : MonoBehaviour
 
         if (allPlayersDead && NetworkConnectionController.HasAuthority)
         {
+            Debug.Log("All players dead");
             StartCoroutine(BeginEndGame());
         }
     }
@@ -124,6 +130,7 @@ public class GameController : MonoBehaviour
         // Will be removed after demo
         if(currentEnemyCount <= 0)
         {
+            Debug.Log("Enemy Killed");
             StartCoroutine(BeginEndGame());
         }
     }

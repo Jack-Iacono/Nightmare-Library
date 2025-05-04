@@ -17,7 +17,7 @@ public abstract class TaskAttack : Node
 
     protected void Attack(PlayerController controller)
     {
-        if(preset != EnemyBookController.appliedBooks[controller])
+        if(!EnemyBookController.appliedBooks.ContainsKey(controller) || preset != EnemyBookController.appliedBooks[controller])
         {
             // Kill the player
             controller.ChangeAliveState(false);

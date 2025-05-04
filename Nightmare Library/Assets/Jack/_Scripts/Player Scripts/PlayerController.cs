@@ -88,8 +88,16 @@ public class PlayerController : MonoBehaviour
         // Teleport the player to the spawn point of the map
         Warp(MapDataController.Instance.playerSpawnPoint);
 
+        // Registers the player to warp to the map start when the map is loaded
+        MapDataController.OnMapDataLoaded += OnMapDataLoaded;
+
         // Get the player's layer from the editor
         playerLayerMask = gameObject.layer;
+    }
+
+    private void OnMapDataLoaded()
+    {
+        Warp(MapDataController.Instance.playerSpawnPoint);
     }
     public void Warp(Vector3 pos)
     {
@@ -203,12 +211,7 @@ public class PlayerController : MonoBehaviour
         charCont.Move(currentMove * Time.deltaTime);
     }
 
-    public void OnDestroy()
-    {
-        //Takes itself out of the player array
-        OnPlayerAliveChanged?.Invoke(this, false);
-        playerInstances.Remove(gameObject);
-    }
+    
 
     private void OnTriggerEnter(Collider other)
     {
@@ -299,6 +302,15 @@ public class PlayerController : MonoBehaviour
     {
         // Checks whether there is move input for this frame
         return currentInput != Vector3.zero;
+    }
+
+    public void OnDestroy()
+    {
+        //Takes itself out of the player array
+        OnPlayerAliveChanged?.Invoke(this, false);
+        playerInstances.Remove(gameObject);
+
+        MapDataController.OnMapDataLoaded -= OnMapDataLoaded;
     }
 
     [Serializable]

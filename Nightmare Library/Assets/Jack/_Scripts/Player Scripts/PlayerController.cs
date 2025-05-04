@@ -160,7 +160,8 @@ public class PlayerController : MonoBehaviour
         {
             if (currentInput.y != 0)
             {
-                audioSource.Play(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP));
+                if(isAlive)
+                    audioSource.Play(AudioManager.GetAudioData(AudioManager.SoundType.p_JUMP));
                 currentMove.y = jumpHeight;
             }
 

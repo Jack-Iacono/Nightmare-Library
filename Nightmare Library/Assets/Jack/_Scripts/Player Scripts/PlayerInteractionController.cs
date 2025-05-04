@@ -150,6 +150,10 @@ public class PlayerInteractionController : MonoBehaviour
                 interactionTypes[1] = true;
                 onItemSightChange?.Invoke(1);
             }
+            else
+            {
+                onItemSightChange?.Invoke(-1);
+            }
 
             // If there is no action buffering and there is some input being processed
             if(!actionBuffering && isActive)

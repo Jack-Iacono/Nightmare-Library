@@ -96,6 +96,11 @@ public class TaskWanderTimed : Node
         pointWaitTimer = Random.Range(pointWaitTimeMin, pointWaitTimeMax);
     }
 
+    public void ResetTime()
+    {
+        wanderTimer = Random.Range(wanderTimeMin, wanderTimeMax);
+    }
+
     public void OnLevelChange(float min, float max)
     {
         wanderTimeMin = min;

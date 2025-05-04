@@ -35,6 +35,10 @@ public class aa_Stalk : ActiveAttack
     protected float baseRunTimeMin = 3;
     protected float baseRunTimeMax = 7;
 
+    // Parameters for the player seeing this enemy
+    protected float playerSightRange = 50;
+    protected float playerSightAngle = 0.6f;
+
     protected TaskWanderTimed n_WanderTime;
     protected TaskStalkCloseIn n_CloseIn;
     protected TaskWait n_AttackWait;
@@ -86,7 +90,7 @@ public class aa_Stalk : ActiveAttack
                     // Run Away Behavior
                     new Sequence(new List<Node>()
                     {
-                        new CheckInPlayerSight(this, owner),
+                        new CheckInPlayerSight(this, owner, playerSightRange, playerSightAngle),
                         new TaskWait(0.25f),
                         new TaskWarpAway(this,owner.navAgent),
                         new TaskChangeCounter(n_StalkCounter, TaskChangeCounter.ChangeType.SUBTRACT, 1)
@@ -104,7 +108,8 @@ public class aa_Stalk : ActiveAttack
                     // Warp behind and approach
                     new Sequence(new List<Node>()
                     {
-                        new TaskStalkWarpBehind(this, owner),
+                        new TaskWarpBehindPlayer(owner, GetCurrentTarget),
+                        new TaskPlaySound(AudioManager.SoundType.e_STALK_CLOSE_IN, GetCurrentTargetPosition),
                         n_AttackWait,
                         n_CloseIn
                     })
@@ -136,6 +141,9 @@ public class aa_Stalk : ActiveAttack
                 currentTargetPlayer = cont;
                 BeginStalking();
                 irritationCounter = 0;
+
+                // Makes the enemy wander after this attack for the correct time
+                n_WanderTime.ResetTime();
             }
 
             return true;
@@ -184,6 +192,15 @@ public class aa_Stalk : ActiveAttack
     {
         SetCurrentTarget(null);
         currentTargetPlayer = null;
+    }
+
+    public PlayerController GetCurrentTarget()
+    {
+        return currentTargetPlayer;
+    }
+    public Vector3 GetCurrentTargetPosition()
+    {
+        return currentTargetPlayer.transform.position;
     }
 
     protected override void OnLevelChange(int level)

@@ -26,9 +26,16 @@ public class EvidenceBoardNetwork : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         if (NetworkManager.IsServer)
+        {
             evidenceData.Value = new EvidenceBoardData();
+        }
         else
+        {
             evidenceData.OnValueChanged += OnEvidenceDataValueChanged;
+
+            if(evidenceData != null)
+                OnEvidenceDataValueChanged(evidenceData.Value, evidenceData.Value);
+        }
     }
 
     private void OnEvidenceDataChange(int index, EvidenceData data)

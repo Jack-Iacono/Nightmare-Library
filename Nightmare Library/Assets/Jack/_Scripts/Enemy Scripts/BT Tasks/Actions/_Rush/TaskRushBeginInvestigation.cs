@@ -20,10 +20,10 @@ public class TaskRushBeginInvestigation : Node
     {
         if (!hasRun)
         {
-            EnemyNavGraph.NeighborPair pair = EnemyNavGraph.GetClosestNodePair(owner.GetAudioSource(0).transform.position);
+            EnemyNavNode[] pair = EnemyNavGraph.GetClosestNodePair(owner.GetAudioSource(0).transform.position);
 
             // Makes sure that the enemy has to move to the first node
-            bool normalNodeSet = owner.currentNode != pair.node1;
+            bool normalNodeSet = owner.currentNode != pair[0];
             List<EnemyNavNode> newNodes = new List<EnemyNavNode>();
 
             // Lets the agent finish their current path
@@ -34,13 +34,13 @@ public class TaskRushBeginInvestigation : Node
             {
                 if (normalNodeSet)
                 {
-                    newNodes.Add(pair.node1);
-                    newNodes.Add(pair.node2);
+                    newNodes.Add(pair[0]);
+                    newNodes.Add(pair[1]);
                 }
                 else
                 {
-                    newNodes.Add(pair.node2);
-                    newNodes.Add(pair.node1);
+                    newNodes.Add(pair[1]);
+                    newNodes.Add(pair[0]);
                 }
             }
 

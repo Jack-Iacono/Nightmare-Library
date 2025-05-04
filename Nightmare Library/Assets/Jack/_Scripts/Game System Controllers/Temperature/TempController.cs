@@ -34,39 +34,35 @@ public class TempController : MonoBehaviour
     }
     public void Update()
     {
-        // Make sure the game isn't paused
-        if (!GameController.gamePaused)
+        // Controls the movement of the target temperature based on external factors
+        if (updateTick > 0)
+            updateTick -= Time.deltaTime;
+        else
         {
-            // Controls the movement of the target temperature based on external factors
-            if (updateTick > 0)
-                updateTick -= Time.deltaTime;
-            else
+            switch (tempChangeState)
             {
-                switch (tempChangeState)
-                {
-                    case 0:
-                        WaverTemp();
-                        break;
-                    case 1:
-                        RaiseTemp();
-                        break;
-                    case 2:
-                        LowerTemp();
-                        break;
-                }
-
-                updateTick = Random.Range(updateTickAvg - updateTickDev, updateTickAvg + updateTickDev);
+                case 0:
+                    WaverTemp();
+                    break;
+                case 1:
+                    RaiseTemp();
+                    break;
+                case 2:
+                    LowerTemp();
+                    break;
             }
 
-            // Moves the temperature smoothly
-            if(tempTick > 0)
-                tempTick -= Time.deltaTime;
-            else
-            {
-                currentTemp = (int)Mathf.MoveTowards(currentTemp, targetTemp, 1);
-                OnTempChanged?.Invoke(currentTemp);
-                tempTick = tempTickTime;
-            }
+            updateTick = Random.Range(updateTickAvg - updateTickDev, updateTickAvg + updateTickDev);
+        }
+
+        // Moves the temperature smoothly
+        if (tempTick > 0)
+            tempTick -= Time.deltaTime;
+        else
+        {
+            currentTemp = (int)Mathf.MoveTowards(currentTemp, targetTemp, 1);
+            OnTempChanged?.Invoke(currentTemp);
+            tempTick = tempTickTime;
         }
     }
 

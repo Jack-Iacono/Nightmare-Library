@@ -13,6 +13,10 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
 
     [SerializeField]
     private GameObject gameobjectOverride = null;
+    [SerializeField]
+    public MeshFilter mainMeshFilter = null;
+    [NonSerialized]
+    public Material mainMaterial = null;
 
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
@@ -36,7 +40,6 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     /// </summary>
     public bool fixPlacement = true;
 
-
     [SerializeField]
     public bool precisePlacement = false;
 
@@ -58,11 +61,11 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     public delegate void OnThrowDelegate(Vector3 force, bool fromNetwork = false);
     public event OnThrowDelegate OnThrow;
 
-    public delegate void OnAllEnabledDelegate(bool enabled);
-    public event OnAllEnabledDelegate OnSetPhysical;
-
     protected virtual void Awake()
     {
+        if(mainMeshFilter != null)
+            mainMaterial = mainMeshFilter.gameObject.GetComponent<MeshRenderer>().material;
+
         // Add this object to the dictionary for easy referncing from other scripts via the gameObject
         if (gameobjectOverride == null)
         {
@@ -87,6 +90,7 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
             colliders.Add(col);
         }
 
+        // Get the size of the main collider for the object
         if (colliders.Count > 0)
             mainColliderSize = colliders[0].bounds.size;
         else
@@ -98,31 +102,38 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
 
     public virtual GameObject Pickup(bool fromNetwork = false)
     {
-        SetPhysical(false);
+        // Make the object intangible
+        gameObject.SetActive(false);
 
+        // If the object has a rigid body, stop it from moving
         if (hasRigidBody)
             rb.isKinematic = true;
 
+        // Alert that this object has been picked up (used mostly for network decoupling)
         OnPickup?.Invoke(fromNetwork);
 
         return gameObject;
     }
     public virtual void Place(Vector3 pos, Quaternion rot, bool fromNetwork = false)
     {
+        // Place the object at the desired position
         trans.position = pos;
         trans.rotation = rot;
 
-        SetPhysical(true);
+        // Make the object tangible
+        gameObject.SetActive(true);
 
+        // make kinematic if the object has the fixPlacement modifier
         if (fixPlacement && hasRigidBody)
             rb.isKinematic = true;
 
+        // Alert that this object has been placed
         OnPlace?.Invoke(fromNetwork);
     }
     public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
     {
         trans.position = pos;
-        SetPhysical(true);
+        gameObject.SetActive(true);
 
         if (hasRigidBody)
         {
@@ -132,8 +143,7 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
 
         OnThrow?.Invoke(force, fromNetwork);
     }
-
-    public void ExecuteHystericInteraction()
+    public virtual void ExecuteHystericInteraction()
     {
         Throw(
             trans.position,
@@ -144,57 +154,12 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
                 ) * 10);
     }
 
-    public void SetPhysical(bool b)
-    {
-        EnableColliders(b);
-        EnableMesh(b);
-        gameObject.SetActive(b);
-
-        if (b)
-            ResetMeshMaterial();
-
-        OnSetPhysical?.Invoke(b);
-    }
-    public void EnableColliders(bool b)
-    {
-        foreach (Collider c in colliders)
-        {
-            c.enabled = b;
-        }
-        if (!b && hasRigidBody)
-            rb.isKinematic = true;
-
-        isPhysical = b;
-    }
-
-    public void EnableMesh(bool b)
-    {
-        foreach (MeshRenderer r in renderMaterialList.Keys)
-        {
-            r.enabled = b;
-        }
-    }
-    public void SetMeshMaterial(Material mat)
-    {
-        foreach (MeshRenderer r in renderMaterialList.Keys)
-        {
-            r.material = mat;
-        }
-    }
-    public void ResetMeshMaterial()
-    {
-        foreach (MeshRenderer r in renderMaterialList.Keys)
-        {
-            r.material = renderMaterialList[r];
-        }
-    }
-
     public Vector3 GetColliderSize()
     {
         return mainColliderSize;
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         HoldableItem.instances.Remove(gameObject);
         IEnemyHystericObject.instances.Remove(gameObject);

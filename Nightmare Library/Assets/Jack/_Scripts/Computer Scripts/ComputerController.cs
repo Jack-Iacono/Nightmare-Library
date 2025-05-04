@@ -96,5 +96,11 @@ public class ComputerController : MonoBehaviour, IClickable
     private void OnDestroy()
     {
         IClickable.instances.Remove(screenGameObject);
+
+        if (inUse && PlayerController.mainPlayerInstance != null)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            PlayerController.mainPlayerInstance.Lock(false);
+        }
     }
 }

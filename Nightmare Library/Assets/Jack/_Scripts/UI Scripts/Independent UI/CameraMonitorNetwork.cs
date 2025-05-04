@@ -12,14 +12,11 @@ public class CameraMonitorNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
+            parent = GetComponent<CameraMonitorController>();
+            parent.OnStartFinish += OnParentStartFinish;
         }
-
-        parent = GetComponent<CameraMonitorController>();
-        parent.OnStartFinish += OnParentStartFinish;
     }
 
     private void OnParentStartFinish()
@@ -31,10 +28,16 @@ public class CameraMonitorNetwork : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
-        if (!IsOwner)
+        if (NetworkManager.IsServer)
         {
-            cameraIndex.OnValueChanged += OnCameraIndexChange;
-            parent.ChangeCamera(cameraIndex.Value);
+            cameraIndex.Value = 0;
+        }
+        else
+        {
+            cameraIndex.OnValueChanged += OnCameraIndexValueChange;
+
+            if(cameraIndex != null)
+                OnCameraIndexValueChange(cameraIndex.Value, cameraIndex.Value);
         }
 
         parent.OnCamIndexChange += OnParentIndexChange;
@@ -57,7 +60,7 @@ public class CameraMonitorNetwork : NetworkBehaviour
         cameraIndex.Value = index;
     }
 
-    private void OnCameraIndexChange(int previousValue, int newValue)
+    private void OnCameraIndexValueChange(int previousValue, int newValue)
     {
         parent.ChangeCamera(newValue);
     }

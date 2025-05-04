@@ -61,7 +61,7 @@ public class aa_Warden : ActiveAttack
             new Sequence(new List<Node>()
             {
                 new CheckPlayerInRange(owner, 3),
-                new TaskAttackPlayersInRange(owner.navAgent, 3)
+                new TaskAttackPlayersInRange(owner, 3)
             }),
             // Makes the agent wait if a new target is found
             new Sequence(new List<Node>()
@@ -182,8 +182,11 @@ public class aa_Warden : ActiveAttack
 
         foreach(GameObject g in spawnedSensors)
         {
-            PrefabHandler.Instance.CleanupGameObject(g);
-            PrefabHandler.Instance.DestroyGameObject(g);
+            if(PrefabHandler.Instance != null)
+            {
+                PrefabHandler.Instance.CleanupGameObject(g);
+                PrefabHandler.Instance.DestroyGameObject(g);
+            }
         }
     }
 }

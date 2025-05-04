@@ -31,7 +31,7 @@ public class aa_Rush : ActiveAttack
         name = "Rush";
         toolTip = "I couldn't even tell you if I wanted to";
 
-        hearingRadius = 10;
+        hearingRadius = 100;
     }
 
     public override void Initialize(int level = 1) 
@@ -50,7 +50,7 @@ public class aa_Rush : ActiveAttack
         n_AtNodePauseN = new TaskWait(baseReachGoalPauseMin, baseReachGoalPauseMax);
         n_RushTargetN = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
-        n_AtNodePauseI = new TaskWait(1, 1);
+        n_AtNodePauseI = new TaskWait(0.1f, 0.5f);
         n_RushTargetI = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
         n_PathCompleteCounter = new CheckConditionCounter(3, CheckConditionCounter.EvalType.GREATER_EQUAL);
@@ -62,8 +62,9 @@ public class aa_Rush : ActiveAttack
             new Sequence(new List<Node>()
             {
                 new CheckPlayerInRange(owner, 3),
-                new TaskAttackPlayersInRange(owner.navAgent, 3)
+                new TaskAttackPlayersInRange(owner, 3)
             }),
+            // Area patrol from hearing noise
             new Sequence(new List<Node>()
             {
                 new CheckConditionAudioSourcePresent(this),
@@ -73,7 +74,7 @@ public class aa_Rush : ActiveAttack
                     new Sequence(new List<Node>()
                     {
                         new CheckConditionRushInvestigationEnd(this),
-                        new TaskWait(5),
+                        new TaskWait(1),
                         new TaskRushEndInvestigation(this)
                     }),
                     new Sequence(new List<Node>()
@@ -87,7 +88,7 @@ public class aa_Rush : ActiveAttack
             }),
             new Selector(new List<Node>()
             {
-                // check whether the correct number of paths has elapsed for a break to be triggered
+                // Pause after completing a certain number of paths (Not including paths from investigation)
                 new Sequence(new List<Node>()
                 {
                     n_PathCompleteCounter,

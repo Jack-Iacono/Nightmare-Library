@@ -10,6 +10,11 @@ using static HoldableItem;
 public class PlayerInteractionController : MonoBehaviour
 {
     private PlayerController playerCont;
+    // Yes, I am aware of the prefab handler, no I am not using it for this, I know what I'm doing
+
+    [SerializeField]
+    private GameObject placementGuideprefab;
+    private PlacementGuideController placementGuideController;
 
     [SerializeField]
     private float interactDistance = 4f;
@@ -30,16 +35,13 @@ public class PlayerInteractionController : MonoBehaviour
     private bool isPlacePressed = false;
     private bool isPlaceFinish = false;
 
-    private float actionBufferTime = 0.25f;
+    private float actionBufferTime = 0.1f;
     private float actionBufferTimer = 0f;
     private bool actionBuffering = false;
 
-    [SerializeField]
-    private Material clearPlacementMaterial;
-    [SerializeField]
-    private Material blockedPlacementMaterial;
     private bool isPlacingItem = false;
     private bool isPlacementValid = false;
+    private bool isPlacementVisible = false;
 
     public bool canSeeItem { get; private set; }
     public delegate void OnItemSightChangeDelegate(int interactionType);
@@ -49,12 +51,15 @@ public class PlayerInteractionController : MonoBehaviour
     void Start()
     {
         playerCont = GetComponent<PlayerController>();
+
+        GameObject guide = Instantiate(placementGuideprefab, playerCont.transform);
+        placementGuideController = guide.GetComponent<PlacementGuideController>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!GameController.gamePaused)
+        if (!PauseController.gamePaused)
         {
             CheckActionBuffer();
             GetInput();
@@ -94,60 +99,88 @@ public class PlayerInteractionController : MonoBehaviour
         Ray ray = playerCont.camCont.GetCameraRay();
         RaycastHit hit;
 
-        HoldableItem currentHeldItem = InventoryController.currentHeldItem;
+        // Get interactable properties of the held item
+        InventoryItem currentInventoryItem = InventoryController.currentHeldItem;
+        HoldableItem currentHoldableItem = null;
+        IUseable currentUsableItem = null;
+
+        if (currentInventoryItem != null)
+        {
+            currentHoldableItem = currentInventoryItem.holdable;
+            currentUsableItem = currentInventoryItem.useable;
+
+            placementGuideController.SetMeshFilter(currentHoldableItem.mainMeshFilter);
+        }
 
         // Process Throwing first since you don't need to raycast for it
-        if (currentHeldItem != null && isThrow)
+        if (currentHoldableItem != null && isThrow)
         {
             // TEMPORARY
             // Not sure where to throw from or what velocity to have
-            currentHeldItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
+            currentHoldableItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
             InventoryController.instance.RemoveCurrentItem();
-            currentHeldItem = null;
+            currentHoldableItem = null;
+            actionBuffering = true;
+        }
+        // Using the click button temporarily to use item
+        else if (currentUsableItem != null && isClick)
+        {
+            currentUsableItem.Use();
             actionBuffering = true;
         }
 
         // Used for changing reticle to indicate when player is looking at an interactable
         if (Physics.Raycast(ray, out hit, interactDistance, interactLayers))
         {
+            // Get the gameobject that was hit
             GameObject hitObject = hit.collider.gameObject;
-            int objectType = -1;
 
-            // Determine what kind of object the ray is hitting
+            // Used to represent whether the item can be clicked, interacted with, etc
+            // 0: Click, 1: Pickup
+            bool[] interactionTypes = new bool[2] { false, false };
+
+            // Determine what kind of object the ray is hitting, and figure out if it is clickable or holdable
             if (IClickable.instances.ContainsKey(hitObject))
-                objectType = 0;
+            {
+                interactionTypes[0] = true;
+                onItemSightChange?.Invoke(0);
+            }   
             else if (HoldableItem.instances.ContainsKey(hitObject))
-                objectType = 1;
+            { 
+                interactionTypes[1] = true;
+                onItemSightChange?.Invoke(1);
+            }
+            else
+            {
+                onItemSightChange?.Invoke(-1);
+            }
 
-            onItemSightChange?.Invoke(objectType);
-
+            // If there is no action buffering and there is some input being processed
             if(!actionBuffering && isActive)
             {
-                if (isClick && objectType == 0)
+                // Check
+                if (isClick && interactionTypes[0] == true)
                 {
                     IClickable.instances[hitObject].Click();
 
                     actionBuffering = true;
                 }
-                else if (isPickup && objectType == 1 && InventoryController.instance.HasOpenSlot())
+                else if (isPickup && interactionTypes[1] == true && InventoryController.instance.HasOpenSlot())
                 {
                     InventoryController.instance.AddItem(HoldableItem.instances[hitObject]);
                     HoldableItem.instances[hitObject].Pickup();
 
                     actionBuffering = true;
                 }
-                else if (currentHeldItem != null)
+                else if (currentHoldableItem != null)
                 {
                     // For starting or resuming the placement
                     if (isPlaceStart || (isPlacePressed && !isPlacingItem))
                     {
-                        // Working like this as it will not be networked this way
-                        currentHeldItem.gameObject.SetActive(true);
-                        currentHeldItem.EnableColliders(false);
-                        currentHeldItem.SetMeshMaterial(clearPlacementMaterial);
-                        currentHeldItem.EnableMesh(true);
+                        placementGuideController.SetMaterial(true);
+                        placementGuideController.SetVisibility(true);
 
-                        if (currentHeldItem.precisePlacement)
+                        if (currentHoldableItem.precisePlacement)
                         {
                             PlacementType type = CheckPlacementType(hit);
                             SetObjectTransform(type, hit);
@@ -161,20 +194,20 @@ public class PlayerInteractionController : MonoBehaviour
                     {
                         PlacementType type = CheckPlacementType(hit);
 
-                        if (currentHeldItem != null && currentHeldItem.placementTypes.Contains(type))
+                        if (currentHoldableItem != null && currentHoldableItem.placementTypes.Contains(type))
                         {
-                            if (currentHeldItem.precisePlacement)
+                            if (currentHoldableItem.precisePlacement)
                             {
                                 switch (type)
                                 {
                                     case PlacementType.FLOOR:
-                                        currentHeldItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                        placementGuideController.trans.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         break;
                                     case PlacementType.WALL:
-                                        if (currentHeldItem.wallPlacementType == 0)
-                                            currentHeldItem.transform.Rotate(Vector3.forward, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                        if (currentHoldableItem.wallPlacementType == 0)
+                                            placementGuideController.trans.Rotate(Vector3.forward, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         else
-                                            currentHeldItem.transform.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
+                                            placementGuideController.trans.Rotate(Vector3.up, Input.GetAxis("Mouse X") * 100 * Time.deltaTime);
                                         break;
                                 }
                             }
@@ -182,18 +215,24 @@ public class PlayerInteractionController : MonoBehaviour
                             {
                                 SetObjectTransform(type, hit);
                             }
-                        }
 
-                        // Check if the object is colliding with other stuff
-                        if (!Physics.CheckBox(currentHeldItem.transform.position, currentHeldItem.GetColliderSize() * 0.45f, currentHeldItem.transform.rotation, interactLayers))
-                        {
-                            currentHeldItem.SetMeshMaterial(clearPlacementMaterial);
-                            isPlacementValid = true;
+                            // Check if the object is colliding with other stuff
+                            if (!Physics.CheckBox(placementGuideController.trans.position, currentHoldableItem.GetColliderSize() * 0.45f, placementGuideController.trans.rotation, interactLayers))
+                            {
+                                placementGuideController.SetMaterial(true);
+                                isPlacementValid = true;
+                            }
+                            else
+                            {
+                                placementGuideController.SetMaterial(false);
+                                isPlacementValid = false;
+                            }
+
+                            isPlacementVisible = true;
                         }
                         else
                         {
-                            currentHeldItem.SetMeshMaterial(blockedPlacementMaterial);
-                            isPlacementValid = false;
+                            isPlacementVisible = false;
                         }
                     }
                     else if (isPlaceFinish && isPlacingItem)
@@ -202,21 +241,17 @@ public class PlayerInteractionController : MonoBehaviour
                         {
                             PlacementType type = CheckPlacementType(hit);
 
-                            if (currentHeldItem.placementTypes.Contains(type))
+                            if (currentHoldableItem.placementTypes.Contains(type))
                             {
-                                currentHeldItem.Place(currentHeldItem.trans.position, currentHeldItem.trans.rotation);
+                                currentHoldableItem.Place(placementGuideController.trans.position, placementGuideController.trans.rotation);
                                 InventoryController.instance.RemoveCurrentItem();
                             }
 
-                            currentHeldItem = null;
+                            currentHoldableItem = null;
                             actionBuffering = true;
                         }
-                        else
-                        {
-                            // Working like this as it will not be networked this way
-                            currentHeldItem.gameObject.SetActive(false);
-                            currentHeldItem.EnableMesh(false);
-                        }
+                        
+                        placementGuideController.SetVisibility(false);
 
                         isPlacingItem = false;
                         playerCont.Lock(false);
@@ -227,8 +262,7 @@ public class PlayerInteractionController : MonoBehaviour
         else if (isPlacingItem)
         {
             // Resets the item if it was being placed and the player is now too far from the placement range
-            currentHeldItem.ResetMeshMaterial();
-            currentHeldItem.EnableMesh(false);
+            placementGuideController.SetVisibility(false);
             isPlacingItem = false;
             playerCont.Lock(false);
         }
@@ -240,7 +274,7 @@ public class PlayerInteractionController : MonoBehaviour
 
     public void DropItems()
     {
-        HoldableItem[] items = InventoryController.instance.GetInventoryItems();
+        HoldableItem[] items = InventoryController.instance.GetHoldableItems();
         for(int i = 0; i < items.Length; i++)
         {
             HoldableItem item = items[i];
@@ -257,7 +291,7 @@ public class PlayerInteractionController : MonoBehaviour
 
     private void SetObjectTransform(PlacementType type, RaycastHit hit)
     {
-        HoldableItem currentHeldItem = InventoryController.currentHeldItem;
+        HoldableItem currentHeldItem = InventoryController.currentHeldItem.holdable;
 
         switch (type)
         {
@@ -283,8 +317,8 @@ public class PlayerInteractionController : MonoBehaviour
                 float xRot = Mathf.Cos((yRot - hitAngle) * Mathf.Deg2Rad) * slope;
                 float zRot = Mathf.Sin((yRot - hitAngle) * Mathf.Deg2Rad) * slope;
 
-                currentHeldItem.transform.position = hit.point + MultiplyVector(hit.normal, currentHeldItem.GetColliderSize()) / 2;
-                currentHeldItem.transform.rotation = Quaternion.Euler(xRot, yRot, zRot);
+                placementGuideController.trans.position = hit.point + MultiplyVector(hit.normal, currentHeldItem.GetColliderSize()) / 2;
+                placementGuideController.trans.rotation = Quaternion.Euler(xRot, yRot, zRot);
                 break;
             case PlacementType.WALL:
                 float wallAngleY = Mathf.Atan2(hit.normal.x, hit.normal.z) * Mathf.Rad2Deg;
@@ -293,13 +327,13 @@ public class PlayerInteractionController : MonoBehaviour
                 {
                     case 0:
                         // Back against wall, facing perpendicular
-                        currentHeldItem.transform.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().z / 2;
-                        currentHeldItem.transform.rotation = Quaternion.Euler(0, wallAngleY, 0);
+                        placementGuideController.trans.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().z / 2;
+                        placementGuideController.trans.rotation = Quaternion.Euler(0, wallAngleY, 0);
                         break;
                     case 1:
                         // Have bottom against the wall
-                        currentHeldItem.transform.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().y / 2;
-                        currentHeldItem.transform.rotation = Quaternion.Euler(90, wallAngleY, 0);
+                        placementGuideController.trans.position = hit.point + hit.normal * currentHeldItem.GetColliderSize().y / 2;
+                        placementGuideController.trans.rotation = Quaternion.Euler(90, wallAngleY, 0);
                         break;
                 }
                 break;
@@ -322,6 +356,11 @@ public class PlayerInteractionController : MonoBehaviour
             case < 0:
                 return PlacementType.CEILING;
         }
+    }
+
+    public bool CheckItemPlacing()
+    {
+        return isPlacementVisible;
     }
 
 }

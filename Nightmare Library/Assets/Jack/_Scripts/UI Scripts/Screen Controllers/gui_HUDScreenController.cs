@@ -4,15 +4,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEditor.Progress;
 
 public class gui_HUDScreenController : ScreenController
 {
-    [SerializeField]
-    private TMP_Text timerText;
-    [SerializeField]
-    private TMP_Text inventoryText;
-
     [SerializeField]
     private Image reticle;
     [SerializeField]
@@ -24,19 +18,9 @@ public class gui_HUDScreenController : ScreenController
 
     private void Start()
     {
-        InventoryController.instance.onHeldItemChanged += OnInventoryHeldItemChanged;
         PlayerInteractionController.onItemSightChange += OnItemSightChanged;
 
-        inventoryText.text = "Empty";
         reticle.sprite = normalReticle;
-    }
-
-    
-
-    private void Update()
-    {
-        if (GameController.instance != null)
-            timerText.text = FloatToTime(GameController.instance.gameTimer);
     }
 
     private string FloatToTime(float time)
@@ -65,17 +49,6 @@ public class gui_HUDScreenController : ScreenController
             timeString += sec.ToString();
 
         return timeString;
-    }
-    private void OnInventoryHeldItemChanged(InventoryItem item)
-    {
-        
-    }
-    private void OnInventoryHeldItemChanged(HoldableItem holdable)
-    {
-        if (holdable != null)
-            inventoryText.text = holdable.name;
-        else
-            inventoryText.text = "Empty";
     }
 
     private void OnItemSightChanged(int interactionType)

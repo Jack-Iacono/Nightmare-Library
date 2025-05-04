@@ -34,7 +34,7 @@ public class pa_Temps : PassiveAttack
     public override void Update(float dt)
     {
         // Make sure the game isn't paused
-        if (!GameController.gamePaused && DeskController.playersAtDesk.Count > 0)
+        if (DeskController.playersAtDesk.Count > 0)
         {
             if (tickTimer > 0)
                 tickTimer -= dt;

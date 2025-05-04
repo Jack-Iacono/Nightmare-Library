@@ -18,26 +18,23 @@ public class GameControllerNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
+            if (instance == null)
+                instance = this;
+            else
+                Destroy(this);
+
+            parent = GetComponent<GameController>();
+
+            var permission = NetworkVariableWritePermission.Server;
+
+            contState = new NetworkVariable<ContinuousData>(writePerm: permission);
+            gamePaused = new NetworkVariable<bool>(writePerm: permission);
+            enemyCount = new NetworkVariable<int>(writePerm: permission);
+
+            PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
         }
-
-        if (instance == null)
-            instance = this;
-        else
-            Destroy(this);
-
-        parent = GetComponent<GameController>();
-
-        var permission = NetworkVariableWritePermission.Server;
-
-        contState = new NetworkVariable<ContinuousData>(writePerm: permission);
-        gamePaused = new NetworkVariable<bool>(writePerm: permission);
-        enemyCount = new NetworkVariable<int>(writePerm: permission);
-
-        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
     }
 
     public override void OnNetworkSpawn()
@@ -91,7 +88,6 @@ public class GameControllerNetwork : NetworkBehaviour
     {
         if(id != NetworkManager.LocalClientId)
         {
-            Debug.Log("Muting Player " + id + ": " + !b);
             VoiceChatController.MutePlayer(id, !b);
         }
     }
@@ -168,6 +164,6 @@ public class GameControllerNetwork : NetworkBehaviour
             VoiceChatController.UnMuteAll();
 
         GameController.OnGameEnd -= OnGameEnd;
-        PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
+        PlayerController.OnPlayerAliveChanged -= OnPlayerAliveChanged;
     }
 }

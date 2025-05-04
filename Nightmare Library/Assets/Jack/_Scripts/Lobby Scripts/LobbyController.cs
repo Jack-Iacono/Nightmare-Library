@@ -118,16 +118,16 @@ public abstract class LobbyController : NetworkBehaviour
 
     public virtual async void LeaveLobby()
     {
-        //Debug.Log("Leaving Lobby");
         await DisconnectFromLobby();
-        //Debug.Log("Disconnected");
-        SceneController.LoadScene(SceneController.m_Scene.MAIN_MENU, true);
+
+        SceneController.LoadMainMenuScene();
     }
     public virtual async Task DisconnectFromLobby()
     {
         try
         {
             UnRegisterCallbacks();
+
         }
         catch(Exception ex)
         {

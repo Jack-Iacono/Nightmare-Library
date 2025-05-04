@@ -24,7 +24,7 @@ public class Enemy : MonoBehaviour
 
     [NonSerialized]
     public NavMeshAgent navAgent;
-    private AudioSource audioSrc;
+    private AudioSourceController audioSrc;
 
     [SerializeField]
     protected Vector3 spawnLocation;
@@ -47,8 +47,6 @@ public class Enemy : MonoBehaviour
     [Space(10)]
     public LayerMask interactionLayers = 1 << 10;
 
-    [Space(10)]
-    public AudioClip musicLoverSound;
     public event EventHandler<string> OnPlaySound;
     
     [Space(10)]
@@ -73,6 +71,9 @@ public class Enemy : MonoBehaviour
     public delegate void OnInitializeDelegate();
     public event OnInitializeDelegate OnInitialize;
 
+    public delegate void OnEnemyRemovedDelegate(Enemy enemy);
+    public static event OnEnemyRemovedDelegate OnEnemyRemoved;
+
     #region Initialization
 
     private void Awake()
@@ -89,14 +90,14 @@ public class Enemy : MonoBehaviour
         navAgent = GetComponent<NavMeshAgent>();
         navAgent.speed = moveSpeed;
 
-        audioSrc = GetComponent<AudioSource>();
+        audioSrc = GetComponent<AudioSourceController>();
 
         AudioSourceController.OnProject += OnAudioSourceDetect;
 
         navAgent.Warp(spawnLocation);
 
         // Gets the enemy preset that this will follow, does not pick one which is already in use
-        List<EnemyPreset> validPresets = new List<EnemyPreset>(PersistentDataController.Instance.enemyPresets);
+        List<EnemyPreset> validPresets = new List<EnemyPreset>(PersistentDataController.Instance.activeEnemyPresets);
         foreach (EnemyPreset preset in inUsePresets)
         {
             validPresets.Remove(preset);
@@ -162,21 +163,18 @@ public class Enemy : MonoBehaviour
         navAgent.enabled = b;
 
         // Unregister this event as it won't be used by an inactive enemy
-        AudioSourceController.OnProject -= OnAudioSourceDetect;
+        if(!b)
+            AudioSourceController.OnProject -= OnAudioSourceDetect;
     }
 
     public void PlaySound(string soundName)
     {
         OnPlaySound?.Invoke(this, soundName);
 
-        if(!audioSrc)
-            audioSrc = GetComponent<AudioSource>();
-
         switch (soundName)
         {
             case "musicLover":
-                audioSrc.volume = 2;
-                audioSrc.PlayOneShot(musicLoverSound);
+                audioSrc.Play(AudioManager.GetAudioData(AudioManager.SoundType.e_MUSIC_LOVER));
                 break;
         }
     }
@@ -263,6 +261,14 @@ public class Enemy : MonoBehaviour
     public PassiveAttack GetPassiveAttack()
     {
         return passiveAttackTree;
+    }
+
+    public void RemoveEnemy()
+    {
+        PrefabHandler.Instance.CleanupGameObject(gameObject);
+        PrefabHandler.Instance.DestroyGameObject(gameObject);
+
+        OnEnemyRemoved?.Invoke(this);
     }
 
     protected virtual void OnGamePause(object sender, bool e)

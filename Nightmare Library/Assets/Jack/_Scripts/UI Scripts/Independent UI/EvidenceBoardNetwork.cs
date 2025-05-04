@@ -17,12 +17,7 @@ public class EvidenceBoardNetwork : NetworkBehaviour
 
     private void Awake()
     {
-        if (!NetworkConnectionController.connectedToLobby)
-        {
-            Destroy(this);
-            Destroy(GetComponent<NetworkObject>());
-        }
-        else
+        if (NetworkConnectionController.CheckNetworkConnected(this))
         {
             parent = GetComponent<EvidenceBoardController>();
             parent.OnEvidenceDataChange += OnEvidenceDataChange;
@@ -31,9 +26,16 @@ public class EvidenceBoardNetwork : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         if (NetworkManager.IsServer)
+        {
             evidenceData.Value = new EvidenceBoardData();
+        }
         else
+        {
             evidenceData.OnValueChanged += OnEvidenceDataValueChanged;
+
+            if(evidenceData != null)
+                OnEvidenceDataValueChanged(evidenceData.Value, evidenceData.Value);
+        }
     }
 
     private void OnEvidenceDataChange(int index, EvidenceData data)
@@ -66,11 +68,11 @@ public class EvidenceBoardNetwork : NetworkBehaviour
 
         public EvidenceBoardData()
         {
-            data = new bool[EvidenceTypeCount * GameController.enemyCount];
+            data = new bool[EvidenceTypeCount * GameController.startingEnemyCount];
         }
         public EvidenceBoardData(EvidenceBoardData eDataS, int index, bool[] eData)
         {
-            data = new bool[EvidenceTypeCount * GameController.enemyCount];
+            data = new bool[EvidenceTypeCount * GameController.startingEnemyCount];
 
             // Replace the given index range
             for (int i = 0; i < data.Length; i++)

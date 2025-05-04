@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class TaskStalkWarpBehind : Node
+public class TaskWarpBehindPlayer : Node
 {
-    private aa_Stalk owner;
     private NavMeshAgent navAgent;
     private Transform transform;
     private Enemy enemy;
@@ -18,25 +17,29 @@ public class TaskStalkWarpBehind : Node
 
     private AudioClip warpSound;
 
-    public TaskStalkWarpBehind(aa_Stalk owner, Enemy enemy, float speed = 20, float acceleration = 400)
+    public delegate PlayerController WarpBehindTargetDelegate();
+
+    // This is used to dynamically get the player regardless of the parent's class type
+    private WarpBehindTargetDelegate GetTarget;
+
+    public TaskWarpBehindPlayer(Enemy enemy, WarpBehindTargetDelegate playerDelegate, float speed = 20, float acceleration = 400)
     {
-        this.owner = owner;
         this.enemy = enemy;
         navAgent = enemy.navAgent;
         transform = navAgent.transform;
         this.speed = speed;
         this.acceleration = acceleration;
+
+        GetTarget = playerDelegate;
     }
     public override Status Check(float dt)
     {
         if (!hasWarped)
         {
-            navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(owner.currentTargetPlayer).position);
+            if(GetTarget() != null)
+                navAgent.Warp(EnemyNavGraph.GetOutOfSightNode(GetTarget()).position);
             navAgent.speed = 0;
             hasWarped = true;
-
-            // Play the sound to alert the player
-            AudioManager.PlaySoundAtPoint(AudioManager.GetAudioData(AudioManager.SoundType.e_STALK_APPEAR), owner.currentTargetPlayer.transform.position);
         }
 
         status = Status.SUCCESS;

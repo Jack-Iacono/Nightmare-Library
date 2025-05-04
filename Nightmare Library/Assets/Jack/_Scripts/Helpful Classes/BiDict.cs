@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BiDict<T1, T2>
+public class BiDict<T1, T2> : IEnumerable<BiDict<T1, T2>>
 {
     private List<BiDictItem<T1, T2>> dict = new List<BiDictItem<T1, T2>>();
 
@@ -100,6 +100,16 @@ public class BiDict<T1, T2>
             output += item.ToString() + "\n";
         }
         return output;
+    }
+
+    public IEnumerator<BiDict<T1, T2>> GetEnumerator()
+    {
+        return new BiDict<T1, T2>().GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return (IEnumerator)GetEnumerator();
     }
 
     private class BiDictItem<type1, type2>

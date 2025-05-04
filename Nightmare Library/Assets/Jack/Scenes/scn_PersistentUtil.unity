@@ -294,6 +294,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: SceneController
       objectReference: {fileID: 0}
+    - target: {fileID: 7368097981795521424, guid: 96a4a0ca94a706d4da0c4f0b7f95892d,
+        type: 3}
+      propertyPath: loadingScreen
+      value: 
+      objectReference: {fileID: 59318794}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -608,8 +613,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: caf06e8305779864f9412660f2b86409, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyPresets:
+  activeEnemyPresets:
   - {fileID: 11400000, guid: c77dbe13533d60f4ba018cc0511215cf, type: 2}
+  - {fileID: 11400000, guid: 1e0beca956d577944acf20ccc0bab9a8, type: 2}
+  - {fileID: 11400000, guid: 093ca5d0d2ca1c44d956ac8e6e466027, type: 2}
 --- !u!4 &1336110767
 Transform:
   m_ObjectHideFlags: 0

@@ -4,28 +4,32 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[RequireComponent(typeof(PlayerInteractionController))]
 public class InventoryController : MonoBehaviour
 {
     public static InventoryController instance;
+    private PlayerInteractionController interactionController;
+    [SerializeField]
+    private PlayerHoldItemController handItem;
 
     private const int inventorySize = 3;
-    private HoldableItem[] inventoryItems = new HoldableItem[inventorySize];
+    private InventoryItem[] inventoryItems = new InventoryItem[inventorySize];
 
     private int currentItemIndex = 0;
 
     public static KeyCode keyInventoryUp = KeyCode.Z;
     public static KeyCode keyInventoryDown = KeyCode.X;
 
-    public static HoldableItem currentHeldItem = null;
-
-    public delegate void OnHeldItemChangedDelegate(HoldableItem holdable);
-    public event OnHeldItemChangedDelegate onHeldItemChanged;
+    public static InventoryItem currentHeldItem = null;
 
     private void Awake()
     {
-        if(instance != null)
-            Destroy(instance.gameObject);
-        instance = this;
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(this);
+
+        interactionController = GetComponent<PlayerInteractionController>();    
 
         for (int i = 0; i < inventorySize; i++)
         {
@@ -39,7 +43,7 @@ public class InventoryController : MonoBehaviour
 
     private void Update()
     {
-        if (!GameController.gamePaused)
+        if (!PauseController.gamePaused)
         {
             if (Input.GetKeyDown(keyInventoryUp))
             {
@@ -54,20 +58,27 @@ public class InventoryController : MonoBehaviour
 
     public void PickupMoveable(HoldableItem moveable)
     {
-        if (!inventoryItems.Contains(moveable))
+        bool found = false;
+        foreach(InventoryItem i in inventoryItems)
+        {
+            if (i.holdable == moveable)
+                found = true; break;
+        }
+
+        if (!found)
         {
             for(int i = 0; i < inventorySize; i++)
             {
                 if (inventoryItems[i] == null)
                 {
-                    inventoryItems[i] = moveable;
+                    inventoryItems[i] = new InventoryItem(moveable);
                     break;
                 }
             }
         }
     }
 
-    public HoldableItem GetCurrentItem()
+    public InventoryItem GetCurrentItem()
     {
         return currentHeldItem;
     }
@@ -77,14 +88,15 @@ public class InventoryController : MonoBehaviour
 
         if (open != -1)
         {
-            inventoryItems[open] = item;
+            inventoryItems[open] = new InventoryItem(item);
             currentItemIndex = open;
         }
         else
             return false;
 
         currentHeldItem = inventoryItems[currentItemIndex];
-        onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
+
+        CheckHeldItem();
 
         return true;
     }
@@ -93,17 +105,29 @@ public class InventoryController : MonoBehaviour
         if (inventoryItems[currentItemIndex] != null)
         {
             inventoryItems[currentItemIndex] = null;
-            onHeldItemChanged?.Invoke(inventoryItems[currentItemIndex]);
             currentHeldItem = null;
+
+            CheckHeldItem();
+
             return true;
         }
 
         return false;
     }
 
-    public HoldableItem[] GetInventoryItems()
+    public InventoryItem[] GetInventoryItems()
     {
         return inventoryItems;
+    }
+    public HoldableItem[] GetHoldableItems()
+    {
+        HoldableItem[] items = new HoldableItem[inventoryItems.Length];
+        for(int i = 0; i < inventoryItems.Length; i++)
+        {
+            if (inventoryItems[i] != null)
+                items[i] = inventoryItems[i].holdable;
+        }
+        return items;
     }
     public void ClearInventory()
     {
@@ -113,13 +137,30 @@ public class InventoryController : MonoBehaviour
         }
 
         SetCurrentIndex(0);
+        CheckHeldItem();
     }
 
     private void SetCurrentIndex(int index)
     {
         currentItemIndex = index;
         currentHeldItem = inventoryItems[currentItemIndex];
-        onHeldItemChanged?.Invoke(currentHeldItem);
+
+        CheckHeldItem();
+    }
+
+    private void CheckHeldItem()
+    {
+        // Show the item in the player's hands if there is one
+        Debug.Log(currentHeldItem == null);
+        if (currentHeldItem != null)
+        {
+            handItem.SetMesh(currentHeldItem.holdable.mainMeshFilter, currentHeldItem.holdable.mainMaterial);
+            handItem.SetVisible(true);
+        }
+        else
+        {
+            handItem.SetVisible(false);
+        }
     }
     
     public bool HasOpenSlot()

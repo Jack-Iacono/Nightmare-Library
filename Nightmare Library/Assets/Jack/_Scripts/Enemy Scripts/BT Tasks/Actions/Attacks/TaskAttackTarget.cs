@@ -5,21 +5,23 @@ using UnityEngine;
 using BehaviorTree;
 using UnityEngine.AI;
 
-public class TaskAttackTarget : Node
+public class TaskAttackTarget : TaskAttack
 {
     private bool hasAttacked = false;
+    private aa_Stalk owner;
     private NavMeshAgent agent;
 
-    public TaskAttackTarget(NavMeshAgent agent)
+    public TaskAttackTarget(Enemy enemy, aa_Stalk owner) : base(enemy)
     {
-        this.agent = agent;
+        this.agent = enemy.navAgent;
+        this.owner = owner;
     }
     public override Status Check(float dt)
     {
         if(!hasAttacked) 
         {
             agent.speed = 0;
-            Debug.Log("Attack Player");
+            Attack(owner.currentTargetPlayer);
             hasAttacked = true;
         }
 

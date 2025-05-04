@@ -18,7 +18,7 @@ public class SceneController : MonoBehaviour
     public readonly static Dictionary<m_Scene, SceneData> scenes = new Dictionary<m_Scene, SceneData>
         {
             { m_Scene.MAIN_MENU, new SceneData("j_Menu", SceneData.Type.MAP) },
-            { m_Scene.GAME, new SceneData("j_Game", SceneData.Type.MAP) },
+            { m_Scene.GAME, new SceneData("scn_GameLib", SceneData.Type.MAP) },
             { m_Scene.PREGAME, new SceneData("j_PreGame", SceneData.Type.MAP) },
             { m_Scene.UNIVERSAL, new SceneData("scn_UniversalGameFunction", SceneData.Type.UTIL) },
             { m_Scene.GAME_SYS, new SceneData("scn_GameSystems", SceneData.Type.UTIL) }

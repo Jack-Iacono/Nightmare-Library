@@ -33,10 +33,12 @@ public abstract class ActiveAttack : Attack
     public void SetCurrentTarget(Transform t)
     {
         currentTargetDynamic = t;
-        if(t != null) 
+        if(t != null)
+        {
             currentTargetStatic = t.position;
+        }
         else
-            currentTargetStatic = Vector3.zero;
+            currentTargetStatic = Vector3.negativeInfinity;
     }
     public void SetCurrentTarget(Vector3 position)
     {
@@ -69,6 +71,8 @@ public abstract class ActiveAttack : Attack
                 Ray ray = new Ray(point + center, Vector3.down);
                 RaycastHit hit;
 
+                
+
                 // Check to see if the ray hit the ground
                 if
                     (
@@ -78,10 +82,20 @@ public abstract class ActiveAttack : Attack
                     !Physics.CheckBox(hit.point + Vector3.up * 2, Vector3.one, Quaternion.identity, envLayers)
                     )
                 {
-                    point = hit.point;
+                    NavMeshPath path = new NavMeshPath();
+                    owner.navAgent.CalculatePath(hit.point, path);
 
-                    Debug.DrawRay(point, Vector3.up * 10, Color.green, 10f);
-                    validWanderLocations[i].Add(point);
+                    if(path.status == NavMeshPathStatus.PathComplete)
+                    {
+                        point = hit.point;
+
+                        Debug.DrawRay(point, Vector3.up * 10, Color.green, 10f);
+                        validWanderLocations[i].Add(point);
+                    }
+                    else
+                    {
+                        Debug.DrawRay(point, Vector3.up * 10, Color.red, 10f);
+                    }
                 }
             }
         }

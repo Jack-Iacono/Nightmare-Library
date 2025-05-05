@@ -151,7 +151,6 @@ public class InventoryController : MonoBehaviour
     private void CheckHeldItem()
     {
         // Show the item in the player's hands if there is one
-        Debug.Log(currentHeldItem == null);
         if (currentHeldItem != null)
         {
             handItem.SetMesh(currentHeldItem.holdable.mainMeshFilter, currentHeldItem.holdable.mainMaterial);

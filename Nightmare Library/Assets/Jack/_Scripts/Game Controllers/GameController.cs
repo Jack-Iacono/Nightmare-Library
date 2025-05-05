@@ -63,7 +63,6 @@ public class GameController : MonoBehaviour
                 for (int i = 0; i < GameController.startingEnemyCount; i++)
                 {
                     Vector3 pos = MapDataController.GetRandomEnemySpawnPoint();
-                    Debug.Log(pos);
                     GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, pos, Quaternion.identity);
                     ePrefab.name = "Basic Enemy";
                     spawnedEnemies.Add(ePrefab);

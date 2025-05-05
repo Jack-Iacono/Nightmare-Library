@@ -28,6 +28,8 @@ public class TaskGotoStaticTarget : Node
     }
     public override Status Check(float dt)
     {
+        Debug.Log("Going to Target");
+
         if (passCheck)
         {
             status = Status.SUCCESS;

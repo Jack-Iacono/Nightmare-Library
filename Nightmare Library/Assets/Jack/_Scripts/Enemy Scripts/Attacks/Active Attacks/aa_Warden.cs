@@ -19,8 +19,8 @@ public class aa_Warden : ActiveAttack
     protected List<Vector3> alertQueue = new List<Vector3>();
     protected int alertQueueMax = 3;
 
-    protected float basePlayerSightWaitMin = 1;
-    protected float basePlayerSightWaitMax = 1;
+    protected float basePlayerSightWaitMin = 0.2f;
+    protected float basePlayerSightWaitMax = 0.6f;
 
     protected float baseCheckTargetSpeed = 10;
     protected float baseCheckTargetAccel = 400;
@@ -63,24 +63,19 @@ public class aa_Warden : ActiveAttack
                 new CheckPlayerInRange(owner, 3),
                 new TaskAttackPlayersInRange(owner, 3)
             }),
-            // Makes the agent wait if a new target is found
-            new Sequence(new List<Node>()
-            {
-                new CheckConditionNewTarget(this, owner),
-                n_PlayerSightWait
-            }),
-            // Checks if the player is in sight and removes the alert queue if there is a player
-            new Sequence(new List<Node>()
-            {
-                new CheckPlayerInSight(this, owner.navAgent, 30, 0.2f, areaCenter.position, wanderRange),
-                new TaskWardenClearAlertQueue(this),
-                n_GoToSeenTarget
-            }),
             // Moves toward the target and freezes once there
             new Sequence(new List<Node>()
             {
-                new CheckConditionHasStaticTarget(this),
+                // Will return true if the player is seen or if the last seen location has not been checked yet
+                new Selector(new List<Node>()
+                {
+                    new CheckPlayerInSight(this, owner.navAgent, 30, 0.2f, areaCenter.position, wanderRange),
+                    new CheckConditionHasStaticTarget(this),
+                }),
+                n_PlayerSightWait,
+                new TaskWardenClearAlertQueue(this),
                 n_GoToSeenTarget,
+                // Does a final sweep for the player once at the location
                 new Selector(new List<Node>()
                 {
                     new CheckPlayerInSight(this, owner.navAgent, 40, -0.8f),
@@ -88,7 +83,7 @@ public class aa_Warden : ActiveAttack
                 }),
                 new TaskRemoveTarget(this)
             }),
-            // Checks if this warden has any alerts and
+            // Checks if this warden has any alerts and goes to that alert
             new Sequence(new List<Node>()
             {
                 new CheckConditionWardenAlert(this),
@@ -124,7 +119,7 @@ public class aa_Warden : ActiveAttack
     {
         // Bypasses the typical hearing range check
         // Check that the sound is within the warden's area of partol
-        if (Vector3.Distance(data.transform.position, areaCenter.position) < wanderRange)
+        if (!DeskController.PointInOffice(data.transform.position) && Vector3.Distance(data.transform.position, areaCenter.position) < wanderRange)
         {
             alertQueue.Clear();
             alertQueue.Add(data.transform.position);

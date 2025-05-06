@@ -71,7 +71,10 @@ public static class EnemyNavGraph
     }
     public static EnemyNavNode GetClosestNavPointRay(Vector3 pos)
     {
-        return GetClosestNavPointRay(pos, new EnemyNavNode[0]);
+        EnemyNavNode node = GetClosestNavPointRay(pos, new EnemyNavNode[0]);
+        if (node == null)
+            node = GetClosestNavPoint(pos);
+        return node;
     }
 
     public static EnemyNavNode GetFarthestNavPoint(Vector3 pos)

@@ -27,13 +27,13 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     /// 0: Facing Player 
     /// 1: Facing away from player
     /// </summary>
-    [Range(0, 1)]
+    [Range(0, 1), Tooltip("0: Facing Player , facing player\n1: Facing away from player") ]
     public int floorPlacementType = 0;
     /// <summary>
     /// 0: Bottom down, no x or z rotation, facing player
     /// 1: Bottom on wall, top facing player
     /// </summary>
-    [Range(0, 1)]
+    [Range(0, 1), Tooltip("0: Bottom down, no x or z rotation, facing player\n1: Bottom on wall, top facing player")]
     public int wallPlacementType = 0;
     /// <summary>
     /// True: When the item is placed, disable the rigidbody to fix it to the surface. This will disable if the item is thrown or hit with the enemy hysteric interaction
@@ -130,9 +130,10 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
         // Alert that this object has been placed
         OnPlace?.Invoke(fromNetwork);
     }
-    public virtual void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
+    public virtual void Throw(Vector3 pos, Vector3 force, Vector3 rot, bool fromNetwork = false)
     {
         trans.position = pos;
+        trans.rotation = Quaternion.Euler(rot);
         gameObject.SetActive(true);
 
         if (hasRigidBody)
@@ -151,7 +152,9 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
                 (UnityEngine.Random.Range(0, 1),
                 UnityEngine.Random.Range(0.1f, 1),
                 UnityEngine.Random.Range(0, 1)
-                ) * 10);
+                ) * 10,
+            transform.rotation.eulerAngles
+            );
     }
 
     public Vector3 GetColliderSize()

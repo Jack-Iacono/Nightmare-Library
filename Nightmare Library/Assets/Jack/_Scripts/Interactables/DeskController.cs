@@ -9,6 +9,7 @@ public class DeskController : MonoBehaviour
     public static DeskController instance;
 
     public static List<PlayerController> playersAtDesk = new List<PlayerController>();
+    private Bounds colBounds;
 
     private void Awake()
     {
@@ -17,6 +18,8 @@ public class DeskController : MonoBehaviour
 
         instance = this;
         PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
+
+        colBounds = GetComponent<Collider>().bounds;
     }
 
     // Start is called before the first frame update
@@ -44,6 +47,11 @@ public class DeskController : MonoBehaviour
                 playersAtDesk.Remove(PlayerController.playerInstances[other.gameObject]);
             }
         }
+    }
+
+    public static bool PointInOffice(Vector3 point)
+    {
+        return instance.colBounds.Contains(point);
     }
 
     private void OnPlayerAliveChanged(PlayerController player, bool b)

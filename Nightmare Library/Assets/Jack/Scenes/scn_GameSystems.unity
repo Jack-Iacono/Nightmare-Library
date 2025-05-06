@@ -191,6 +191,11 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 1067917155
       objectReference: {fileID: 0}
+    - target: {fileID: 8277916014497907763, guid: 54117c7e2179bbc4e8cc3427745d15ec,
+        type: 3}
+      propertyPath: spawnEnemies
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

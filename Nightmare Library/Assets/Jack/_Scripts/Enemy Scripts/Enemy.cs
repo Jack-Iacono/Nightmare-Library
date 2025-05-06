@@ -26,8 +26,6 @@ public class Enemy : MonoBehaviour
     public NavMeshAgent navAgent;
     private AudioSourceController audioSrc;
 
-    [SerializeField]
-    protected Vector3 spawnLocation;
     protected Vector3 targetLocation = Vector3.zero;
 
     public ObjectPool objPool = new ObjectPool();
@@ -94,8 +92,6 @@ public class Enemy : MonoBehaviour
 
         AudioSourceController.OnProject += OnAudioSourceDetect;
 
-        navAgent.Warp(spawnLocation);
-
         // Gets the enemy preset that this will follow, does not pick one which is already in use
         List<EnemyPreset> validPresets = new List<EnemyPreset>(PersistentDataController.Instance.activeEnemyPresets);
         foreach (EnemyPreset preset in inUsePresets)
@@ -132,7 +128,6 @@ public class Enemy : MonoBehaviour
     public virtual void Spawn()
     {
         //Spawn Stuff
-        navAgent.Warp(spawnLocation);
     }
 
     #endregion

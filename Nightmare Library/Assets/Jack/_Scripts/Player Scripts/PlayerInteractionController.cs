@@ -10,7 +10,7 @@ using static HoldableItem;
 public class PlayerInteractionController : MonoBehaviour
 {
     private PlayerController playerCont;
-    // Yes, I am aware of the prefab handler, no I am not using it for this, I know what I'm doing
+    private InventoryController inventoryCont;
 
     [SerializeField]
     private GameObject placementGuideprefab;
@@ -51,6 +51,7 @@ public class PlayerInteractionController : MonoBehaviour
     void Start()
     {
         playerCont = GetComponent<PlayerController>();
+        inventoryCont = playerCont.inventoryCont;
 
         GameObject guide = Instantiate(placementGuideprefab, playerCont.transform);
         placementGuideController = guide.GetComponent<PlacementGuideController>();
@@ -117,8 +118,8 @@ public class PlayerInteractionController : MonoBehaviour
         {
             // TEMPORARY
             // Not sure where to throw from or what velocity to have
-            currentHoldableItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10);
-            InventoryController.instance.RemoveCurrentItem();
+            currentHoldableItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10, transform.rotation.eulerAngles);
+            inventoryCont.RemoveCurrentItem();
             currentHoldableItem = null;
             actionBuffering = true;
         }
@@ -165,9 +166,9 @@ public class PlayerInteractionController : MonoBehaviour
 
                     actionBuffering = true;
                 }
-                else if (isPickup && interactionTypes[1] == true && InventoryController.instance.HasOpenSlot())
+                else if (isPickup && interactionTypes[1] == true &&inventoryCont.HasOpenSlot())
                 {
-                    InventoryController.instance.AddItem(HoldableItem.instances[hitObject]);
+                    inventoryCont.AddItem(HoldableItem.instances[hitObject]);
                     HoldableItem.instances[hitObject].Pickup();
 
                     actionBuffering = true;
@@ -244,7 +245,7 @@ public class PlayerInteractionController : MonoBehaviour
                             if (currentHoldableItem.placementTypes.Contains(type))
                             {
                                 currentHoldableItem.Place(placementGuideController.trans.position, placementGuideController.trans.rotation);
-                                InventoryController.instance.RemoveCurrentItem();
+                               inventoryCont.RemoveCurrentItem();
                             }
 
                             currentHoldableItem = null;
@@ -274,7 +275,7 @@ public class PlayerInteractionController : MonoBehaviour
 
     public void DropItems()
     {
-        HoldableItem[] items = InventoryController.instance.GetHoldableItems();
+        HoldableItem[] items = inventoryCont.GetHoldableItems();
         for(int i = 0; i < items.Length; i++)
         {
             HoldableItem item = items[i];
@@ -286,7 +287,7 @@ public class PlayerInteractionController : MonoBehaviour
                 item.Place(transform.position + new Vector3(0, i, 0), transform.rotation);
             }
         }
-        InventoryController.instance.ClearInventory();
+        inventoryCont.ClearInventory();
     }
 
     private void SetObjectTransform(PlacementType type, RaycastHit hit)

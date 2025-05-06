@@ -11,6 +11,10 @@ public class GameController : MonoBehaviour
 
     public static bool gameStarted = false;
 
+    // For testing purposes
+    [SerializeField]
+    private bool spawnEnemies = true;
+
     public const float gameTime = 360;
     public float gameTimer { get; set; } = gameTime;
 
@@ -54,13 +58,17 @@ public class GameController : MonoBehaviour
     {
         if (NetworkConnectionController.HasAuthority && SceneController.loadedMap.name == SceneController.scenes[SceneController.m_Scene.GAME].name)
         {
-            for (int i = 0; i < GameController.startingEnemyCount; i++)
+            if (spawnEnemies)
             {
-                GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, new Vector3(-20, 1, 0), Quaternion.identity);
-                ePrefab.name = "Basic Enemy";
-                spawnedEnemies.Add(ePrefab);
+                for (int i = 0; i < GameController.startingEnemyCount; i++)
+                {
+                    Vector3 pos = MapDataController.GetRandomEnemySpawnPoint();
+                    GameObject ePrefab = PrefabHandler.Instance.InstantiatePrefab(PrefabHandler.Instance.e_Enemy, pos, Quaternion.identity);
+                    ePrefab.name = "Basic Enemy";
+                    spawnedEnemies.Add(ePrefab);
 
-                currentEnemyCount++;
+                    currentEnemyCount++;
+                }
             }
         }
 
@@ -83,7 +91,10 @@ public class GameController : MonoBehaviour
             }
         }
         else
+        {
+            Debug.Log("End Game Due to Time");
             EndGame();
+        }
     }
 
     public static void SetEnemyCount(int e)
@@ -106,6 +117,7 @@ public class GameController : MonoBehaviour
 
         if (allPlayersDead && NetworkConnectionController.HasAuthority)
         {
+            Debug.Log("All players dead");
             StartCoroutine(BeginEndGame());
         }
     }
@@ -117,6 +129,7 @@ public class GameController : MonoBehaviour
         // Will be removed after demo
         if(currentEnemyCount <= 0)
         {
+            Debug.Log("Enemy Killed");
             StartCoroutine(BeginEndGame());
         }
     }

@@ -14,8 +14,8 @@ public abstract class ActiveAttack : Attack
     public static readonly LayerMask envLayers = 1 << 9 | 1 << 2 | 1 << 13;
 
     public List<List<Vector3>> validWanderLocations { get; protected set; } = new List<List<Vector3>>();
-    public float wanderRange = 25;
-    protected float baseWanderRange = 25;
+    public float wanderRange = 15;
+    protected float baseWanderRange = 15;
 
     public ActiveAttack(Enemy owner)
     {
@@ -33,7 +33,7 @@ public abstract class ActiveAttack : Attack
     public void SetCurrentTarget(Transform t)
     {
         currentTargetDynamic = t;
-        if(t != null) 
+        if(t != null)
             currentTargetStatic = t.position;
         else
             currentTargetStatic = Vector3.zero;
@@ -69,6 +69,8 @@ public abstract class ActiveAttack : Attack
                 Ray ray = new Ray(point + center, Vector3.down);
                 RaycastHit hit;
 
+                
+
                 // Check to see if the ray hit the ground
                 if
                     (
@@ -78,10 +80,20 @@ public abstract class ActiveAttack : Attack
                     !Physics.CheckBox(hit.point + Vector3.up * 2, Vector3.one, Quaternion.identity, envLayers)
                     )
                 {
-                    point = hit.point;
+                    NavMeshPath path = new NavMeshPath();
+                    owner.navAgent.CalculatePath(hit.point, path);
 
-                    Debug.DrawRay(point, Vector3.up * 10, Color.green, 10f);
-                    validWanderLocations[i].Add(point);
+                    if(path.status == NavMeshPathStatus.PathComplete)
+                    {
+                        point = hit.point;
+
+                        Debug.DrawRay(point, Vector3.up * 10, Color.green, 10f);
+                        validWanderLocations[i].Add(point);
+                    }
+                    else
+                    {
+                        Debug.DrawRay(point, Vector3.up * 10, Color.red, 10f);
+                    }
                 }
             }
         }

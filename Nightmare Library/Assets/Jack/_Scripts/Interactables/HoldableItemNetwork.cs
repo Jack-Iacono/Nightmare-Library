@@ -273,7 +273,7 @@ public class HoldableItemNetwork : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     protected virtual void TransmitThrowServerRpc(ulong sender, Vector3 pos, Vector3 force, Quaternion rot)
     {
-        parent.Throw(pos, force, true);
+        parent.Throw(pos, force, rot.eulerAngles, true);
 
         // Tell the game to update the transform
         currentUpdateFrame = updateTransformFrequency;
@@ -284,7 +284,7 @@ public class HoldableItemNetwork : NetworkBehaviour
     protected virtual void ConsumeThrowClientRpc(ulong sender, Vector3 pos, Vector3 force, Quaternion rot)
     {
         if (NetworkManager.LocalClientId != sender && !NetworkManager.IsServer)
-            parent.Throw(pos, force, true);
+            parent.Throw(pos, force, rot.eulerAngles,true);
     }
 
     #endregion

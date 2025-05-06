@@ -16,7 +16,11 @@ public class PlayerController : MonoBehaviour
 
     public CameraController camCont;
     public AudioSourceController audioSource;
-    private PlayerInteractionController interactionCont;
+
+    [NonSerialized]
+    public PlayerInteractionController interactionCont;
+    [NonSerialized]
+    public InventoryController inventoryCont;
 
     [Header("Mesh / Material")]
     [SerializeField]
@@ -74,6 +78,7 @@ public class PlayerController : MonoBehaviour
         // Get components on the player
         charCont = GetComponent<CharacterController>();
         interactionCont = GetComponent<PlayerInteractionController>();
+        inventoryCont = GetComponent<InventoryController>();
 
         // Make all meshes on the player normal
         for (int i = 0; i < meshMaterials.Count; i++)

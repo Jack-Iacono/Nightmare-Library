@@ -14,8 +14,8 @@ public abstract class ActiveAttack : Attack
     public static readonly LayerMask envLayers = 1 << 9 | 1 << 2 | 1 << 13;
 
     public List<List<Vector3>> validWanderLocations { get; protected set; } = new List<List<Vector3>>();
-    public float wanderRange = 25;
-    protected float baseWanderRange = 25;
+    public float wanderRange = 15;
+    protected float baseWanderRange = 15;
 
     public ActiveAttack(Enemy owner)
     {
@@ -34,11 +34,9 @@ public abstract class ActiveAttack : Attack
     {
         currentTargetDynamic = t;
         if(t != null)
-        {
             currentTargetStatic = t.position;
-        }
         else
-            currentTargetStatic = Vector3.negativeInfinity;
+            currentTargetStatic = Vector3.zero;
     }
     public void SetCurrentTarget(Vector3 position)
     {

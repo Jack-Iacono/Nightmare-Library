@@ -7,9 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerInteractionController))]
 public class InventoryController : MonoBehaviour
 {
-    public static InventoryController instance;
     private PlayerInteractionController interactionController;
-    [SerializeField]
     private PlayerHoldItemController handItem;
 
     private const int inventorySize = 3;
@@ -24,12 +22,8 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
-        else
-            Destroy(this);
-
-        interactionController = GetComponent<PlayerInteractionController>();    
+        interactionController = GetComponent<PlayerInteractionController>();  
+        handItem = GetComponentInChildren<PlayerHoldItemController>();
 
         for (int i = 0; i < inventorySize; i++)
         {
@@ -38,7 +32,12 @@ public class InventoryController : MonoBehaviour
     }
     private void Start()
     {
-        SetCurrentIndex(0);
+        if (PlayerController.playerInstances[gameObject] != PlayerController.mainPlayerInstance)
+            enabled = false;
+        else
+        {
+            SetCurrentIndex(0);
+        }
     }
 
     private void Update()
@@ -175,11 +174,5 @@ public class InventoryController : MonoBehaviour
         }
 
         return -1;
-    }
-
-    private void OnDestroy()
-    {
-        if(instance == this)
-            instance = null;
     }
 }

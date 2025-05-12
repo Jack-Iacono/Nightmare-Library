@@ -18,9 +18,13 @@ public class EnemyBookController : MonoBehaviour, IClickable
     private void Awake()
     {
         IClickable.instances.Add(gameObject, this);
-        foreach(PlayerController cont in PlayerController.playerInstances.Values)
+
+        if(appliedBooks.Count == 0)
         {
-            appliedBooks.Add(cont, null);
+            foreach (PlayerController cont in PlayerController.playerInstances.Values)
+            {
+                appliedBooks.Add(cont, null);
+            }
         }
     }
 

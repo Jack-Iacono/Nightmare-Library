@@ -200,7 +200,10 @@ public class aa_Stalk : ActiveAttack
     }
     public Vector3 GetCurrentTargetPosition()
     {
-        return currentTargetPlayer.transform.position;
+        if(currentTargetPlayer != null)
+            return currentTargetPlayer.transform.position;
+        else
+            return owner.transform.position;
     }
 
     protected override void OnLevelChange(int level)

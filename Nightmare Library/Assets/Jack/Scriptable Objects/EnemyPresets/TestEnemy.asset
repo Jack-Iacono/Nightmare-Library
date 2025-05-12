@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyName: Test Enemy
   description: A Basic Test Enemy
-  activeAttacks: 02000000
-  passiveAttacks: 03000000
+  activeAttacks: 000000000100000002000000
+  passiveAttacks: 000000000100000002000000
   evidence: 000000000400000005000000

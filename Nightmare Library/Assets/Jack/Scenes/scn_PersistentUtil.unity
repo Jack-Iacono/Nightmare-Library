@@ -615,8 +615,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   activeEnemyPresets:
   - {fileID: 11400000, guid: c77dbe13533d60f4ba018cc0511215cf, type: 2}
-  - {fileID: 11400000, guid: 1e0beca956d577944acf20ccc0bab9a8, type: 2}
-  - {fileID: 11400000, guid: 093ca5d0d2ca1c44d956ac8e6e466027, type: 2}
 --- !u!4 &1336110767
 Transform:
   m_ObjectHideFlags: 0

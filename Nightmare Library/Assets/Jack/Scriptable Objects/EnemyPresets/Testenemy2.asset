@@ -15,5 +15,5 @@ MonoBehaviour:
   enemyName: Test Enemy 2
   description: The second test enemy
   activeAttacks: 000000000100000002000000
-  passiveAttacks: 000000000200000001000000
+  passiveAttacks: 03000000
   evidence: 030000000400000005000000

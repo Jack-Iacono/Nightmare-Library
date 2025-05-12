@@ -30,10 +30,10 @@ public class LibraryCameraController : HoldableItem
         SetBroadcasting(true);
         base.Place(pos, rot, fromNetwork);
     }
-    public override void Throw(Vector3 pos, Vector3 force, bool fromNetwork = false)
+    public override void Throw(Vector3 pos, Vector3 force, Vector3 rot, bool fromNetwork = false)
     {
         SetBroadcasting(true);
-        base.Throw(pos, force, fromNetwork);
+        base.Throw(pos, force, rot, fromNetwork);
     }
 
     public void SetBroadcasting(bool b)

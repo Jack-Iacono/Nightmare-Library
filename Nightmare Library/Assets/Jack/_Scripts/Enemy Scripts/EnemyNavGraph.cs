@@ -165,33 +165,40 @@ public static class EnemyNavGraph
     }
     public static EnemyNavNode[] GetClosestNodePair(Vector3 pos)
     {
-        EnemyNavNode[] closest = new EnemyNavNode[2];
-
-        // Get the closest node to the player
-        closest[0] = GetClosestNavPointRay(pos);
-
-        Vector3 closeDirection = (pos - closest[0].position).normalized;
-
-        float lowAngle = -1;
-        EnemyNavNode closestNode = null;
-
-        // Run through that node's neighbors and check which is closest
-        foreach(EnemyNavNode checkNode in closest[0].neighbors.Keys)
+        try
         {
-            // Get the dot product of the ray pointing toward the player and the ray from the closest node to the current candidate
-            float dotProd = Vector3.Dot(closeDirection, (checkNode.position - closest[0].position).normalized);
+            EnemyNavNode[] closest = new EnemyNavNode[2];
 
-            // If this angle is more shallow than the prior, make it the new goal
-            if (dotProd >= lowAngle)
+            // Get the closest node to the player
+            closest[0] = GetClosestNavPointRay(pos);
+
+            Vector3 closeDirection = (pos - closest[0].position).normalized;
+
+            float lowAngle = -1;
+            EnemyNavNode closestNode = null;
+
+            // Run through that node's neighbors and check which is closest
+            foreach (EnemyNavNode checkNode in closest[0].neighbors.Keys)
             {
-                lowAngle = dotProd;
-                closestNode = checkNode;
+                // Get the dot product of the ray pointing toward the player and the ray from the closest node to the current candidate
+                float dotProd = Vector3.Dot(closeDirection, (checkNode.position - closest[0].position).normalized);
+
+                // If this angle is more shallow than the prior, make it the new goal
+                if (dotProd >= lowAngle)
+                {
+                    lowAngle = dotProd;
+                    closestNode = checkNode;
+                }
             }
+
+            closest[1] = closestNode;
+
+            return closest;
         }
-
-        closest[1] = closestNode;
-
-        return closest;
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>

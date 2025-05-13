@@ -275,19 +275,22 @@ public class PlayerInteractionController : MonoBehaviour
 
     public void DropItems()
     {
-        HoldableItem[] items = inventoryCont.GetHoldableItems();
-        for(int i = 0; i < items.Length; i++)
+        if(inventoryCont != null)
         {
-            HoldableItem item = items[i];
-
-            if (item != null)
+            HoldableItem[] items = inventoryCont.GetHoldableItems();
+            for (int i = 0; i < items.Length; i++)
             {
-                //NavMeshHit hit;
-                //NavMesh.SamplePosition(transform.position + new Vector3(0,i,0), out hit, 10, NavMesh.AllAreas);
-                item.Place(transform.position + new Vector3(0, i, 0), transform.rotation);
+                HoldableItem item = items[i];
+
+                if (item != null)
+                {
+                    //NavMeshHit hit;
+                    //NavMesh.SamplePosition(transform.position + new Vector3(0,i,0), out hit, 10, NavMesh.AllAreas);
+                    item.Throw(transform.position + new Vector3(0, i, 0), Vector3.up * 5, transform.rotation.eulerAngles);
+                }
             }
+            inventoryCont.ClearInventory();
         }
-        inventoryCont.ClearInventory();
     }
 
     private void SetObjectTransform(PlacementType type, RaycastHit hit)

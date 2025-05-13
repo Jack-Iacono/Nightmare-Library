@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -38,6 +39,13 @@ public class GameControllerNetwork : NetworkBehaviour
             gameInfo = new NetworkVariable<NetworkGameInfo>(writePerm: permission);
 
             PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
+
+            if (NetworkManager.IsServer)
+            {
+                GameController.OnEnemyCountChanged += OnEnemyCountChanged;
+                GameController.OnGameEnd += OnGameEnd;
+                GameController.OnGameInfoChanged += OnGameInfoChanged;
+            }
         }
     }
 
@@ -48,14 +56,9 @@ public class GameControllerNetwork : NetworkBehaviour
         if (!IsOwner)
         {
             parent.enabled = false;
+
             enemyCount.OnValueChanged += OnEnemyCountValueChanged;
             gameInfo.OnValueChanged += OnGameInfoValueChanged;
-        }
-        else
-        {
-            GameController.OnEnemyCountChanged += OnEnemyCountChanged;
-            GameController.OnGameEnd += OnGameEnd;
-            GameController.OnGameInfoChanged += OnGameInfoChanged;
         }
     }
 
@@ -171,11 +174,16 @@ public class GameControllerNetwork : NetworkBehaviour
         GameController.gameInfo.SetEndReason(newValue.endReason);
         GameController.gameInfo.presentEnemies = newValue.GetEnemyPresets();
     }
-    public struct NetworkGameInfo : INetworkSerializable
+    public class NetworkGameInfo : INetworkSerializable
     {
         public int endReason;
         public int[] presentEnemies;
 
+        public NetworkGameInfo()
+        {
+            endReason = -1;
+            presentEnemies = new int[0];    
+        }
         public NetworkGameInfo(int endReason, List<EnemyPreset> presentEnemies)
         {
             this.endReason = endReason;
@@ -204,7 +212,6 @@ public class GameControllerNetwork : NetworkBehaviour
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref endReason);
-            Debug.Log(presentEnemies.Length);
             serializer.SerializeValue(ref presentEnemies);
         }
     }

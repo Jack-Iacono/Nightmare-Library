@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class TestUsableController : HoldableItem, IUseable
 {
+    [SerializeField]
+    private ParticleSystem pSystem;
+
     protected override void Awake()
     {
         base.Awake();
@@ -12,7 +15,7 @@ public class TestUsableController : HoldableItem, IUseable
 
     public void Use()
     {
-        Debug.Log("Click");
+        pSystem.Play();
     }
 
     protected override void OnDestroy()

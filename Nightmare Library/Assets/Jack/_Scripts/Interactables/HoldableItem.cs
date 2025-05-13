@@ -21,7 +21,8 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
 
-    public bool isPhysical { get; private set; } = true;
+    public bool isColliderEnabled = true;
+    public bool isHeld = false;
 
     /// <summary>
     /// 0: Facing Player 

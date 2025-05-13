@@ -184,10 +184,12 @@ public class GameController : MonoBehaviour
         public void SetEndReason(int endReason)
         {
             this.endReason = endReason;
+            OnGameInfoChanged?.Invoke();
         }
         public void AddPresentEnemy(EnemyPreset enemy)
         {
             presentEnemies.Add(enemy);
+            OnGameInfoChanged?.Invoke();
         }
     }
 }

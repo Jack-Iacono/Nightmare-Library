@@ -9,6 +9,8 @@ public class InventoryController : MonoBehaviour
 {
     private PlayerInteractionController interactionController;
     private PlayerHoldItemController handItem;
+    [SerializeField]
+    private Transform hand;
 
     private const int inventorySize = 3;
     private InventoryItem[] inventoryItems = new InventoryItem[inventorySize];

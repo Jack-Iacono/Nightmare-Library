@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 [RequireComponent(typeof(PlayerInteractionController))]
 public class InventoryController : MonoBehaviour
 {
     private PlayerInteractionController interactionController;
-    private PlayerHoldItemController handItem;
     [SerializeField]
     private Transform hand;
 
@@ -24,8 +24,7 @@ public class InventoryController : MonoBehaviour
 
     private void Awake()
     {
-        interactionController = GetComponent<PlayerInteractionController>();  
-        handItem = GetComponentInChildren<PlayerHoldItemController>();
+        interactionController = GetComponent<PlayerInteractionController>();
 
         for (int i = 0; i < inventorySize; i++)
         {
@@ -53,6 +52,13 @@ public class InventoryController : MonoBehaviour
             else if (Input.GetKeyDown(keyInventoryDown))
             {
                 SetCurrentIndex((currentItemIndex - 1 + inventorySize) % inventorySize);
+            }
+
+            if(currentHeldItem != null)
+            {
+                HoldableItem item = currentHeldItem.holdable;
+                item.trans.position = Vector3.Slerp(item.trans.position, hand.position, 0.1f);
+                item.trans.rotation = Quaternion.Slerp(item.trans.rotation, hand.rotation, 0.1f);
             }
         }
     }
@@ -143,8 +149,18 @@ public class InventoryController : MonoBehaviour
 
     private void SetCurrentIndex(int index)
     {
+        if(currentHeldItem != null)
+            currentHeldItem.holdable.gameObject.SetActive(false);
+
         currentItemIndex = index;
         currentHeldItem = inventoryItems[currentItemIndex];
+
+        if(currentHeldItem != null)
+        {
+            HoldableItem item = currentHeldItem.holdable;
+            item.trans.position = hand.position;
+            item.trans.rotation = hand.rotation;
+        }
 
         CheckHeldItem();
     }
@@ -154,12 +170,7 @@ public class InventoryController : MonoBehaviour
         // Show the item in the player's hands if there is one
         if (currentHeldItem != null)
         {
-            handItem.SetMesh(currentHeldItem.holdable.mainMeshFilter, currentHeldItem.holdable.mainMaterial);
-            handItem.SetVisible(true);
-        }
-        else
-        {
-            handItem.SetVisible(false);
+            currentHeldItem.holdable.gameObject.SetActive(true);
         }
     }
     

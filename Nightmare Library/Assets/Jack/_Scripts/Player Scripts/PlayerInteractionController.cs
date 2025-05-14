@@ -90,7 +90,7 @@ public class PlayerInteractionController : MonoBehaviour
         isPlaceStart = Input.GetKeyDown(keyPlace);
         isPlaceFinish = Input.GetKeyUp(keyPlace);
         isPlacePressed = Input.GetKey(keyPlace);
-        
+
         isActive = isClick || isPickup || isPlaceFinish || isPlacePressed || isPlaceStart || isThrow;
     }
 
@@ -116,9 +116,7 @@ public class PlayerInteractionController : MonoBehaviour
         // Process Throwing first since you don't need to raycast for it
         if (currentHoldableItem != null && isThrow)
         {
-            // TEMPORARY
-            // Not sure where to throw from or what velocity to have
-            currentHoldableItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10, transform.rotation.eulerAngles);
+            currentHoldableItem.Throw(currentHoldableItem.trans.position, ray.direction * 10 + Vector3.up, transform.rotation.eulerAngles);
             inventoryCont.RemoveCurrentItem();
             currentHoldableItem = null;
             actionBuffering = true;
@@ -168,8 +166,8 @@ public class PlayerInteractionController : MonoBehaviour
                 }
                 else if (isPickup && interactionTypes[1] == true &&inventoryCont.HasOpenSlot())
                 {
-                    inventoryCont.AddItem(HoldableItem.instances[hitObject]);
                     HoldableItem.instances[hitObject].Pickup();
+                    inventoryCont.AddItem(HoldableItem.instances[hitObject]);
 
                     actionBuffering = true;
                 }
@@ -244,8 +242,8 @@ public class PlayerInteractionController : MonoBehaviour
 
                             if (currentHoldableItem.placementTypes.Contains(type))
                             {
+                                inventoryCont.RemoveCurrentItem();
                                 currentHoldableItem.Place(placementGuideController.trans.position, placementGuideController.trans.rotation);
-                               inventoryCont.RemoveCurrentItem();
                             }
 
                             currentHoldableItem = null;

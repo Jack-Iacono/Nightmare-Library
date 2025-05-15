@@ -129,8 +129,13 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
         gameObject.SetActive(true);
 
         // make kinematic if the object has the fixPlacement modifier
-        if (fixPlacement && hasRigidBody)
-            rb.isKinematic = true;
+        if (hasRigidBody)
+        {
+            if (fixPlacement)
+                rb.isKinematic = true;
+            else
+                rb.isKinematic = false;
+        }
 
         SetHeld(false);
 

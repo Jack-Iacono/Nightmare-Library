@@ -57,8 +57,8 @@ public class InventoryController : MonoBehaviour
             if(currentHeldItem != null)
             {
                 HoldableItem item = currentHeldItem.holdable;
-                item.trans.position = Vector3.Slerp(item.trans.position, hand.position, 0.1f);
-                item.trans.rotation = Quaternion.Slerp(item.trans.rotation, hand.rotation, 0.1f);
+                item.trans.position = Vector3.Slerp(item.trans.position, hand.position, 0.2f);
+                item.trans.rotation = Quaternion.Slerp(item.trans.rotation, hand.rotation, 0.2f);
             }
         }
     }

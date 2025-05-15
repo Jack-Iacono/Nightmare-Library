@@ -163,7 +163,7 @@ public class PlayerInteractionController : MonoBehaviour
                     IClickable.instances[hitObject].Click();
 
                     actionBuffering = true;
-                }
+                } 
                 else if (isPickup && interactionTypes[1] == true &&inventoryCont.HasOpenSlot())
                 {
                     HoldableItem.instances[hitObject].Pickup();

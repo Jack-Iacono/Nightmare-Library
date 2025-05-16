@@ -7,4 +7,5 @@ public interface IUseable
     public static Dictionary<GameObject, IUseable> Instances = new Dictionary<GameObject, IUseable>();
 
     public void Use();
+    public Vector3 GetOffset();
 }

@@ -57,6 +57,8 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     [NonSerialized]
     public Rigidbody rb;
 
+    bool placeColliderBuffer = false;
+
     public delegate void OnPickupDelegate(bool fromNetwork = false);
     public event OnPickupDelegate OnPickup;
     public delegate void OnPlaceDelegate(bool fromNetwork = false);
@@ -102,6 +104,15 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
         hasRigidBody = TryGetComponent(out rb);
         trans = transform;
     }
+    private void FixedUpdate()
+    {
+        // This is used to ensure colliders are turned on only after the rigidbody of the object has actually moved
+        if(placeColliderBuffer)
+        {
+            SetHeld(false);
+            placeColliderBuffer = false;
+        }
+    }
 
     public virtual GameObject Pickup(bool fromNetwork = false)
     {
@@ -137,7 +148,9 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
                 rb.isKinematic = false;
         }
 
-        SetHeld(false);
+        // Need this to ensure that the collider does not push player when placed
+        // Rigidbodies are only moved on fixedUpdate frames, so this can result in premature collider enabling
+        placeColliderBuffer = true;
 
         // Alert that this object has been placed
         OnPlace?.Invoke(fromNetwork);

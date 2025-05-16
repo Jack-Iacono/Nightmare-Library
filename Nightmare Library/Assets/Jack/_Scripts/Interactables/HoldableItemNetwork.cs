@@ -27,6 +27,7 @@ public class HoldableItemNetwork : NetworkBehaviour
 
     private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>();
     private NetworkVariable<bool> isActive = new NetworkVariable<bool>();
+    private NetworkVariable<bool> isColliderActive = new NetworkVariable<bool>();
 
     protected virtual void Awake()
     {

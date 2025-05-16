@@ -9,8 +9,6 @@ using static UnityEditor.Progress;
 public class InventoryController : MonoBehaviour
 {
     private PlayerInteractionController interactionController;
-    [SerializeField]
-    private Transform hand;
 
     private const int inventorySize = 3;
     private InventoryItem[] inventoryItems = new InventoryItem[inventorySize];
@@ -21,6 +19,14 @@ public class InventoryController : MonoBehaviour
     public static KeyCode keyInventoryDown = KeyCode.X;
 
     public static InventoryItem currentHeldItem = null;
+
+    /// <summary>
+    /// Alerts other scripts that the current held item is being changed
+    /// </summary>
+    /// <param name="current">The currently held item</param>
+    /// <param name="changeType">0: Change Held Item\n1: Pickup</param>
+    public delegate void OnHeldItemChangedDelegate(InventoryItem current, int changeType = 0);
+    public event OnHeldItemChangedDelegate OnHeldItemChanged;
 
     private void Awake()
     {
@@ -52,13 +58,6 @@ public class InventoryController : MonoBehaviour
             else if (Input.GetKeyDown(keyInventoryDown))
             {
                 SetCurrentIndex((currentItemIndex - 1 + inventorySize) % inventorySize);
-            }
-
-            if(currentHeldItem != null)
-            {
-                HoldableItem item = currentHeldItem.holdable;
-                item.trans.position = Vector3.Slerp(item.trans.position, hand.position, 0.2f);
-                item.trans.rotation = Quaternion.Slerp(item.trans.rotation, hand.rotation, 0.2f);
             }
         }
     }
@@ -103,7 +102,7 @@ public class InventoryController : MonoBehaviour
 
         currentHeldItem = inventoryItems[currentItemIndex];
 
-        CheckHeldItem();
+        CheckHeldItem(1);
 
         return true;
     }
@@ -114,7 +113,7 @@ public class InventoryController : MonoBehaviour
             inventoryItems[currentItemIndex] = null;
             currentHeldItem = null;
 
-            CheckHeldItem();
+            CheckHeldItem(2);
 
             return true;
         }
@@ -144,34 +143,20 @@ public class InventoryController : MonoBehaviour
         }
 
         SetCurrentIndex(0);
-        CheckHeldItem();
+        CheckHeldItem(0);
     }
 
     private void SetCurrentIndex(int index)
     {
-        if(currentHeldItem != null)
-            currentHeldItem.holdable.gameObject.SetActive(false);
-
         currentItemIndex = index;
         currentHeldItem = inventoryItems[currentItemIndex];
 
-        if(currentHeldItem != null)
-        {
-            HoldableItem item = currentHeldItem.holdable;
-            item.trans.position = hand.position;
-            item.trans.rotation = hand.rotation;
-        }
-
-        CheckHeldItem();
+        CheckHeldItem(0);
     }
 
-    private void CheckHeldItem()
+    private void CheckHeldItem(int changeType = 0)
     {
-        // Show the item in the player's hands if there is one
-        if (currentHeldItem != null)
-        {
-            currentHeldItem.holdable.gameObject.SetActive(true);
-        }
+        OnHeldItemChanged?.Invoke(currentHeldItem, changeType);
     }
     
     public bool HasOpenSlot()

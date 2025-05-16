@@ -2,8 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TestUsableController : HoldableItem, IUseable
+public class UsableController : HoldableItem, IUseable
 {
+    [Header("Useable Variables")]
+    [SerializeField]
+    private Vector3 holdOffset = Vector3.zero;
+
     [SerializeField]
     private ParticleSystem pSystem;
 
@@ -16,6 +20,10 @@ public class TestUsableController : HoldableItem, IUseable
     public void Use()
     {
         pSystem.Play();
+    }
+    public Vector3 GetOffset()
+    {
+        return holdOffset;
     }
 
     protected override void OnDestroy()

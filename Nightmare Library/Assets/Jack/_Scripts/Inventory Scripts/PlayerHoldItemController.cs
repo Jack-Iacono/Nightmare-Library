@@ -18,7 +18,7 @@ public class PlayerHoldItemController : MonoBehaviour
     private void Awake()
     {
         invCont = GetComponent<InventoryController>();
-        invCont.OnHeldItemChanged += ChangeHeldItem;
+        invCont.OnHeldItemChanged += InventoryItemChanged;
     }
 
     private void Update()
@@ -38,21 +38,22 @@ public class PlayerHoldItemController : MonoBehaviour
         
     }
 
-    public void ChangeHeldItem(InventoryItem item, int change)
+    private void InventoryItemChanged(InventoryItem item, int change)
+    {
+        ChangeHeldItem(item == null ? null : item.holdable, change);
+    }
+    public void ChangeHeldItem(HoldableItem item, int change)
     {
         if (change != 2 && heldItem != null)
-            heldItem.gameObject.SetActive(false);
-        
-        if(item != null)
-            heldItem = item.holdable;
-        else
-            heldItem = null;
+            heldItem.SetActive(false);
+
+        heldItem = item;
 
         OnHeldItemChanged?.Invoke(heldItem);
 
-        if(heldItem != null)
+        if (heldItem != null)
         {
-            heldItem.gameObject.SetActive(true);
+            heldItem.SetActive(true);
 
             if (change == 0)
             {

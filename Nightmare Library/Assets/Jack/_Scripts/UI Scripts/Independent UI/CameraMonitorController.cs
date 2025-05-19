@@ -105,7 +105,6 @@ public class CameraMonitorController : MonoBehaviour
 
     public void SetCameraIndex(int i)
     {
-        Debug.Log("Index Set to " + i);
         cameraIndex = i;
         ChangeCamera(cameraIndex);
     }

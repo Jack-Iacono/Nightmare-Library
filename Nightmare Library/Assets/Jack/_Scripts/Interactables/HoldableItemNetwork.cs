@@ -7,6 +7,9 @@ using NetVar;
 [RequireComponent(typeof(HoldableItem))]
 public class HoldableItemNetwork : NetworkBehaviour
 {
+    // Used to easily reference specific holdable objects over the network
+    public static BiDict<HoldableItem, ulong> idLink = new BiDict<HoldableItem, ulong>();
+
     private HoldableItem parent;
     private bool canUpdateRigidbody = false;
     protected bool ownInteraction = false;
@@ -27,7 +30,7 @@ public class HoldableItemNetwork : NetworkBehaviour
 
     private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>();
     private NetworkVariable<bool> isActive = new NetworkVariable<bool>();
-    private NetworkVariable<bool> isColliderActive = new NetworkVariable<bool>();
+    private NetworkVariable<bool> isHeld = new NetworkVariable<bool>();
 
     protected virtual void Awake()
     {
@@ -47,9 +50,14 @@ public class HoldableItemNetwork : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
+        idLink.Add(parent, NetworkObjectId);
+
         parent.OnPickup += OnPickup;
         parent.OnPlace += OnPlace;
         parent.OnThrow += OnThrow;
+
+        parent.OnActiveChanged += OnActiveChanged;
+        parent.OnHeldChanged += OnHeldChanged;
 
         canUpdateRigidbody = parent.hasRigidBody;
 
@@ -57,15 +65,16 @@ public class HoldableItemNetwork : NetworkBehaviour
         {
             transformData.OnValueChanged += ConsumeTransformData;
             isActive.OnValueChanged += ConsumeEnabledData;
+            isHeld.OnValueChanged += OnHeldValueChanged;
 
             // Moves the item to the correct location according to the server
             ConsumeTransformData(transformData.Value, transformData.Value);
-            ConsumeEnabledData(isActive.Value, isActive.Value);
         }
         else
         {
             TransmitTransformData();
             isActive.Value = gameObject.activeInHierarchy;
+            isHeld.Value = false;
         }
     }
 
@@ -231,7 +240,7 @@ public class HoldableItemNetwork : NetworkBehaviour
             if (IsOwner)
             {
                 TransmitTransformData();
-                isActive.Value = true;
+                isHeld.Value = true;
                 PlaceClientRpc(new TransformData(parent.trans.position, parent.trans.rotation), NetworkManager.LocalClientId);
             }
             else
@@ -246,7 +255,7 @@ public class HoldableItemNetwork : NetworkBehaviour
         PlaceClientRpc(data, sender);
 
         TransmitTransformData();
-        isActive.Value = true;
+        isHeld.Value = true;
     }
     [ClientRpc]
     protected virtual void PlaceClientRpc(TransformData data, ulong sender)
@@ -286,6 +295,51 @@ public class HoldableItemNetwork : NetworkBehaviour
     {
         if (NetworkManager.LocalClientId != sender && !NetworkManager.IsServer)
             parent.Throw(pos, force, rot.eulerAngles,true);
+    }
+
+    #endregion
+
+    #region Active / Colliders
+
+    private void OnActiveChanged(bool b)
+    {
+        if(!NetworkManager.IsServer)
+            OnActiveChangedServerRpc(b);
+        else
+        {
+            isActive.Value = b;
+            OnActiveValueChanged(b, b);
+        }
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void OnActiveChangedServerRpc(bool b)
+    {
+        OnActiveChanged(b);
+    }
+    private void OnActiveValueChanged(bool previous, bool current)
+    {
+        parent.SetActive(current, true);
+    }
+
+    private void OnHeldChanged(bool b)
+    {
+        if (!NetworkManager.IsServer)
+            OnHeldChangedServerRpc(b);
+        else
+        {
+            isHeld.Value = b;
+            OnHeldValueChanged(b, b);
+        }
+            
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void OnHeldChangedServerRpc(bool b)
+    {
+        OnHeldChanged(b);
+    }
+    private void OnHeldValueChanged(bool previous, bool current)
+    {
+        parent.SetHeld(current, true);
     }
 
     #endregion

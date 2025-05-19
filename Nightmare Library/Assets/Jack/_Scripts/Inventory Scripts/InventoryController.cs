@@ -24,7 +24,7 @@ public class InventoryController : MonoBehaviour
     /// Alerts other scripts that the current held item is being changed
     /// </summary>
     /// <param name="current">The currently held item</param>
-    /// <param name="changeType">0: Change Held Item\n1: Pickup</param>
+    /// <param name="changeType">0: Change Held Item\n1: Pickup\n2: Place / Throw</param>
     public delegate void OnHeldItemChangedDelegate(InventoryItem current, int changeType = 0);
     public event OnHeldItemChangedDelegate OnHeldItemChanged;
 

@@ -64,10 +64,11 @@ public class HoldableItemNetwork : NetworkBehaviour
         {
             isActive.OnValueChanged += OnActiveValueChanged;
             isHeld.OnValueChanged += OnHeldValueChanged;
+
+            ConsumeTransformData();
         }
         else
         {
-            TransmitTransformData();
             isActive.Value = gameObject.activeInHierarchy;
             isHeld.Value = new HeldData(false, 0);
         }
@@ -78,36 +79,44 @@ public class HoldableItemNetwork : NetworkBehaviour
         // Check to make sure the network is running to avoid calls going out without being connected and that this is on the server/owner
         if (NetworkConnectionController.IsRunning)
         {
-            // Check to make sure that this object has a rigid body, is active and is being run on the server
-            if (NetworkManager.IsServer && canUpdateRigidbody && isActive.Value)
+            if (!isHeld.Value.isHeld)
             {
-                // Check if the object is moving enough to pass the velocity check
-                if (Vector3.SqrMagnitude(previousPosition - transform.position) > movementThreshold * movementThreshold)
+                // Check to make sure that this object has a rigid body, is active and is being run on the server
+                if (NetworkManager.IsServer && canUpdateRigidbody && isActive.Value)
                 {
-                    // Transmit this object's transform data
-                    TransmitTransformData();
-                    wasUpdating = true;
-                }
-                // Sends one more update just as the object stops moving
-                else if (wasUpdating)
-                {
-                    // Transmit this object's transform data
-                    TransmitTransformData();
-                    RectifyTransform();
-                    wasUpdating = false;
-                }
+                    // Check if the object is moving enough to pass the velocity check
+                    if (Vector3.SqrMagnitude(previousPosition - transform.position) > movementThreshold * movementThreshold)
+                    {
+                        // Transmit this object's transform data
+                        TransmitTransformData();
+                        wasUpdating = true;
+                    }
+                    // Sends one more update just as the object stops moving
+                    else if (wasUpdating)
+                    {
+                        // Transmit this object's transform data
+                        TransmitTransformData();
+                        RectifyTransform();
+                        wasUpdating = false;
+                    }
 
-                previousPosition = transform.position;
-            }
-            else if (!IsOwner && parent.hasRigidBody && parent.rb.velocity == Vector3.zero)
-            {
-                if (rectifyFrame < rectifyFrequency)
-                    rectifyFrame++;
-                else
-                {
-                    //RectifyTransform();
-                    rectifyFrame = 0;
+                    previousPosition = transform.position;
                 }
+                else if (!IsOwner && parent.hasRigidBody && parent.rb.velocity == Vector3.zero)
+                {
+                    if (rectifyFrame < rectifyFrequency)
+                        rectifyFrame++;
+                    else
+                    {
+                        //RectifyTransform();
+                        rectifyFrame = 0;
+                    }
+                }
+            }
+            // Only run if the item is being held by this client
+            else if (isHeld.Value.isHeld && NetworkManager.LocalClientId == isHeld.Value.holderID)
+            {
+                TransmitTransformData();
             }
         }
     }
@@ -124,10 +133,14 @@ public class HoldableItemNetwork : NetworkBehaviour
         };
 
         // just a safety net in case the client somehow is able to call this method
-        if (IsServer)
+        if (NetworkManager.IsServer)
         {
             transformData.Value = state;
             TransformDataUpdateClientRpc();
+        }
+        else
+        {
+            TransformDataUpdateServerRpc(state);
         }
     }
     [ClientRpc]
@@ -136,20 +149,31 @@ public class HoldableItemNetwork : NetworkBehaviour
         // May need to pass data through method as well
         ConsumeTransformData();
     }
+    [ServerRpc(RequireOwnership = false)]
+    private void TransformDataUpdateServerRpc(TransformData data)
+    {
+        transformData.Value = data;
+
+        transform.rotation = Quaternion.Lerp(parent.trans.rotation, transformData.Value.Rotation, interpolationStrength);
+        parent.trans.position = Vector3.Slerp(parent.trans.position, transformData.Value.Position, interpolationStrength);
+        if (parent.hasRigidBody && !parent.rb.isKinematic)
+        {
+            parent.rb.velocity = transformData.Value.Velocity;
+        }
+
+        TransformDataUpdateClientRpc();
+    }
 
     private void ConsumeTransformData()
     {
         // Ensure that the owner does not waste time updating to it's own values
         if (!IsOwner)
         {
-            if (Vector3.SqrMagnitude(transformData.Value.Position - transform.position) < transformThreshold * transformThreshold)
+            transform.rotation = Quaternion.Lerp(parent.trans.rotation, transformData.Value.Rotation, interpolationStrength);
+            parent.trans.position = Vector3.Slerp(parent.trans.position, transformData.Value.Position, interpolationStrength);
+            if (parent.hasRigidBody && !parent.rb.isKinematic)
             {
-                transform.rotation = Quaternion.Lerp(parent.trans.rotation, transformData.Value.Rotation, interpolationStrength);
-                parent.trans.position = Vector3.Slerp(parent.trans.position, transformData.Value.Position, interpolationStrength);
-                if (parent.hasRigidBody && !parent.rb.isKinematic)
-                {
-                    parent.rb.velocity = transformData.Value.Velocity;
-                }
+                parent.rb.velocity = transformData.Value.Velocity;
             }
 
             rectifyFrame = 0;
@@ -229,10 +253,7 @@ public class HoldableItemNetwork : NetworkBehaviour
     protected virtual void TransmitPlaceServerRpc(ulong sender, TransformData data)
     {
         parent.Place(data.Position, data.Rotation, true);
-
         PlaceClientRpc(data, sender);
-
-        TransmitTransformData();
     }
     [ClientRpc]
     protected virtual void PlaceClientRpc(TransformData data, ulong sender)

@@ -71,6 +71,8 @@ public class HoldableItemNetwork : NetworkBehaviour
         {
             isActive.Value = gameObject.activeInHierarchy;
             isHeld.Value = new HeldData(false, 0);
+
+            TransmitTransformData();
         }
     }
 
@@ -102,13 +104,13 @@ public class HoldableItemNetwork : NetworkBehaviour
 
                     previousPosition = transform.position;
                 }
-                else if (!IsOwner && parent.hasRigidBody && parent.rb.velocity == Vector3.zero)
+                else if (!NetworkManager.IsServer)
                 {
                     if (rectifyFrame < rectifyFrequency)
                         rectifyFrame++;
                     else
                     {
-                        //RectifyTransform();
+                        RectifyTransform();
                         rectifyFrame = 0;
                     }
                 }
@@ -167,7 +169,8 @@ public class HoldableItemNetwork : NetworkBehaviour
     private void ConsumeTransformData()
     {
         // Ensure that the owner does not waste time updating to it's own values
-        if (!IsOwner)
+        // Also allows for smooth client side object holding
+        if (!IsOwner && isHeld.Value.holderID != NetworkManager.LocalClientId)
         {
             transform.rotation = Quaternion.Lerp(parent.trans.rotation, transformData.Value.Rotation, interpolationStrength);
             parent.trans.position = Vector3.Slerp(parent.trans.position, transformData.Value.Position, interpolationStrength);
@@ -175,34 +178,23 @@ public class HoldableItemNetwork : NetworkBehaviour
             {
                 parent.rb.velocity = transformData.Value.Velocity;
             }
-
-            rectifyFrame = 0;
         }
+
+        rectifyFrame = 0;
     }
 
     /// <summary>
-    /// Forces a sync between the server object and the client object
+    /// Forces a sync between the 
     /// </summary>
     private void RectifyTransform()
     {
-        if (NetworkManager.IsServer)
-            RectifyTransformClientRpc();
-        else
+        parent.trans.position = transformData.Value.Position;
+        parent.trans.rotation = transformData.Value.Rotation;
+        if (parent.hasRigidBody && transformData.Value.Velocity != Vector3.zero)
         {
-            parent.trans.position = transformData.Value.Position;
-            parent.trans.rotation = transformData.Value.Rotation;
-            if (transformData.Value.Velocity != Vector3.zero && parent.hasRigidBody)
-            {
-                parent.rb.isKinematic = false;
-                parent.rb.velocity = transformData.Value.Velocity;
-            }
+            parent.rb.isKinematic = false;
+            parent.rb.velocity = transformData.Value.Velocity;
         }
-    }
-    [ClientRpc]
-    private void RectifyTransformClientRpc()
-    {
-        if (!NetworkManager.IsServer)
-            RectifyTransform();
     }
 
     #endregion
@@ -240,19 +232,22 @@ public class HoldableItemNetwork : NetworkBehaviour
     {
         if (!fromNetwork)
         {
-            if (IsOwner)
+            if (NetworkManager.IsServer)
             {
                 TransmitTransformData();
                 PlaceClientRpc(new TransformData(parent.trans.position, parent.trans.rotation, Vector3.zero), NetworkManager.LocalClientId);
             }
             else
+            {
                 TransmitPlaceServerRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation, Vector3.zero));
+            }
         }
     }
     [ServerRpc(RequireOwnership = false)]
     protected virtual void TransmitPlaceServerRpc(ulong sender, TransformData data)
     {
         parent.Place(data.Position, data.Rotation, true);
+        TransmitTransformData();
         PlaceClientRpc(data, sender);
     }
     [ClientRpc]
@@ -394,9 +389,9 @@ public class HoldableItemNetwork : NetworkBehaviour
             yPos = pos.y;
             zPos = pos.z;
 
-            xRot = rot.x;
-            yRot = rot.y;
-            zRot = rot.z;
+            xRot = rot.eulerAngles.x;
+            yRot = rot.eulerAngles.y;
+            zRot = rot.eulerAngles.z;
 
             xVel = vel.x;
             yVel = vel.y;

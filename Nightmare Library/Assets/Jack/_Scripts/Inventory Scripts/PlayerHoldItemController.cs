@@ -35,7 +35,6 @@ public class PlayerHoldItemController : MonoBehaviour
             heldItem.trans.position = Vector3.Slerp(heldItem.trans.position, hand.position + offset, 0.2f);
             heldItem.trans.rotation = Quaternion.Slerp(heldItem.trans.rotation, hand.rotation, 0.2f);
         }
-        
     }
 
     private void InventoryItemChanged(InventoryItem item, int change)

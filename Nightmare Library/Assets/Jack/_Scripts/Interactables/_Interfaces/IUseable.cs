@@ -6,6 +6,6 @@ public interface IUseable
 {
     public static Dictionary<GameObject, IUseable> Instances = new Dictionary<GameObject, IUseable>();
 
-    public void Use();
+    public void Use(bool fromNetwork = false);
     public Vector3 GetOffset();
 }

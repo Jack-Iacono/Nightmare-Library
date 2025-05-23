@@ -11,15 +11,19 @@ public class UsableController : HoldableItem, IUseable
     [SerializeField]
     private ParticleSystem pSystem;
 
+    public delegate void OnUseDelegate(bool fromNetwork = false);
+    public event OnUseDelegate OnUse;
+
     protected override void Awake()
     {
         base.Awake();
         IUseable.Instances.Add(gameObject, this);
     }
 
-    public void Use()
+    public void Use(bool fromNetwork = false)
     {
         pSystem.Play();
+        OnUse?.Invoke(fromNetwork);
     }
     public Vector3 GetOffset()
     {

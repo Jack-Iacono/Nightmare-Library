@@ -212,6 +212,11 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
         return mainColliderSize;
     }
 
+    public bool GetKinematic()
+    {
+        return hasRigidBody ? rb.isKinematic : false;
+    }
+
     public void SetActive(bool b, bool fromNetwork = false)
     {
         gameObject.SetActive(b);

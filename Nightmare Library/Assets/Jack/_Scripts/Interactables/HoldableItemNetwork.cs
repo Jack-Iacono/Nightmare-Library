@@ -131,7 +131,8 @@ public class HoldableItemNetwork : NetworkBehaviour
         {
             Position = parent.trans.position,
             Rotation = parent.trans.rotation,
-            Velocity = parent.hasRigidBody ? parent.rb.velocity : Vector3.zero
+            Velocity = parent.hasRigidBody ? parent.rb.velocity : Vector3.zero,
+            isKinematic = parent.GetKinematic()
         };
 
         // just a safety net in case the client somehow is able to call this method
@@ -148,43 +149,34 @@ public class HoldableItemNetwork : NetworkBehaviour
     [ClientRpc]
     private void TransformDataUpdateClientRpc()
     {
-        // May need to pass data through method as well
-        ConsumeTransformData();
+        if (!NetworkManager.IsServer && isHeld.Value.holderID != NetworkManager.LocalClientId)
+        {
+            ConsumeTransformData();
+        }
+
+        rectifyFrame = 0;
     }
     [ServerRpc(RequireOwnership = false)]
     private void TransformDataUpdateServerRpc(TransformData data)
     {
         transformData.Value = data;
-
-        transform.rotation = Quaternion.Lerp(parent.trans.rotation, transformData.Value.Rotation, interpolationStrength);
-        parent.trans.position = Vector3.Slerp(parent.trans.position, transformData.Value.Position, interpolationStrength);
-        if (parent.hasRigidBody && !parent.rb.isKinematic)
-        {
-            parent.rb.velocity = transformData.Value.Velocity;
-        }
-
+        ConsumeTransformData();
         TransformDataUpdateClientRpc();
     }
 
     private void ConsumeTransformData()
     {
-        // Ensure that the owner does not waste time updating to it's own values
-        // Also allows for smooth client side object holding
-        if (!IsOwner && isHeld.Value.holderID != NetworkManager.LocalClientId)
+        transform.rotation = Quaternion.Lerp(parent.trans.rotation, transformData.Value.Rotation, interpolationStrength);
+        parent.trans.position = Vector3.Slerp(parent.trans.position, transformData.Value.Position, interpolationStrength);
+        if (parent.hasRigidBody && !parent.rb.isKinematic)
         {
-            transform.rotation = Quaternion.Lerp(parent.trans.rotation, transformData.Value.Rotation, interpolationStrength);
-            parent.trans.position = Vector3.Slerp(parent.trans.position, transformData.Value.Position, interpolationStrength);
-            if (parent.hasRigidBody && !parent.rb.isKinematic)
-            {
-                parent.rb.velocity = transformData.Value.Velocity;
-            }
+            parent.rb.velocity = transformData.Value.Velocity;
+            parent.rb.isKinematic = transformData.Value.isKinematic;
         }
-
-        rectifyFrame = 0;
     }
 
     /// <summary>
-    /// Forces a sync between the 
+    /// Forces the clients to set object position directly to the current transform of the server with no slerp
     /// </summary>
     private void RectifyTransform()
     {
@@ -192,9 +184,11 @@ public class HoldableItemNetwork : NetworkBehaviour
         parent.trans.rotation = transformData.Value.Rotation;
         if (parent.hasRigidBody && transformData.Value.Velocity != Vector3.zero)
         {
-            parent.rb.isKinematic = false;
+            parent.rb.isKinematic = transformData.Value.isKinematic;
             parent.rb.velocity = transformData.Value.Velocity;
         }
+
+        rectifyFrame = 0;
     }
 
     #endregion
@@ -235,11 +229,11 @@ public class HoldableItemNetwork : NetworkBehaviour
             if (NetworkManager.IsServer)
             {
                 TransmitTransformData();
-                PlaceClientRpc(new TransformData(parent.trans.position, parent.trans.rotation, Vector3.zero), NetworkManager.LocalClientId);
+                PlaceClientRpc(new TransformData(parent.trans.position, parent.trans.rotation, Vector3.zero, parent.GetKinematic()), NetworkManager.LocalClientId);
             }
             else
             {
-                TransmitPlaceServerRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation, Vector3.zero));
+                TransmitPlaceServerRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation, Vector3.zero, parent.GetKinematic()));
             }
         }
     }
@@ -292,12 +286,6 @@ public class HoldableItemNetwork : NetworkBehaviour
 
     #endregion
 
-    #region Holding Update
-
-
-
-    #endregion
-
     #region Active / Colliders
 
     private void OnActiveChanged(bool b)
@@ -344,13 +332,15 @@ public class HoldableItemNetwork : NetworkBehaviour
 
     #endregion
 
-    #region Data
+    #region Classes and Structs
 
     public struct TransformData : INetworkSerializable
     {
         private float xPos, yPos, zPos;
         private float xRot, yRot, zRot;
+
         private float xVel, yVel, zVel;
+        public bool isKinematic;
 
         internal Vector3 Position
         {
@@ -383,7 +373,7 @@ public class HoldableItemNetwork : NetworkBehaviour
             }
         }
 
-        public TransformData(Vector3 pos, Quaternion rot, Vector3 vel)
+        public TransformData(Vector3 pos, Quaternion rot, Vector3 vel, bool isKinematic)
         {
             xPos = pos.x;
             yPos = pos.y;
@@ -396,6 +386,8 @@ public class HoldableItemNetwork : NetworkBehaviour
             xVel = vel.x;
             yVel = vel.y;
             zVel = vel.z;
+
+            this.isKinematic = isKinematic;
         }
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -411,6 +403,8 @@ public class HoldableItemNetwork : NetworkBehaviour
             serializer.SerializeValue(ref xVel);
             serializer.SerializeValue(ref yVel);
             serializer.SerializeValue(ref zVel);
+
+            serializer.SerializeValue(ref isKinematic);
         }
     }
     public struct HeldData : INetworkSerializable

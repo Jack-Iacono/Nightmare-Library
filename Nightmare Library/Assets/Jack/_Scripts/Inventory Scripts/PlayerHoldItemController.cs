@@ -43,6 +43,7 @@ public class PlayerHoldItemController : MonoBehaviour
     }
     public void ChangeHeldItem(HoldableItem item, int change)
     {
+        // Is the item not being placed and is it null
         if (change != 2 && heldItem != null)
             heldItem.SetActive(false);
 
@@ -54,6 +55,7 @@ public class PlayerHoldItemController : MonoBehaviour
         {
             heldItem.SetActive(true);
 
+            // Is the item being cycled into the inventory
             if (change == 0)
             {
                 heldItem.trans.position = hand.position;

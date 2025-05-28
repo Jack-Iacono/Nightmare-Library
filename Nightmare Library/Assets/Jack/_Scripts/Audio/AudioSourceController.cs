@@ -32,7 +32,7 @@ public class AudioSourceController : MonoBehaviour
     {
         sourceAccess.Add(gameObject, this);
         audioSource = GetComponent<AudioSource>();
-        sourceData = new SourceData(gameObject, SoundType.e_SCREECH_APPEAR);
+        sourceData = new SourceData(gameObject, SoundType.e_SCREECH_APPEAR, audioData);
         trans = transform;
     }
     public void Initialize()
@@ -88,6 +88,8 @@ public class AudioSourceController : MonoBehaviour
     {
         audioData = sound;
 
+        sourceData.audioData = sound;
+
         audioSource.clip = sound.audioClip;
         audioSource.playOnAwake = sound.playOnAwake;
         audioSource.loop = sound.loop;
@@ -124,13 +126,15 @@ public class AudioSourceController : MonoBehaviour
         public float radius;
 
         public SoundType soundType;
+        public AudioData audioData;
 
-        public SourceData(GameObject gameObject, SoundType type, float radius = 10)
+        public SourceData(GameObject gameObject, SoundType type, AudioData data, float radius = 10)
         {
             this.gameObject = gameObject;
             transform = gameObject.transform;
             this.radius = radius;
             soundType = type;
+            audioData = data;
         }
     }
 }

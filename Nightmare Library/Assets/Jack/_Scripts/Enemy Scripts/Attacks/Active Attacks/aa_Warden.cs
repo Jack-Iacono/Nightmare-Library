@@ -25,8 +25,8 @@ public class aa_Warden : ActiveAttack
     protected float baseCheckTargetSpeed = 10;
     protected float baseCheckTargetAccel = 400;
 
-    protected TaskWait n_PlayerSightWait;
-    protected TaskGotoStaticTarget n_GoToSeenTarget;
+    protected Action_Wait n_PlayerSightWait;
+    protected Action_GotoTargetStatic n_GoToSeenTarget;
 
     public aa_Warden(Enemy owner) : base(owner)
     {
@@ -51,8 +51,8 @@ public class aa_Warden : ActiveAttack
         GetWanderLocations(areaCenter.position, ringCount);
         PlaceSensors();
 
-        n_PlayerSightWait = new TaskWait(basePlayerSightWaitMin, basePlayerSightWaitMax);
-        n_GoToSeenTarget = new TaskGotoStaticTarget(this, owner, baseCheckTargetSpeed, baseCheckTargetAccel);
+        n_PlayerSightWait = new Action_Wait(basePlayerSightWaitMin, basePlayerSightWaitMax);
+        n_GoToSeenTarget = new Action_GotoTargetStatic(this, owner, baseCheckTargetSpeed, baseCheckTargetAccel);
 
         // Establishes the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -60,8 +60,8 @@ public class aa_Warden : ActiveAttack
             // Attack any player that gets within range
             new Sequence(new List<Node>()
             {
-                new CheckPlayerInRange(owner, 3),
-                new TaskAttackPlayersInRange(owner, 3)
+                new Check_InPlayerRange(owner, 3),
+                new Action_AttackInRange(owner, 3)
             }),
             // Moves toward the target and freezes once there
             new Sequence(new List<Node>()
@@ -69,30 +69,30 @@ public class aa_Warden : ActiveAttack
                 // Will return true if the player is seen or if the last seen location has not been checked yet
                 new Selector(new List<Node>()
                 {
-                    new CheckPlayerInSight(this, owner.navAgent, 30, 0.2f, areaCenter.position, wanderRange),
-                    new CheckConditionHasStaticTarget(this),
+                    new Check_PlayerInSight(this, owner.navAgent, 30, 0.2f, areaCenter.position, wanderRange),
+                    new Check_ConditionHasStaticTarget(this),
                 }),
                 n_PlayerSightWait,
-                new TaskWardenClearAlertQueue(this),
+                new Action_WardenClearAlert(this),
                 n_GoToSeenTarget,
                 // Does a final sweep for the player once at the location
                 new Selector(new List<Node>()
                 {
-                    new CheckPlayerInSight(this, owner.navAgent, 40, -0.8f),
-                    new TaskWait(2),
+                    new Check_PlayerInSight(this, owner.navAgent, 40, -0.8f),
+                    new Action_Wait(2),
                 }),
-                new TaskRemoveTarget(this)
+                new Action_RemoveTarget(this)
             }),
             // Checks if this warden has any alerts and goes to that alert
             new Sequence(new List<Node>()
             {
-                new CheckConditionWardenAlert(this),
-                new TaskWardenCheckAlert(this, owner),
-                new TaskWait(3),
-                new TaskClearAlertLocation(this)
+                new Check_ConditionWardenAlert(this),
+                new Action_WardenCheckAlert(this, owner),
+                new Action_Wait(3),
+                new Action_WardenRemoveAlert(this)
             }),
             // Wander by default
-            new TaskWander(this, owner.navAgent, 5)
+            new Action_Wander(this, owner.navAgent, 5)
         });
 
         tree.SetupTree(root);

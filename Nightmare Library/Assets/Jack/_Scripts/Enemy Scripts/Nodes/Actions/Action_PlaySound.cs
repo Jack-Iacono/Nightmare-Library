@@ -41,11 +41,11 @@ public class Action_PlaySound : Node
         {
             if (useTransform)
             {
-                PlaySoundAtPoint(GetAudioData(SoundType.e_STALK_APPEAR), trans.position);
+                PlaySoundAtPoint(SoundType.e_STALK_APPEAR, trans.position);
             }
             else
             {
-                PlaySoundAtPoint(GetAudioData(SoundType.e_STALK_APPEAR), GetPosition());
+                PlaySoundAtPoint(SoundType.e_STALK_APPEAR, GetPosition());
             }
 
             hasPlayed = true;

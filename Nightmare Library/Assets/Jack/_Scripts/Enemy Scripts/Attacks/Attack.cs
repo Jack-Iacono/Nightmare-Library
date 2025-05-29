@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static AudioManager;
 
 public abstract class Attack
 {
@@ -15,6 +16,7 @@ public abstract class Attack
 
     protected float hearingRadius = -1;
     protected List<AudioSourceController.SourceData> recentAudioSources = new List<AudioSourceController.SourceData>();
+    protected SoundType[] ignoreSounds = { };
 
     public virtual void Initialize(int level = 1) 
     {
@@ -33,7 +35,6 @@ public abstract class Attack
         if(Vector3.Distance(data.transform.position, owner.transform.position) <= hearingRadius + data.radius)
         {
             // Could add raycast here to detratc from volume if heard through wall
-            Debug.Log("Detect Sound");
             return true;
         }
 

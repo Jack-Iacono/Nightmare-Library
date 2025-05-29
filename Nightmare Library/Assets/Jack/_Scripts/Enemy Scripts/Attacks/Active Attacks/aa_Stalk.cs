@@ -3,9 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using static AudioManager;
 
 public class aa_Stalk : ActiveAttack
 {
+    protected new string name = "Stalker";
+    protected new SoundType[] ignoreSounds = { SoundType.e_STALK_CLOSE_IN };
+    protected new string toolTip = "This guy should go to jail, clearly what they do isn't legal. Especially the killing part, that might be bad.";
+    protected new float hearingRadius = 10;
+
     //private float sightAngle = -0.4f;
     public PlayerController currentTargetPlayer;
 
@@ -48,9 +54,6 @@ public class aa_Stalk : ActiveAttack
 
     public aa_Stalk(Enemy owner) : base(owner)
     {
-        name = "Stalker";
-        toolTip = "This guy should go to jail, clearly what they do isn't legal. Especially the killing part, that might be bad.";
-        hearingRadius = 10;
     }
 
     public override void Initialize(int level = 1)

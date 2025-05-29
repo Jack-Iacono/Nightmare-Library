@@ -1,11 +1,18 @@
 using BehaviorTree;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+using static AudioManager;
 
 public class aa_Rush : ActiveAttack
 {
+    protected new string name = "Rush";
+    protected new SoundType[] ignoreSounds = { SoundType.e_STALK_CLOSE_IN };
+    protected new string toolTip = "I couldn't even tell you if I wanted to";
+    protected new float hearingRadius = 100;
+
     private float baseReachGoalPauseMin = 5;
     private float baseReachGoalPauseMax = 5;
     private float baseAtNodePause = 0.1f;
@@ -28,10 +35,6 @@ public class aa_Rush : ActiveAttack
 
     public aa_Rush(Enemy owner) : base(owner)
     {
-        name = "Rush";
-        toolTip = "I couldn't even tell you if I wanted to";
-
-        hearingRadius = 100;
     }
 
     public override void Initialize(int level = 1) 
@@ -94,7 +97,7 @@ public class aa_Rush : ActiveAttack
                     n_PathCompleteCounter,
                     new Action_Wait(9),
                     new Action_PlaySound(AudioManager.SoundType.e_STALK_CLOSE_IN, owner.transform),
-                    new Action_Wait(1),
+                    new Action_Wait(2),
                     new Action_CounterChange(n_PathCompleteCounter, Action_CounterChange.ChangeType.RESET)
                 }),
                 new Sequence(new List<Node>
@@ -112,7 +115,7 @@ public class aa_Rush : ActiveAttack
 
     public override bool DetectSound(AudioSourceController.SourceData data)
     {
-        if (data.soundType != AudioManager.SoundType.e_STALK_CLOSE_IN && base.DetectSound(data))
+        if (!ignoreSounds.Contains(data.soundType) && base.DetectSound(data))
         {
             if (recentAudioSources.Count < 3)
                 recentAudioSources.Add(data);

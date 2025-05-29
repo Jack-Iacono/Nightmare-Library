@@ -67,9 +67,15 @@ public class AudioSourceController : MonoBehaviour
         if(!fromNetwork)
             OnPlay?.Invoke(audioData);
     }
-    public void Play(AudioData data, bool fromNetwork = false)
+    public void Play(AudioData data, SoundType type, bool fromNetwork = false)
     {
-        SetAudioSourceData(data);
+        SetAudioSourceData(data, type);
+        Play(fromNetwork);
+    }
+    public void Play(SoundType type, bool fromNetwork = false)
+    {
+        AudioData chosenAudio = AudioManager.GetAudioData(type);
+        SetAudioSourceData(chosenAudio, type);
         Play(fromNetwork);
     }
 
@@ -84,7 +90,7 @@ public class AudioSourceController : MonoBehaviour
         isPlaying = true;
         playTimer = audioData.clipLength;
     }
-    public void SetAudioSourceData(AudioData sound)
+    public void SetAudioSourceData(AudioData sound, SoundType type)
     {
         audioData = sound;
 
@@ -112,6 +118,7 @@ public class AudioSourceController : MonoBehaviour
 
         // Change this to use volume later
         sourceData.radius = 10;
+        sourceData.soundType = type;
     }
 
     private void OnDestroy()

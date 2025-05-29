@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using static AudioManager;
 
 [RequireComponent(typeof(AudioSourceController))]
 public class AudioSourceNetwork : NetworkBehaviour
@@ -40,7 +41,7 @@ public class AudioSourceNetwork : NetworkBehaviour
             if (i != -1)
             {
                 AudioData data = AudioManager.GetAudioData(i, j);
-                parent.Play(data, true);
+                parent.Play(data, (SoundType)i, true);
             }
             else
                 parent.Play(true);
@@ -50,13 +51,13 @@ public class AudioSourceNetwork : NetworkBehaviour
     [ClientRpc]
     private void OnPlayClientRpc(int i, int j, ulong sender)
     {
-        if (sender != NetworkManager.LocalClientId)
+        if (sender != NetworkManager.LocalClientId && !NetworkManager.IsServer)
         {
             // check for presence of audio source
             if (i != -1)
             {
                 AudioData data = AudioManager.GetAudioData(i, j);
-                parent.Play(data, true);
+                parent.Play(data, (SoundType)i, true);
             }
             else
                 parent.Play(true);

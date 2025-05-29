@@ -68,9 +68,15 @@ public class AudioManager : NetworkBehaviour
     /// </summary>
     /// <param name="sound">The sound data that should be played</param>
     /// <param name="pos">The position at which to play this sound</param>
-    public static void PlaySoundAtPoint(AudioData sound, Vector3 pos)
+    public static void PlaySoundAtPoint(SoundType type, Vector3 pos)
     {
-        PlaySoundAtPointOffline(sound, pos);
+        AudioData chosenSound = GetAudioData(type);
+        PlaySoundAtPointOffline(chosenSound, type, pos);
+        OnSoundPlay?.Invoke(chosenSound, pos);
+    }
+    public static void PlaySoundAtPoint(AudioData sound, SoundType type, Vector3 pos)
+    {
+        PlaySoundAtPointOffline(sound, type, pos);
         OnSoundPlay?.Invoke(sound, pos);
     }
     /// <summary>
@@ -78,10 +84,17 @@ public class AudioManager : NetworkBehaviour
     /// </summary>
     /// <param name="sound">The sound to play</param>
     /// <param name="pos">The location that this sound should originate from</param>
-    public static void PlaySoundAtPointOffline(AudioData sound, Vector3 pos)
+    public static void PlaySoundAtPointOffline(SoundType type, Vector3 pos)
     {
         AudioSourceController source = AudioSourceController.sourceAccess[soundSourcePool.GetObject(audioSourceObject)];
-        source.SetAudioSourceData(sound);
+        source.SetAudioSourceData(GetAudioData(type), type);
+        source.transform.position = pos;
+        source.Play();
+    }
+    public static void PlaySoundAtPointOffline(AudioData sound, SoundType type, Vector3 pos)
+    {
+        AudioSourceController source = AudioSourceController.sourceAccess[soundSourcePool.GetObject(audioSourceObject)];
+        source.SetAudioSourceData(sound, type);
         source.transform.position = pos;
         source.Play();
     }
@@ -122,6 +135,7 @@ public class AudioManager : NetworkBehaviour
         for (int i = 0; i < names.Length; i++)
         {
             sounds[i].name = names[i];
+            sounds[i].type = (SoundType)i;
         }
     }
 #endif
@@ -132,5 +146,6 @@ public class AudioManager : NetworkBehaviour
 public struct SoundList
 {
     [HideInInspector] public string name;
+    [HideInInspector] public SoundType type;
     [SerializeField] public AudioData[] sounds;
 }

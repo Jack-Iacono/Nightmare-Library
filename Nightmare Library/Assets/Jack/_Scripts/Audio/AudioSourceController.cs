@@ -32,7 +32,7 @@ public class AudioSourceController : MonoBehaviour
     {
         sourceAccess.Add(gameObject, this);
         audioSource = GetComponent<AudioSource>();
-        sourceData = new SourceData(gameObject, SoundType.e_SCREECH_APPEAR);
+        sourceData = new SourceData(gameObject, SoundType.e_SCREECH_APPEAR, audioData);
         trans = transform;
     }
     public void Initialize()
@@ -67,9 +67,15 @@ public class AudioSourceController : MonoBehaviour
         if(!fromNetwork)
             OnPlay?.Invoke(audioData);
     }
-    public void Play(AudioData data, bool fromNetwork = false)
+    public void Play(AudioData data, SoundType type, bool fromNetwork = false)
     {
-        SetAudioSourceData(data);
+        SetAudioSourceData(data, type);
+        Play(fromNetwork);
+    }
+    public void Play(SoundType type, bool fromNetwork = false)
+    {
+        AudioData chosenAudio = AudioManager.GetAudioData(type);
+        SetAudioSourceData(chosenAudio, type);
         Play(fromNetwork);
     }
 
@@ -84,9 +90,11 @@ public class AudioSourceController : MonoBehaviour
         isPlaying = true;
         playTimer = audioData.clipLength;
     }
-    public void SetAudioSourceData(AudioData sound)
+    public void SetAudioSourceData(AudioData sound, SoundType type)
     {
         audioData = sound;
+
+        sourceData.audioData = sound;
 
         audioSource.clip = sound.audioClip;
         audioSource.playOnAwake = sound.playOnAwake;
@@ -110,6 +118,7 @@ public class AudioSourceController : MonoBehaviour
 
         // Change this to use volume later
         sourceData.radius = 10;
+        sourceData.soundType = type;
     }
 
     private void OnDestroy()
@@ -124,13 +133,15 @@ public class AudioSourceController : MonoBehaviour
         public float radius;
 
         public SoundType soundType;
+        public AudioData audioData;
 
-        public SourceData(GameObject gameObject, SoundType type, float radius = 10)
+        public SourceData(GameObject gameObject, SoundType type, AudioData data, float radius = 10)
         {
             this.gameObject = gameObject;
             transform = gameObject.transform;
             this.radius = radius;
             soundType = type;
+            audioData = data;
         }
     }
 }

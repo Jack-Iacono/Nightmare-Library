@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -15,6 +16,9 @@ public class GameControllerNetwork : NetworkBehaviour
     private NetworkVariable<ContinuousData> contState;
     public static NetworkVariable<bool> gamePaused;
     private static NetworkVariable<int> enemyCount = new NetworkVariable<int>();
+
+    // Game Info Variables
+    private NetworkVariable<NetworkGameInfo> gameInfo;
 
     private void Awake()
     {
@@ -32,8 +36,16 @@ public class GameControllerNetwork : NetworkBehaviour
             contState = new NetworkVariable<ContinuousData>(writePerm: permission);
             gamePaused = new NetworkVariable<bool>(writePerm: permission);
             enemyCount = new NetworkVariable<int>(writePerm: permission);
+            gameInfo = new NetworkVariable<NetworkGameInfo>(writePerm: permission);
 
             PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
+
+            if (NetworkManager.IsServer)
+            {
+                GameController.OnEnemyCountChanged += OnEnemyCountChanged;
+                GameController.OnGameEnd += OnGameEnd;
+                GameController.OnGameInfoChanged += OnGameInfoChanged;
+            }
         }
     }
 
@@ -44,12 +56,9 @@ public class GameControllerNetwork : NetworkBehaviour
         if (!IsOwner)
         {
             parent.enabled = false;
+
             enemyCount.OnValueChanged += OnEnemyCountValueChanged;
-        }
-        else
-        {
-            GameController.OnEnemyCountChanged += OnEnemyCountChanged;
-            GameController.OnGameEnd += OnGameEnd;
+            gameInfo.OnValueChanged += OnGameInfoValueChanged;
         }
     }
 
@@ -96,17 +105,17 @@ public class GameControllerNetwork : NetworkBehaviour
 
     #region Game Ending
 
-    private void OnGameEnd()
+    private void OnGameEnd(int endReason)
     {
         if (NetworkManager.IsServer)
-            OnGameEndClientRpc();
+            OnGameEndClientRpc(endReason);
     }
     [ClientRpc]
-    private void OnGameEndClientRpc()
+    private void OnGameEndClientRpc(int endReason)
     {
         if (!NetworkManager.IsServer)
         {
-            GameController.EndGame();
+            GameController.EndGame(endReason);
         }
     }
 
@@ -154,6 +163,61 @@ public class GameControllerNetwork : NetworkBehaviour
 
     #endregion
 
+    #region Game Info
+
+    private void OnGameInfoChanged()
+    {
+        gameInfo.Value = new NetworkGameInfo(GameController.gameInfo.endReason, GameController.gameInfo.presentEnemies);
+    }
+    private void OnGameInfoValueChanged(NetworkGameInfo previous,  NetworkGameInfo newValue)
+    {
+        GameController.gameInfo.SetEndReason(newValue.endReason);
+        GameController.gameInfo.presentEnemies = newValue.GetEnemyPresets();
+    }
+    public class NetworkGameInfo : INetworkSerializable
+    {
+        public int endReason;
+        public int[] presentEnemies;
+
+        public NetworkGameInfo()
+        {
+            endReason = -1;
+            presentEnemies = new int[0];    
+        }
+        public NetworkGameInfo(int endReason, List<EnemyPreset> presentEnemies)
+        {
+            this.endReason = endReason;
+
+            int[] e = new int[presentEnemies.Count];
+
+            // Convert the presets into their int formats
+            for(int i = 0; i < presentEnemies.Count; i++)
+            {
+                e[i] = PersistentDataController.Instance.activeEnemyPresets.IndexOf(presentEnemies[i]);
+            }
+
+            this.presentEnemies = e;
+        }
+
+        public List<EnemyPreset> GetEnemyPresets()
+        {
+            List<EnemyPreset> p = new List<EnemyPreset>();
+            for(int i = 0; i < presentEnemies.Length; i++)
+            {
+                p.Add(PersistentDataController.Instance.activeEnemyPresets[i]);
+            }
+            return p;
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref endReason);
+            serializer.SerializeValue(ref presentEnemies);
+        }
+    }
+
+    #endregion
+
     public override void OnDestroy()
     {
         // Should never not be this, but just better to check
@@ -165,5 +229,6 @@ public class GameControllerNetwork : NetworkBehaviour
 
         GameController.OnGameEnd -= OnGameEnd;
         PlayerController.OnPlayerAliveChanged -= OnPlayerAliveChanged;
+        GameController.OnGameInfoChanged -= OnGameInfoChanged;
     }
 }

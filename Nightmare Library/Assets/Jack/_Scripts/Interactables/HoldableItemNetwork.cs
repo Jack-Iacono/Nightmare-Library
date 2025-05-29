@@ -7,6 +7,9 @@ using NetVar;
 [RequireComponent(typeof(HoldableItem))]
 public class HoldableItemNetwork : NetworkBehaviour
 {
+    // Used to easily reference specific holdable objects over the network
+    public static BiDict<HoldableItem, ulong> idLink = new BiDict<HoldableItem, ulong>();
+
     private HoldableItem parent;
     private bool canUpdateRigidbody = false;
     protected bool ownInteraction = false;
@@ -25,8 +28,9 @@ public class HoldableItemNetwork : NetworkBehaviour
     private bool wasUpdating = false;
     private int currentUpdateFrame = 0;
 
-    private NetworkVariable<TransformDataRB> transformData = new NetworkVariable<TransformDataRB>();
+    private NetworkVariable<TransformData> transformData = new NetworkVariable<TransformData>();
     private NetworkVariable<bool> isActive = new NetworkVariable<bool>();
+    private NetworkVariable<HeldData> isHeld = new NetworkVariable<HeldData>();
 
     protected virtual void Awake()
     {
@@ -41,30 +45,34 @@ public class HoldableItemNetwork : NetworkBehaviour
             previousPosition = transform.position;
         }
     }
-
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+
+        idLink.Add(parent, NetworkObjectId);
 
         parent.OnPickup += OnPickup;
         parent.OnPlace += OnPlace;
         parent.OnThrow += OnThrow;
 
+        parent.OnActiveChanged += OnActiveChanged;
+        parent.OnHeldChanged += OnHeldChanged;
+
         canUpdateRigidbody = parent.hasRigidBody;
 
         if (!IsOwner)
         {
-            transformData.OnValueChanged += ConsumeTransformData;
-            isActive.OnValueChanged += ConsumeEnabledData;
+            isActive.OnValueChanged += OnActiveValueChanged;
+            isHeld.OnValueChanged += OnHeldValueChanged;
 
-            // Moves the item to the correct location according to the server
-            ConsumeTransformData(transformData.Value, transformData.Value);
-            ConsumeEnabledData(isActive.Value, isActive.Value);
+            ConsumeTransformData();
         }
         else
         {
-            TransmitTransformData();
             isActive.Value = gameObject.activeInHierarchy;
+            isHeld.Value = new HeldData(false, 0);
+
+            TransmitTransformData();
         }
     }
 
@@ -73,10 +81,10 @@ public class HoldableItemNetwork : NetworkBehaviour
         // Check to make sure the network is running to avoid calls going out without being connected and that this is on the server/owner
         if (NetworkConnectionController.IsRunning)
         {
-            if (IsOwner && canUpdateRigidbody && isActive.Value)
+            if (!isHeld.Value.isHeld)
             {
-                // ensures the update only runs every few frames
-                if (currentUpdateFrame >= updateTransformFrequency)
+                // Check to make sure that this object has a rigid body, is active and is being run on the server
+                if (NetworkManager.IsServer && canUpdateRigidbody && isActive.Value)
                 {
                     // Check if the object is moving enough to pass the velocity check
                     if (Vector3.SqrMagnitude(previousPosition - transform.position) > movementThreshold * movementThreshold)
@@ -94,102 +102,93 @@ public class HoldableItemNetwork : NetworkBehaviour
                         wasUpdating = false;
                     }
 
-                    // Reset the frame counter
-                    currentUpdateFrame = 0;
                     previousPosition = transform.position;
                 }
-                else
+                else if (!NetworkManager.IsServer)
                 {
-                    // Increment the frame counter
-                    currentUpdateFrame++;
+                    if (rectifyFrame < rectifyFrequency)
+                        rectifyFrame++;
+                    else
+                    {
+                        RectifyTransform();
+                        rectifyFrame = 0;
+                    }
                 }
             }
-            else if (!IsOwner && parent.hasRigidBody && parent.rb.velocity == Vector3.zero)
+            // Only run if the item is being held by this client
+            else if (isHeld.Value.isHeld && NetworkManager.LocalClientId == isHeld.Value.holderID)
             {
-                if (rectifyFrame < rectifyFrequency)
-                    rectifyFrame++;
-                else
-                {
-                    //RectifyTransform();
-                    rectifyFrame = 0;
-                }
+                TransmitTransformData();
             }
         }
-    }
-
-    private void ConsumeEnabledData(bool previousValue, bool newValue)
-    {
-        parent.gameObject.SetActive(newValue);
     }
 
     #region Transform
 
     private void TransmitTransformData()
     {
-        var state = new TransformDataRB
+        var state = new TransformData
         {
             Position = parent.trans.position,
             Rotation = parent.trans.rotation,
-            Velocity = parent.hasRigidBody ? parent.rb.velocity : Vector3.zero
+            Velocity = parent.hasRigidBody ? parent.rb.velocity : Vector3.zero,
+            isKinematic = parent.GetKinematic()
         };
 
-        // Needed because we are not able to change info if server has authority
-        if (IsServer)
+        // just a safety net in case the client somehow is able to call this method
+        if (NetworkManager.IsServer)
         {
             transformData.Value = state;
+            TransformDataUpdateClientRpc();
         }
         else
         {
-            TransmitTransformDataServerRpc(state);
+            TransformDataUpdateServerRpc(state);
         }
     }
-    [ServerRpc(RequireOwnership = false)]
-    private void TransmitTransformDataServerRpc(TransformDataRB state)
+    [ClientRpc]
+    private void TransformDataUpdateClientRpc()
     {
-        transformData.Value = state;
-    }
-    private void ConsumeTransformData(TransformDataRB previousValue, TransformDataRB newValue)
-    {
-        // Ensure that the owner does not waste time updating to it's own values
-        if (!IsOwner)
+        if (!NetworkManager.IsServer && isHeld.Value.holderID != NetworkManager.LocalClientId)
         {
-            if (Vector3.SqrMagnitude(newValue.Position - transform.position) < transformThreshold * transformThreshold)
-            {
-                transform.rotation = Quaternion.Lerp(parent.trans.rotation, newValue.Rotation, interpolationStrength);
-                parent.trans.position = Vector3.Slerp(parent.trans.position, newValue.Position, interpolationStrength);
-                if (parent.hasRigidBody && !parent.rb.isKinematic)
-                {
-                    parent.rb.velocity = transformData.Value.Velocity;
-                }
-            }
+            ConsumeTransformData();
+        }
 
-            rectifyFrame = 0;
+        rectifyFrame = 0;
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void TransformDataUpdateServerRpc(TransformData data)
+    {
+        transformData.Value = data;
+        ConsumeTransformData();
+        TransformDataUpdateClientRpc();
+    }
+
+    private void ConsumeTransformData()
+    {
+        transform.rotation = Quaternion.Lerp(parent.trans.rotation, transformData.Value.Rotation, interpolationStrength);
+        parent.trans.position = Vector3.Slerp(parent.trans.position, transformData.Value.Position, interpolationStrength);
+        if (parent.hasRigidBody && !parent.rb.isKinematic)
+        {
+            parent.rb.velocity = transformData.Value.Velocity;
+            parent.rb.isKinematic = transformData.Value.isKinematic;
         }
     }
 
     /// <summary>
-    /// Forces a sync between the server object and the client object
+    /// Forces the clients to set object position directly to the current transform of the server with no slerp
     /// </summary>
     private void RectifyTransform()
     {
-        if (NetworkManager.IsServer)
-            RectifyTransformClientRpc();
-        else
+        parent.trans.position = transformData.Value.Position;
+        parent.trans.rotation = transformData.Value.Rotation;
+        if (parent.hasRigidBody && transformData.Value.Velocity != Vector3.zero)
         {
-            parent.trans.position = transformData.Value.Position;
-            parent.trans.rotation = transformData.Value.Rotation;
-            if (transformData.Value.Velocity != Vector3.zero && parent.hasRigidBody)
-            {
-                parent.rb.isKinematic = false;
-                parent.rb.velocity = transformData.Value.Velocity;
-            }
+            parent.rb.isKinematic = transformData.Value.isKinematic;
+            parent.rb.velocity = transformData.Value.Velocity;
         }
-    }
-    [ClientRpc]
-    private void RectifyTransformClientRpc()
-    {
-        if (!NetworkManager.IsServer)
-            RectifyTransform();
+
+        rectifyFrame = 0;
     }
 
     #endregion
@@ -227,25 +226,23 @@ public class HoldableItemNetwork : NetworkBehaviour
     {
         if (!fromNetwork)
         {
-            if (IsOwner)
+            if (NetworkManager.IsServer)
             {
                 TransmitTransformData();
-                isActive.Value = true;
-                PlaceClientRpc(new TransformData(parent.trans.position, parent.trans.rotation), NetworkManager.LocalClientId);
+                PlaceClientRpc(new TransformData(parent.trans.position, parent.trans.rotation, Vector3.zero, parent.GetKinematic()), NetworkManager.LocalClientId);
             }
             else
-                TransmitPlaceServerRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation));
+            {
+                TransmitPlaceServerRpc(NetworkManager.LocalClientId, new TransformData(parent.trans.position, parent.trans.rotation, Vector3.zero, parent.GetKinematic()));
+            }
         }
     }
     [ServerRpc(RequireOwnership = false)]
     protected virtual void TransmitPlaceServerRpc(ulong sender, TransformData data)
     {
         parent.Place(data.Position, data.Rotation, true);
-
-        PlaceClientRpc(data, sender);
-
         TransmitTransformData();
-        isActive.Value = true;
+        PlaceClientRpc(data, sender);
     }
     [ClientRpc]
     protected virtual void PlaceClientRpc(TransformData data, ulong sender)
@@ -285,6 +282,147 @@ public class HoldableItemNetwork : NetworkBehaviour
     {
         if (NetworkManager.LocalClientId != sender && !NetworkManager.IsServer)
             parent.Throw(pos, force, rot.eulerAngles,true);
+    }
+
+    #endregion
+
+    #region Active / Colliders
+
+    private void OnActiveChanged(bool b)
+    {
+        if(!NetworkManager.IsServer)
+            OnActiveChangedServerRpc(b);
+        else
+        {
+            isActive.Value = b;
+            OnActiveValueChanged(b, b);
+        }
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void OnActiveChangedServerRpc(bool b)
+    {
+        OnActiveChanged(b);
+    }
+    private void OnActiveValueChanged(bool previous, bool current)
+    {
+        parent.SetActive(current, true);
+    }
+
+    private void OnHeldChanged(bool b)
+    {
+        if (!NetworkManager.IsServer)
+            OnHeldChangedServerRpc(new HeldData(b, NetworkManager.LocalClientId));
+        else
+        {
+            isHeld.Value = new HeldData(b, NetworkManager.LocalClientId);
+            OnHeldValueChanged(isHeld.Value, isHeld.Value);
+        }
+            
+    }
+    [ServerRpc(RequireOwnership = false)]
+    private void OnHeldChangedServerRpc(HeldData data)
+    {
+        isHeld.Value = data;
+        OnHeldValueChanged(data, data);
+    }
+    private void OnHeldValueChanged(HeldData previous, HeldData current)
+    {
+        parent.SetHeld(current.isHeld, true);
+    }
+
+    #endregion
+
+    #region Classes and Structs
+
+    public struct TransformData : INetworkSerializable
+    {
+        private float xPos, yPos, zPos;
+        private float xRot, yRot, zRot;
+
+        private float xVel, yVel, zVel;
+        public bool isKinematic;
+
+        internal Vector3 Position
+        {
+            get => new Vector3(xPos, yPos, zPos);
+            set
+            {
+                xPos = value.x;
+                yPos = value.y;
+                zPos = value.z;
+            }
+        }
+        internal Quaternion Rotation
+        {
+            get => Quaternion.Euler(xRot, yRot, zRot);
+            set
+            {
+                xRot = value.eulerAngles.x;
+                yRot = value.eulerAngles.y;
+                zRot = value.eulerAngles.z;
+            }
+        }
+        internal Vector3 Velocity
+        {
+            get => new Vector3(xVel, yVel, zVel);
+            set
+            {
+                xVel = value.x;
+                yVel = value.y;
+                zVel = value.z;
+            }
+        }
+
+        public TransformData(Vector3 pos, Quaternion rot, Vector3 vel, bool isKinematic)
+        {
+            xPos = pos.x;
+            yPos = pos.y;
+            zPos = pos.z;
+
+            xRot = rot.eulerAngles.x;
+            yRot = rot.eulerAngles.y;
+            zRot = rot.eulerAngles.z;
+
+            xVel = vel.x;
+            yVel = vel.y;
+            zVel = vel.z;
+
+            this.isKinematic = isKinematic;
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref xPos);
+            serializer.SerializeValue(ref yPos);
+            serializer.SerializeValue(ref zPos);
+
+            serializer.SerializeValue(ref xRot);
+            serializer.SerializeValue(ref yRot);
+            serializer.SerializeValue(ref zRot);
+
+            serializer.SerializeValue(ref xVel);
+            serializer.SerializeValue(ref yVel);
+            serializer.SerializeValue(ref zVel);
+
+            serializer.SerializeValue(ref isKinematic);
+        }
+    }
+    public struct HeldData : INetworkSerializable
+    {
+        public bool isHeld;
+        public ulong holderID;
+
+        public HeldData(bool isHeld, ulong holderID)
+        {
+            this.isHeld = isHeld;
+            this.holderID = holderID;
+        }
+
+        public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+        {
+            serializer.SerializeValue(ref isHeld);
+            serializer.SerializeValue(ref holderID);
+        }
     }
 
     #endregion

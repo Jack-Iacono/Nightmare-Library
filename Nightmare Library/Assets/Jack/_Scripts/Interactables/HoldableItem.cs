@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class HoldableItem : MonoBehaviour, IEnemyHystericObject
 {
@@ -21,7 +23,8 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     public enum PlacementType { FLOOR, WALL, CEILING }
     public List<PlacementType> placementTypes = new List<PlacementType>();
 
-    public bool isPhysical { get; private set; } = true;
+    // This allows this object to know if it is placed down
+    public bool isHeld { get; private set; } = true;
 
     /// <summary>
     /// 0: Facing Player 
@@ -54,12 +57,18 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     [NonSerialized]
     public Rigidbody rb;
 
+    bool placeColliderBuffer = false;
+
     public delegate void OnPickupDelegate(bool fromNetwork = false);
     public event OnPickupDelegate OnPickup;
     public delegate void OnPlaceDelegate(bool fromNetwork = false);
     public event OnPlaceDelegate OnPlace;
     public delegate void OnThrowDelegate(Vector3 force, bool fromNetwork = false);
     public event OnThrowDelegate OnThrow;
+
+    public delegate void OnBoolChangeDelegate(bool b);
+    public event OnBoolChangeDelegate OnActiveChanged;
+    public event OnBoolChangeDelegate OnHeldChanged;
 
     protected virtual void Awake()
     {
@@ -99,15 +108,26 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
         hasRigidBody = TryGetComponent(out rb);
         trans = transform;
     }
+    private void FixedUpdate()
+    {
+        // This is used to ensure colliders are turned on only after the rigidbody of the object has actually moved
+        if(placeColliderBuffer)
+        {
+            SetHeld(false);
+            placeColliderBuffer = false;
+        }
+    }
 
     public virtual GameObject Pickup(bool fromNetwork = false)
     {
         // Make the object intangible
-        gameObject.SetActive(false);
+        SetActive(false, fromNetwork);
 
         // If the object has a rigid body, stop it from moving
         if (hasRigidBody)
             rb.isKinematic = true;
+
+        SetHeld(true, fromNetwork);
 
         // Alert that this object has been picked up (used mostly for network decoupling)
         OnPickup?.Invoke(fromNetwork);
@@ -121,11 +141,23 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
         trans.rotation = rot;
 
         // Make the object tangible
-        gameObject.SetActive(true);
+        SetActive(true, fromNetwork);
+
+        // Have no clue how this gets set to physical again, but whatever
+        //SetHeld(false, fromNetwork);
 
         // make kinematic if the object has the fixPlacement modifier
-        if (fixPlacement && hasRigidBody)
-            rb.isKinematic = true;
+        if (hasRigidBody)
+        {
+            if (fixPlacement)
+                rb.isKinematic = true;
+            else
+                rb.isKinematic = false;
+        }
+
+        // Need this to ensure that the collider does not push player when placed
+        // Rigidbodies are only moved on fixedUpdate frames, so this can result in premature collider enabling
+        placeColliderBuffer = true;
 
         // Alert that this object has been placed
         OnPlace?.Invoke(fromNetwork);
@@ -134,13 +166,15 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     {
         trans.position = pos;
         trans.rotation = Quaternion.Euler(rot);
-        gameObject.SetActive(true);
+        SetActive(true, fromNetwork);
 
         if (hasRigidBody)
         {
             rb.isKinematic = false;
             rb.AddForce(force, ForceMode.Impulse);
         }
+
+        SetHeld(false, fromNetwork);
 
         OnThrow?.Invoke(force, fromNetwork);
     }
@@ -157,9 +191,38 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
             );
     }
 
+    public void SetHeld(bool b, bool fromNetwork = false)
+    {
+        isHeld = b;
+        SetCollidersEnabled(!b);
+
+        if (!fromNetwork)
+            OnHeldChanged?.Invoke(b);
+    }
+
+    private void SetCollidersEnabled(bool b)
+    {
+        foreach(Collider col in colliders)
+        {
+            col.enabled = b;
+        }
+    }
     public Vector3 GetColliderSize()
     {
         return mainColliderSize;
+    }
+
+    public bool GetKinematic()
+    {
+        return hasRigidBody ? rb.isKinematic : false;
+    }
+
+    public void SetActive(bool b, bool fromNetwork = false)
+    {
+        gameObject.SetActive(b);
+
+        if(!fromNetwork)
+            OnActiveChanged?.Invoke(b);
     }
 
     protected virtual void OnDestroy()

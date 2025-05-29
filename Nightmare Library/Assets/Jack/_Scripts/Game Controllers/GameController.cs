@@ -27,11 +27,11 @@ public class GameController : MonoBehaviour
     public static int currentEnemyCount = 0;
     private List<GameObject> spawnedEnemies = new List<GameObject>();
 
-    public static RoundResults roundResults = null;
+    public static GameInfo gameInfo = null;
 
     public static bool isNetworkGame = true;
 
-    public delegate void OnGameEndDelegate();
+    public delegate void OnGameEndDelegate(int endReason);
     public static event OnGameEndDelegate OnGameEnd;
 
     public delegate void OnGameStartDelegate();
@@ -40,6 +40,9 @@ public class GameController : MonoBehaviour
     public delegate void OnEnemyCountChangedDelegate(int count);
     public static event OnEnemyCountChangedDelegate OnEnemyCountChanged;
 
+    public delegate void OnGameInfoChangedDelegate();
+    public static event OnGameInfoChangedDelegate OnGameInfoChanged;
+
     private void Awake()
     {
         if (instance == null)
@@ -47,7 +50,8 @@ public class GameController : MonoBehaviour
         else
             Destroy(this);
 
-        roundResults = new RoundResults(startingEnemyCount);
+        // Ensure to overwrite the previous data
+        gameInfo = new GameInfo();
         SceneController.OnMapLoaded += OnMapLoaded;
 
         PlayerController.OnPlayerAliveChanged += OnPlayerAliveChanged;
@@ -92,8 +96,7 @@ public class GameController : MonoBehaviour
         }
         else
         {
-            Debug.Log("End Game Due to Time");
-            EndGame();
+            EndGame(0);
         }
     }
 
@@ -117,8 +120,7 @@ public class GameController : MonoBehaviour
 
         if (allPlayersDead && NetworkConnectionController.HasAuthority)
         {
-            Debug.Log("All players dead");
-            StartCoroutine(BeginEndGame());
+            StartCoroutine(BeginEndGame(2));
         }
     }
     private void OnEnemyRemoved(Enemy enemy)
@@ -129,28 +131,28 @@ public class GameController : MonoBehaviour
         // Will be removed after demo
         if(currentEnemyCount <= 0)
         {
-            Debug.Log("Enemy Killed");
-            StartCoroutine(BeginEndGame());
+            StartCoroutine(BeginEndGame(1));
         }
     }
 
-    public static void MakeGuess(int index, EnemyPreset preset)
-    {
-        roundResults.SetGuess(index, preset);
-    }
-
-    private IEnumerator BeginEndGame()
+    private IEnumerator BeginEndGame(int endReason)
     {
         yield return new WaitForSecondsRealtime(5);
-        EndGame();
+        EndGame(endReason);
     }
-    public static void EndGame()
+    public static void EndGame(int endReason)
     {
+        // End reason -> 0: Timer, 1: All Enemies Dead, 2: All Players Dead
+
         if(NetworkConnectionController.HasAuthority)
         {
-            OnGameEnd?.Invoke();
+            OnGameEnd?.Invoke(endReason);
         }
 
+        // Tells the round results how the game ended
+        gameInfo.SetEndReason(endReason);
+
+        // Send the players to the pre game lobby
         ((GameLobbyController)LobbyController.instance).GoToPreGame();
     }
 
@@ -174,34 +176,20 @@ public class GameController : MonoBehaviour
         PlayerController.OnPlayerAliveChanged -= OnPlayerAliveChanged;
     }
 
-    public class RoundResults
+    public class GameInfo
     {
-        public List<EnemyPreset> enemyGuesses = new List<EnemyPreset>(startingEnemyCount);
+        public int endReason { get; private set; } = -1;
         public List<EnemyPreset> presentEnemies = new List<EnemyPreset>(startingEnemyCount);
 
-        public RoundResults(int enemyCount)
+        public void SetEndReason(int endReason)
         {
-            for (int i = 0; i < enemyCount; i++)
-            {
-                enemyGuesses.Add(null);
-                presentEnemies.Add(null);
-            }
+            this.endReason = endReason;
+            OnGameInfoChanged?.Invoke();
         }
-
-        public void SetGuess(int i, EnemyPreset e)
+        public void AddPresentEnemy(EnemyPreset enemy)
         {
-            enemyGuesses[i] = e;    
-        }
-        public void SetPresentEnemies(Dictionary<GameObject, Enemy> enemies)
-        {
-            List<Enemy> e = new List<Enemy>(enemies.Values);
-            for(int i = 0; i < e.Count; i++)
-            {
-                if (presentEnemies.Count > i)
-                    presentEnemies[i] = e[i].enemyType;
-                else
-                    presentEnemies.Add(e[i].enemyType);
-            }
+            presentEnemies.Add(enemy);
+            OnGameInfoChanged?.Invoke();
         }
     }
 }

@@ -185,7 +185,7 @@ GameObject:
   - component: {fileID: 23395816}
   - component: {fileID: 23395815}
   m_Layer: 5
-  m_Name: Player Text
+  m_Name: Result Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2394,7 +2394,7 @@ GameObject:
   - component: {fileID: 1588504750}
   - component: {fileID: 1588504751}
   m_Layer: 5
-  m_Name: Guess Results
+  m_Name: Results
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2435,6 +2435,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   showAnimTime: 0
   hideAnimTime: 0
+  m_ResultText: {fileID: 23395815}
 --- !u!1 &1699675669
 GameObject:
   m_ObjectHideFlags: 0
@@ -3339,6 +3340,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerSpawnPoint: {x: 0, y: 2, z: 0}
+  enemySpawnPoints: []
 --- !u!4 &5333550237556968599
 Transform:
   m_ObjectHideFlags: 0

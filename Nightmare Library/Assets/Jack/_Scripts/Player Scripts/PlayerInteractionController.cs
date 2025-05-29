@@ -90,7 +90,7 @@ public class PlayerInteractionController : MonoBehaviour
         isPlaceStart = Input.GetKeyDown(keyPlace);
         isPlaceFinish = Input.GetKeyUp(keyPlace);
         isPlacePressed = Input.GetKey(keyPlace);
-        
+
         isActive = isClick || isPickup || isPlaceFinish || isPlacePressed || isPlaceStart || isThrow;
     }
 
@@ -116,9 +116,7 @@ public class PlayerInteractionController : MonoBehaviour
         // Process Throwing first since you don't need to raycast for it
         if (currentHoldableItem != null && isThrow)
         {
-            // TEMPORARY
-            // Not sure where to throw from or what velocity to have
-            currentHoldableItem.Throw(transform.position + transform.forward + transform.up, ray.direction * 10, transform.rotation.eulerAngles);
+            currentHoldableItem.Throw(currentHoldableItem.trans.position, ray.direction * 10 + Vector3.up, transform.rotation.eulerAngles);
             inventoryCont.RemoveCurrentItem();
             currentHoldableItem = null;
             actionBuffering = true;
@@ -165,11 +163,11 @@ public class PlayerInteractionController : MonoBehaviour
                     IClickable.instances[hitObject].Click();
 
                     actionBuffering = true;
-                }
+                } 
                 else if (isPickup && interactionTypes[1] == true &&inventoryCont.HasOpenSlot())
                 {
-                    inventoryCont.AddItem(HoldableItem.instances[hitObject]);
                     HoldableItem.instances[hitObject].Pickup();
+                    inventoryCont.AddItem(HoldableItem.instances[hitObject]);
 
                     actionBuffering = true;
                 }
@@ -244,8 +242,8 @@ public class PlayerInteractionController : MonoBehaviour
 
                             if (currentHoldableItem.placementTypes.Contains(type))
                             {
+                                inventoryCont.RemoveCurrentItem();
                                 currentHoldableItem.Place(placementGuideController.trans.position, placementGuideController.trans.rotation);
-                               inventoryCont.RemoveCurrentItem();
                             }
 
                             currentHoldableItem = null;
@@ -275,19 +273,22 @@ public class PlayerInteractionController : MonoBehaviour
 
     public void DropItems()
     {
-        HoldableItem[] items = inventoryCont.GetHoldableItems();
-        for(int i = 0; i < items.Length; i++)
+        if(inventoryCont != null)
         {
-            HoldableItem item = items[i];
-
-            if (item != null)
+            HoldableItem[] items = inventoryCont.GetHoldableItems();
+            for (int i = 0; i < items.Length; i++)
             {
-                //NavMeshHit hit;
-                //NavMesh.SamplePosition(transform.position + new Vector3(0,i,0), out hit, 10, NavMesh.AllAreas);
-                item.Place(transform.position + new Vector3(0, i, 0), transform.rotation);
+                HoldableItem item = items[i];
+
+                if (item != null)
+                {
+                    //NavMeshHit hit;
+                    //NavMesh.SamplePosition(transform.position + new Vector3(0,i,0), out hit, 10, NavMesh.AllAreas);
+                    item.Throw(transform.position + new Vector3(0, i, 0), Vector3.up * 5, transform.rotation.eulerAngles);
+                }
             }
+            inventoryCont.ClearInventory();
         }
-        inventoryCont.ClearInventory();
     }
 
     private void SetObjectTransform(PlacementType type, RaycastHit hit)

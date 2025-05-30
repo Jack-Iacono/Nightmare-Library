@@ -48,16 +48,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d949dc9757e1b24bbf953e21a54dbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  p_Player: {fileID: 8304355550611021137, guid: cd83bc9e5856e324085ffec44549aa1e,
+  p_Player: {fileID: 8304355550611021137, guid: 98b77d2c7097cf442976221930ff0321,
     type: 3}
-  e_Enemy: {fileID: 1289455882946623128, guid: 3693b8fad534778459dd9dbae0fd1532, type: 3}
-  e_EvidenceFootprint: {fileID: 462350817080059154, guid: 59f37b89cd452be47915e99718acc448,
+  e_Enemy: {fileID: 1289455882946623128, guid: 2122e851bdd78a641b407997c1077905, type: 3}
+  e_EvidenceFootprint: {fileID: 462350817080059154, guid: 73b6e466361f23e479e7920c7c7b32d0,
     type: 3}
-  e_EvidenceTrap: {fileID: 2561657698923950872, guid: 8c12e05da9c71f545a58f5d6168b4deb,
+  e_EvidenceTrap: {fileID: 2561657698923950872, guid: 40dd7e361b0bc0246b22a3c33b2e2f5d,
     type: 3}
-  e_WardenSensor: {fileID: 1362234469720430081, guid: da59f9d391b9838429c78acabb4b40e3,
+  e_WardenSensor: {fileID: 1362234469720430081, guid: 528141891ccb0a64fb1a7c208534c237,
     type: 3}
-  e_ScreechHead: {fileID: 668094590302005263, guid: 6f1fdc0bb82b72d4bba623b80a66f8c0,
+  e_ScreechHead: {fileID: 668094590302005263, guid: 7a617dc2d5f9c5a4eb014b0af7561a1d,
     type: 3}
   a_AudioSource: {fileID: 4782423263898580498, guid: fde7960ebc8ffaf44bf1509ea2bd8578,
     type: 3}

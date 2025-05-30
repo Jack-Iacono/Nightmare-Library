@@ -10,8 +10,6 @@ public class ComputerController : MonoBehaviour, IClickable
     private Transform cameraPosition;
     [SerializeField]
     private Canvas computerUI;
-    [SerializeField]
-    private GameObject screenGameObject;
 
     public event IClickable.OnClickDelegate OnClick;
 
@@ -22,7 +20,7 @@ public class ComputerController : MonoBehaviour, IClickable
 
     private void Awake()
     {
-        IClickable.instances.Add(screenGameObject, this);
+        IClickable.instances.Add(gameObject, this);
 
         computerUI.gameObject.SetActive(false);
 
@@ -95,7 +93,7 @@ public class ComputerController : MonoBehaviour, IClickable
 
     private void OnDestroy()
     {
-        IClickable.instances.Remove(screenGameObject);
+        IClickable.instances.Remove(gameObject);
 
         if (inUse && PlayerController.mainPlayerInstance != null)
         {

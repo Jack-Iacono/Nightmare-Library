@@ -10,8 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 682268164381676024}
   - component: {fileID: 6275501651593392126}
+  - component: {fileID: 789263415229057353}
+  - component: {fileID: 1480361540481050856}
+  - component: {fileID: 3401054680986734260}
   m_Layer: 0
-  m_Name: p_Potion_Bottle
+  m_Name: p_PotionBottle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -54,6 +57,58 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.42, y: 0.53, z: 0.41}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &789263415229057353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 869214046771790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d54018939fc4a6418505fa9aa2d67a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemName: Potion
+  gameobjectOverride: {fileID: 0}
+  mainMeshFilter: {fileID: 1928159986753314608}
+  placementTypes: 00000000
+  floorPlacementType: 0
+  wallPlacementType: 0
+  fixPlacement: 0
+  precisePlacement: 0
+--- !u!114 &1480361540481050856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 869214046771790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+--- !u!114 &3401054680986734260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 869214046771790325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a0654958fe166247afdae2dcad5439d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8998865184756441728
 GameObject:
   m_ObjectHideFlags: 0

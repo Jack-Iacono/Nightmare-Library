@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: -187076146033056536}
   - component: {fileID: 6473351765471956210}
   m_Layer: 0
-  m_Name: WardenSensor
+  m_Name: p_WardenSensor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

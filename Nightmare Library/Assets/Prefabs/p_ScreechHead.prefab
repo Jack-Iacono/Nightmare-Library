@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: -568569318667154414}
   - component: {fileID: 1336744745087040662}
   m_Layer: 0
-  m_Name: ScreechHead
+  m_Name: p_ScreechHead
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -14,12 +14,13 @@ public class SceneController : MonoBehaviour
     private static List<m_Scene> sceneTarget;
     public static bool loading { get; private set; } = false;
 
-    public enum m_Scene { MAIN_MENU, GAME, PREGAME, UNIVERSAL, GAME_SYS };
+    public enum m_Scene { MAIN_MENU, GAME, PREGAME, GAME_TEST, UNIVERSAL, GAME_SYS };
     public readonly static Dictionary<m_Scene, SceneData> scenes = new Dictionary<m_Scene, SceneData>
         {
-            { m_Scene.MAIN_MENU, new SceneData("j_Menu", SceneData.Type.MAP) },
+            { m_Scene.MAIN_MENU, new SceneData("scn_MainMenu", SceneData.Type.MAP) },
             { m_Scene.GAME, new SceneData("scn_GameLib", SceneData.Type.MAP) },
-            { m_Scene.PREGAME, new SceneData("j_PreGame", SceneData.Type.MAP) },
+            { m_Scene.GAME_TEST, new SceneData("scn_GameTest", SceneData.Type.MAP) },
+            { m_Scene.PREGAME, new SceneData("scn_PreGame", SceneData.Type.MAP) },
             { m_Scene.UNIVERSAL, new SceneData("scn_UniversalGameFunction", SceneData.Type.UTIL) },
             { m_Scene.GAME_SYS, new SceneData("scn_GameSystems", SceneData.Type.UTIL) }
         };
@@ -221,9 +222,10 @@ public class SceneController : MonoBehaviour
     }
     public static void LoadGameScene()
     {
+        // Will load the test game scene if the option is ticked
         SceneController.SetScenes(new List<SceneController.m_Scene>()
         {
-            SceneController.m_Scene.GAME,
+            PersistentDataController.Instance.loadTestScene ? SceneController.m_Scene.GAME_TEST : SceneController.m_Scene.GAME,
             SceneController.m_Scene.GAME_SYS,
             SceneController.m_Scene.UNIVERSAL
         });

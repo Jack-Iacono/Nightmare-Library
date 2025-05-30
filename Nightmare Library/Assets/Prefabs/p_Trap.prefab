@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 219823782507973147}
   - component: {fileID: 3328787446913030082}
   m_Layer: 0
-  m_Name: Trap
+  m_Name: p_Trap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -69,6 +69,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 233c30ccf4bf24146b5cfa4fa5643b46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemName: Trap
+  gameobjectOverride: {fileID: 0}
+  mainMeshFilter: {fileID: 1974366818162080618}
+  placementTypes: 
+  floorPlacementType: 0
+  wallPlacementType: 0
+  fixPlacement: 1
+  precisePlacement: 0
 --- !u!114 &219823782507973147
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81,7 +89,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1967800834
+  GlobalObjectIdHash: 2988180342
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
   ActiveSceneSynchronization: 0

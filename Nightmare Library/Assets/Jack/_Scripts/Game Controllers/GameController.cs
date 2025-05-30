@@ -60,7 +60,13 @@ public class GameController : MonoBehaviour
 
     private void OnMapLoaded(string mapName)
     {
-        if (NetworkConnectionController.HasAuthority && SceneController.loadedMap.name == SceneController.scenes[SceneController.m_Scene.GAME].name)
+        if(
+            NetworkConnectionController.HasAuthority && 
+            (
+            SceneController.loadedMap.name == SceneController.scenes[SceneController.m_Scene.GAME].name ||
+            SceneController.loadedMap.name == SceneController.scenes[SceneController.m_Scene.GAME_TEST].name
+            )
+          )
         {
             if (spawnEnemies)
             {

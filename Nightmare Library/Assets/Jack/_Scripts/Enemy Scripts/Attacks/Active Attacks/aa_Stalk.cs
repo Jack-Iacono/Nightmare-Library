@@ -3,9 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using static AudioManager;
 
 public class aa_Stalk : ActiveAttack
 {
+    protected new string name = "Stalker";
+    protected new SoundType[] ignoreSounds = { SoundType.e_STALK_CLOSE_IN };
+    protected new string toolTip = "This guy should go to jail, clearly what they do isn't legal. Especially the killing part, that might be bad.";
+    protected new float hearingRadius = 10;
+
     //private float sightAngle = -0.4f;
     public PlayerController currentTargetPlayer;
 
@@ -39,18 +45,15 @@ public class aa_Stalk : ActiveAttack
     protected float playerSightRange = 50;
     protected float playerSightAngle = 0.6f;
 
-    protected TaskWanderTimed n_WanderTime;
-    protected TaskStalkCloseIn n_CloseIn;
-    protected TaskWait n_AttackWait;
-    protected TaskWait n_RunAwayWait;
+    protected Action_WanderTimed n_WanderTime;
+    protected Action_StalkCloseIn n_CloseIn;
+    protected Action_Wait n_AttackWait;
+    protected Action_Wait n_RunAwayWait;
 
-    protected CheckConditionCounter n_StalkCounter;
+    protected Check_Counter n_StalkCounter;
 
     public aa_Stalk(Enemy owner) : base(owner)
     {
-        name = "Stalker";
-        toolTip = "This guy should go to jail, clearly what they do isn't legal. Especially the killing part, that might be bad.";
-        hearingRadius = 10;
     }
 
     public override void Initialize(int level = 1)
@@ -59,12 +62,12 @@ public class aa_Stalk : ActiveAttack
 
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
 
-        n_AttackWait = new TaskWait(baseAttackTimeWaitMin, baseAttackTimeWaitMax);
-        n_CloseIn = new TaskStalkCloseIn(this, owner.navAgent);
-        n_WanderTime = new TaskWanderTimed(this, owner.navAgent, baseWanderTimeMin, baseWanderTimeMax);
-        n_RunAwayWait = new TaskWait(baseRunTimeMin, baseRunTimeMax);
+        n_AttackWait = new Action_Wait(baseAttackTimeWaitMin, baseAttackTimeWaitMax);
+        n_CloseIn = new Action_StalkCloseIn(this, owner.navAgent);
+        n_WanderTime = new Action_WanderTimed(this, owner.navAgent, baseWanderTimeMin, baseWanderTimeMax);
+        n_RunAwayWait = new Action_Wait(baseRunTimeMin, baseRunTimeMax);
 
-        n_StalkCounter = new CheckConditionCounter(0, CheckConditionCounter.EvalType.GREATER);
+        n_StalkCounter = new Check_Counter(0, Check_Counter.EvalType.GREATER);
 
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -73,13 +76,14 @@ public class aa_Stalk : ActiveAttack
             new Sequence(new List<Node>()
             {
                 // Check if the target player is at the desk
-                new CheckConditionStalkTargetOutOffice(this),
+                new Check_ConditionStalkTargetOutOffice(this),
                 new Selector(new List<Node>()
                 {
                     // Attempt to assign a new target
-                    new TaskAssignStalkTarget(this),
+                    new Action_StalkAssignTarget(this),
                     // End the stalk phase due to lack of players
-                    new TaskResetStalk(this)
+                    new Action_StalkReset(this),
+                    new Action_CounterChange(n_StalkCounter, Action_CounterChange.ChangeType.SET, -1)
                 })
             }),
             new Sequence(new List<Node>()
@@ -90,26 +94,26 @@ public class aa_Stalk : ActiveAttack
                     // Run Away Behavior
                     new Sequence(new List<Node>()
                     {
-                        new CheckInPlayerSight(this, owner, playerSightRange, playerSightAngle),
-                        new TaskWait(0.25f),
-                        new TaskWarpAway(this,owner.navAgent),
-                        new TaskChangeCounter(n_StalkCounter, TaskChangeCounter.ChangeType.SUBTRACT, 1)
+                        new Check_InPlayerSight(this, owner, playerSightRange, playerSightAngle),
+                        new Action_Wait(0.25f),
+                        new Action_WarpAway(this,owner.navAgent),
+                        new Action_CounterChange(n_StalkCounter, Action_CounterChange.ChangeType.SUBTRACT, 1)
                     }),
                     // Attack Behavior
                     new Sequence(new List<Node>()
                     {
-                        new CheckTargetInRange(this, owner.transform, 4),
-                        new TaskAttackTarget(owner, this),
-                        new TaskWait(3),
-                        new TaskResetStalk(this),
-                        new TaskChangeCounter(n_StalkCounter, TaskChangeCounter.ChangeType.SET, -1),
-                        new TaskWarpAway(this,owner.navAgent),
+                        new Check_TargetInRange(this, owner.transform, 4),
+                        new Action_StalkAttackTarget(owner, this),
+                        new Action_Wait(3),
+                        new Action_StalkReset(this),
+                        new Action_CounterChange(n_StalkCounter, Action_CounterChange.ChangeType.SET, -1),
+                        new Action_WarpAway(this,owner.navAgent),
                     }),
                     // Warp behind and approach
                     new Sequence(new List<Node>()
                     {
-                        new TaskWarpBehindPlayer(owner, GetCurrentTarget),
-                        new TaskPlaySound(AudioManager.SoundType.e_STALK_CLOSE_IN, GetCurrentTargetPosition),
+                        new Action_WarpBehindPlayer(owner, GetCurrentTarget),
+                        new Action_PlaySound(AudioManager.SoundType.e_STALK_CLOSE_IN, GetCurrentTargetPosition),
                         n_AttackWait,
                         n_CloseIn
                     })
@@ -119,7 +123,7 @@ public class aa_Stalk : ActiveAttack
             new Sequence(new List<Node>()
             {
                 n_WanderTime,
-                new TaskAssignStalkTarget(this)
+                new Action_StalkAssignTarget(this)
             })
         });
 
@@ -200,7 +204,10 @@ public class aa_Stalk : ActiveAttack
     }
     public Vector3 GetCurrentTargetPosition()
     {
-        return currentTargetPlayer.transform.position;
+        if(currentTargetPlayer != null)
+            return currentTargetPlayer.transform.position;
+        else
+            return owner.transform.position;
     }
 
     protected override void OnLevelChange(int level)

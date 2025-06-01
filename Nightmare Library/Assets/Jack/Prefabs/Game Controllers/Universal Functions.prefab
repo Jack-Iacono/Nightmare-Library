@@ -48,16 +48,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d949dc9757e1b24bbf953e21a54dbea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  p_Player: {fileID: 8304355550611021137, guid: cd83bc9e5856e324085ffec44549aa1e,
+  p_Player: {fileID: 8304355550611021137, guid: 98b77d2c7097cf442976221930ff0321,
     type: 3}
-  e_Enemy: {fileID: 1289455882946623128, guid: 3693b8fad534778459dd9dbae0fd1532, type: 3}
-  e_EvidenceFootprint: {fileID: 462350817080059154, guid: 59f37b89cd452be47915e99718acc448,
+  e_Enemy: {fileID: 1289455882946623128, guid: 2122e851bdd78a641b407997c1077905, type: 3}
+  e_EvidenceFootprint: {fileID: 462350817080059154, guid: 73b6e466361f23e479e7920c7c7b32d0,
     type: 3}
-  e_EvidenceTrap: {fileID: 2561657698923950872, guid: 8c12e05da9c71f545a58f5d6168b4deb,
+  e_EvidenceTrap: {fileID: 2561657698923950872, guid: 40dd7e361b0bc0246b22a3c33b2e2f5d,
     type: 3}
-  e_WardenSensor: {fileID: 1362234469720430081, guid: da59f9d391b9838429c78acabb4b40e3,
+  e_WardenSensor: {fileID: 1362234469720430081, guid: 528141891ccb0a64fb1a7c208534c237,
     type: 3}
-  e_ScreechHead: {fileID: 668094590302005263, guid: 6f1fdc0bb82b72d4bba623b80a66f8c0,
+  e_ScreechHead: {fileID: 668094590302005263, guid: 7a617dc2d5f9c5a4eb014b0af7561a1d,
     type: 3}
   a_AudioSource: {fileID: 4782423263898580498, guid: fde7960ebc8ffaf44bf1509ea2bd8578,
     type: 3}
@@ -95,22 +95,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sounds:
   - name: e_MUSIC_LOVER
+    type: 0
     sounds:
     - {fileID: 11400000, guid: 86f0b39cc13aa03409beedb5d9e4dce0, type: 2}
   - name: e_STALK_CLOSE_IN
+    type: 1
     sounds:
     - {fileID: 11400000, guid: 86f0b39cc13aa03409beedb5d9e4dce0, type: 2}
   - name: e_SCREECH_APPEAR
+    type: 2
     sounds:
     - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
     - {fileID: 11400000, guid: e864b2317c21861478438f942dec6452, type: 2}
   - name: e_WARDEN_SENSOR_STEP
+    type: 3
     sounds:
     - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
   - name: e_STALK_APPEAR
+    type: 4
     sounds:
     - {fileID: 11400000, guid: f9d4bf690a5881f4eba3adf7e19c918b, type: 2}
   - name: p_JUMP
+    type: 5
     sounds:
     - {fileID: 11400000, guid: c6b48a61c34cd2d41a085eecaef6f380, type: 2}
 --- !u!114 &9201799052545353948

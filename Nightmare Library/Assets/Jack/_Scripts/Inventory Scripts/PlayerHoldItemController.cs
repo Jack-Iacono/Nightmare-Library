@@ -1,28 +1,66 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR;
 
 public class PlayerHoldItemController : MonoBehaviour
 {
+    private InventoryController invCont;
+
+    private HoldableItem heldItem;
     [SerializeField]
-    private MeshFilter filter;
-    [SerializeField]
-    private MeshRenderer meshRend;
+    private Transform hand;
+
+    public delegate void OnHeldItemChangedDelegate(HoldableItem item);
+    public event OnHeldItemChangedDelegate OnHeldItemChanged;
 
     private void Awake()
     {
-        SetVisible(false);
+        invCont = GetComponent<InventoryController>();
+        invCont.OnHeldItemChanged += InventoryItemChanged;
     }
 
-    public void SetVisible(bool b)
+    private void Update()
     {
-        gameObject.SetActive(b);
-    }
-    public void SetMesh(MeshFilter filter, Material material)
-    {
-        this.filter.mesh = filter.mesh;
-        meshRend.material = material;
+        if(heldItem != null)
+        {
+            Vector3 rawOffset = IUseable.Instances.ContainsKey(heldItem.gameObject) ? IUseable.Instances[heldItem.gameObject].GetOffset() : Vector3.zero;
+            Vector3 offset =
+                rawOffset.x * hand.right +
+                rawOffset.y * hand.up +
+                rawOffset.z * hand.forward
+            ;
 
-        this.filter.transform.localScale = filter.transform.localScale;
+            heldItem.trans.position = Vector3.Slerp(heldItem.trans.position, hand.position + offset, 0.2f);
+            heldItem.trans.rotation = Quaternion.Slerp(heldItem.trans.rotation, hand.rotation, 0.2f);
+        }
+    }
+
+    private void InventoryItemChanged(InventoryItem item, int change)
+    {
+        ChangeHeldItem(item == null ? null : item.holdable, change);
+    }
+    public void ChangeHeldItem(HoldableItem item, int change)
+    {
+        // Is the item not being placed and is it null
+        if (change != 2 && heldItem != null)
+            heldItem.SetActive(false);
+
+        heldItem = item;
+
+        OnHeldItemChanged?.Invoke(heldItem);
+
+        if (heldItem != null)
+        {
+            heldItem.SetActive(true);
+
+            // Is the item being cycled into the inventory
+            if (change == 0)
+            {
+                heldItem.trans.position = hand.position;
+                heldItem.trans.rotation = hand.rotation;
+            }
+        }
     }
 }

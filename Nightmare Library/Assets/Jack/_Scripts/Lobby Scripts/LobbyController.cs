@@ -172,7 +172,6 @@ public abstract class LobbyController : NetworkBehaviour
         {
             playerList.Value = new PlayerList(playerList.Value, obj);
             OnPlayerListChange?.Invoke();
-            Debug.Log(playerList.Value.ToString());
         }
         else if(NetworkManager.Singleton != null && !NetworkManager.IsServer && !NetworkManager.ShutdownInProgress)
         {

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using static AudioManager;
 
 [RequireComponent(typeof(AudioManager))]
 public class AudioManagerNetwork : NetworkBehaviour
@@ -40,7 +41,7 @@ public class AudioManagerNetwork : NetworkBehaviour
     {
         // Convert the index into an audio Data
         AudioData data = AudioManager.GetAudioData(i, j);
-        AudioManager.PlaySoundAtPointOffline(data, pos);
+        AudioManager.PlaySoundAtPointOffline(data, (SoundType)i, pos);
 
         // Tell clients to play that sound
         OnSoundPlayClientRpc(i, j, pos,sender);
@@ -52,7 +53,7 @@ public class AudioManagerNetwork : NetworkBehaviour
         if (sender != NetworkManager.LocalClientId)
         {
             AudioData data = AudioManager.GetAudioData(i, j);
-            AudioManager.PlaySoundAtPointOffline(data, pos);
+            AudioManager.PlaySoundAtPointOffline(data, (SoundType)i, pos);
         }
     }
 }

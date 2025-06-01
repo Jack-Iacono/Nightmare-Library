@@ -3,12 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 [RequireComponent(typeof(PlayerInteractionController))]
 public class InventoryController : MonoBehaviour
 {
     private PlayerInteractionController interactionController;
-    private PlayerHoldItemController handItem;
 
     private const int inventorySize = 3;
     private InventoryItem[] inventoryItems = new InventoryItem[inventorySize];
@@ -20,10 +20,17 @@ public class InventoryController : MonoBehaviour
 
     public static InventoryItem currentHeldItem = null;
 
+    /// <summary>
+    /// Alerts other scripts that the current held item is being changed
+    /// </summary>
+    /// <param name="current">The currently held item</param>
+    /// <param name="changeType">0: Change Held Item\n1: Pickup\n2: Place / Throw</param>
+    public delegate void OnHeldItemChangedDelegate(InventoryItem current, int changeType = 0);
+    public event OnHeldItemChangedDelegate OnHeldItemChanged;
+
     private void Awake()
     {
-        interactionController = GetComponent<PlayerInteractionController>();  
-        handItem = GetComponentInChildren<PlayerHoldItemController>();
+        interactionController = GetComponent<PlayerInteractionController>();
 
         for (int i = 0; i < inventorySize; i++)
         {
@@ -95,7 +102,7 @@ public class InventoryController : MonoBehaviour
 
         currentHeldItem = inventoryItems[currentItemIndex];
 
-        CheckHeldItem();
+        CheckHeldItem(1);
 
         return true;
     }
@@ -106,7 +113,7 @@ public class InventoryController : MonoBehaviour
             inventoryItems[currentItemIndex] = null;
             currentHeldItem = null;
 
-            CheckHeldItem();
+            CheckHeldItem(2);
 
             return true;
         }
@@ -136,7 +143,7 @@ public class InventoryController : MonoBehaviour
         }
 
         SetCurrentIndex(0);
-        CheckHeldItem();
+        CheckHeldItem(0);
     }
 
     private void SetCurrentIndex(int index)
@@ -144,21 +151,12 @@ public class InventoryController : MonoBehaviour
         currentItemIndex = index;
         currentHeldItem = inventoryItems[currentItemIndex];
 
-        CheckHeldItem();
+        CheckHeldItem(0);
     }
 
-    private void CheckHeldItem()
+    private void CheckHeldItem(int changeType = 0)
     {
-        // Show the item in the player's hands if there is one
-        if (currentHeldItem != null)
-        {
-            handItem.SetMesh(currentHeldItem.holdable.mainMeshFilter, currentHeldItem.holdable.mainMaterial);
-            handItem.SetVisible(true);
-        }
-        else
-        {
-            handItem.SetVisible(false);
-        }
+        OnHeldItemChanged?.Invoke(currentHeldItem, changeType);
     }
     
     public bool HasOpenSlot()

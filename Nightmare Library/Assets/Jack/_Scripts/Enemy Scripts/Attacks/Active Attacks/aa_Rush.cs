@@ -1,11 +1,18 @@
 using BehaviorTree;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
+using static AudioManager;
 
 public class aa_Rush : ActiveAttack
 {
+    protected new string name = "Rush";
+    protected new SoundType[] ignoreSounds = { SoundType.e_STALK_CLOSE_IN };
+    protected new string toolTip = "I couldn't even tell you if I wanted to";
+    protected new float hearingRadius = 100;
+
     private float baseReachGoalPauseMin = 5;
     private float baseReachGoalPauseMax = 5;
     private float baseAtNodePause = 0.1f;
@@ -16,22 +23,18 @@ public class aa_Rush : ActiveAttack
     public EnemyNavNode currentNode { get; protected set; }
 
     // These methods allow the enemy to update the values for attacks during level up
-    private TaskWait n_AtNodePauseN;
-    private TaskRushTarget n_RushTargetN;
+    private Action_Wait n_AtNodePauseN;
+    private Action_RushGoToTarget n_RushTargetN;
 
-    private TaskWait n_AtNodePauseI;
-    private TaskRushTarget n_RushTargetI;
+    private Action_Wait n_AtNodePauseI;
+    private Action_RushGoToTarget n_RushTargetI;
 
-    private CheckConditionCounter n_PathCompleteCounter;
+    private Check_Counter n_PathCompleteCounter;
 
     public List<EnemyNavNode> visitedNodes = new List<EnemyNavNode>();
 
     public aa_Rush(Enemy owner) : base(owner)
     {
-        name = "Rush";
-        toolTip = "I couldn't even tell you if I wanted to";
-
-        hearingRadius = 100;
     }
 
     public override void Initialize(int level = 1) 
@@ -47,13 +50,13 @@ public class aa_Rush : ActiveAttack
         owner.navAgent.Warp(currentNode.position);
 
         // References stored so that they can have values changed later
-        n_AtNodePauseN = new TaskWait(baseReachGoalPauseMin, baseReachGoalPauseMax);
-        n_RushTargetN = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
+        n_AtNodePauseN = new Action_Wait(baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_RushTargetN = new Action_RushGoToTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
-        n_AtNodePauseI = new TaskWait(0.1f, 0.5f);
-        n_RushTargetI = new TaskRushTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
+        n_AtNodePauseI = new Action_Wait(0.1f, 0.5f);
+        n_RushTargetI = new Action_RushGoToTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
-        n_PathCompleteCounter = new CheckConditionCounter(3, CheckConditionCounter.EvalType.GREATER_EQUAL);
+        n_PathCompleteCounter = new Check_Counter(1, Check_Counter.EvalType.GREATER_EQUAL);
 
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -61,28 +64,28 @@ public class aa_Rush : ActiveAttack
             // Attack any player that gets within range
             new Sequence(new List<Node>()
             {
-                new CheckPlayerInRange(owner, 3),
-                new TaskAttackPlayersInRange(owner, 3)
+                new Check_InPlayerRange(owner, 3),
+                new Action_AttackInRange(owner, 3)
             }),
             // Area patrol from hearing noise
             new Sequence(new List<Node>()
             {
-                new CheckConditionAudioSourcePresent(this),
-                new TaskRushBeginInvestigation(this),
+                new Check_ConditionAudioSourcePresent(this),
+                new Action_RushBeginInvestigation(this),
                 new Selector(new List<Node>()
                 {
                     new Sequence(new List<Node>()
                     {
                         new CheckConditionRushInvestigationEnd(this),
-                        new TaskWait(1),
-                        new TaskRushEndInvestigation(this)
+                        new Action_Wait(1),
+                        new Action_RushEndInvestigation(this)
                     }),
                     new Sequence(new List<Node>()
                     {
                         n_RushTargetI,
                         n_AtNodePauseI,
-                        new TaskRushPathComplete(this, false),
-                        new TaskRunning()
+                        new Action_RushPathComplete(this, false),
+                        new Action_Running()
                     })
                 }),
             }),
@@ -92,15 +95,17 @@ public class aa_Rush : ActiveAttack
                 new Sequence(new List<Node>()
                 {
                     n_PathCompleteCounter,
-                    new TaskWait(10),
-                    new TaskChangeCounter(n_PathCompleteCounter, TaskChangeCounter.ChangeType.RESET)
+                    new Action_Wait(9),
+                    new Action_PlaySound(AudioManager.SoundType.e_STALK_CLOSE_IN, owner.transform),
+                    new Action_Wait(2),
+                    new Action_CounterChange(n_PathCompleteCounter, Action_CounterChange.ChangeType.RESET)
                 }),
                 new Sequence(new List<Node>
                 {
                     n_RushTargetN,
                     n_AtNodePauseN,
-                    new TaskRushPathComplete(this, true),
-                    new TaskChangeCounter(n_PathCompleteCounter, TaskChangeCounter.ChangeType.ADD, 1)
+                    new Action_RushPathComplete(this, true),
+                    new Action_CounterChange(n_PathCompleteCounter, Action_CounterChange.ChangeType.ADD, 1)
                 }),
             })
         });
@@ -110,7 +115,7 @@ public class aa_Rush : ActiveAttack
 
     public override bool DetectSound(AudioSourceController.SourceData data)
     {
-        if (base.DetectSound(data))
+        if (!ignoreSounds.Contains(data.soundType) && base.DetectSound(data))
         {
             if (recentAudioSources.Count < 3)
                 recentAudioSources.Add(data);

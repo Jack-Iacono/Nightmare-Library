@@ -122,12 +122,23 @@ public class Enemy : MonoBehaviour
         // Gets the evidence from the enemy preset
         evidence = enemyType.GetEvidence(this);
 
+        // Tells the game controller that this enemy has spawned
+        GameController.gameInfo.AddPresentEnemy(enemyType);
+
         OnInitialize?.Invoke();
     }
 
     public virtual void Spawn()
     {
         //Spawn Stuff
+    }
+    public void SetEnemyInfo(EnemyPreset preset, aAttackEnum aAttack, pAttackEnum pAttack)
+    {
+        // this is only used by the network to send the data to the clients
+        
+        enemyType = preset;
+        this.aAttack = aAttack;
+        this.pAttack = pAttack;
     }
 
     #endregion

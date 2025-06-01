@@ -65,9 +65,12 @@ public class EnemyNetwork : NetworkBehaviour
         }
         else
         {
-            parent.enemyType = PersistentDataController.Instance.activeEnemyPresets[type.Value.typeIndex];
-            parent.aAttack = (EnemyPreset.aAttackEnum)type.Value.activeAttackIndex;
-            parent.pAttack = (EnemyPreset.pAttackEnum)type.Value.passiveAttackIndex;
+            parent.SetEnemyInfo
+                (
+                PersistentDataController.Instance.activeEnemyPresets[type.Value.typeIndex],
+                (EnemyPreset.aAttackEnum)type.Value.activeAttackIndex,
+                (EnemyPreset.pAttackEnum)type.Value.passiveAttackIndex
+                );
         }
     }
 

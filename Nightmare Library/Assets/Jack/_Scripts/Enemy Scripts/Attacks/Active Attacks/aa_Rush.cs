@@ -8,11 +8,6 @@ using static AudioManager;
 
 public class aa_Rush : ActiveAttack
 {
-    protected new string name = "Rush";
-    protected new SoundType[] ignoreSounds = { SoundType.e_STALK_CLOSE_IN };
-    protected new string toolTip = "I couldn't even tell you if I wanted to";
-    protected new float hearingRadius = 100;
-
     private float baseReachGoalPauseMin = 5;
     private float baseReachGoalPauseMax = 5;
     private float baseAtNodePause = 0.1f;
@@ -35,6 +30,10 @@ public class aa_Rush : ActiveAttack
 
     public aa_Rush(Enemy owner) : base(owner)
     {
+        name = "Rush";
+        ignoreSounds = new SoundType[]{ SoundType.e_STALK_CLOSE_IN };
+        toolTip = "I couldn't even tell you if I wanted to, it just seems mad";
+        hearingRadius = 100;
     }
 
     public override void Initialize(int level = 1) 

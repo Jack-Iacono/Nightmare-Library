@@ -7,11 +7,6 @@ using static AudioManager;
 
 public class aa_Stalk : ActiveAttack
 {
-    protected new string name = "Stalker";
-    protected new SoundType[] ignoreSounds = { SoundType.e_STALK_CLOSE_IN };
-    protected new string toolTip = "This guy should go to jail, clearly what they do isn't legal. Especially the killing part, that might be bad.";
-    protected new float hearingRadius = 10;
-
     //private float sightAngle = -0.4f;
     public PlayerController currentTargetPlayer;
 
@@ -54,6 +49,10 @@ public class aa_Stalk : ActiveAttack
 
     public aa_Stalk(Enemy owner) : base(owner)
     {
+        name = "Stalker";
+        ignoreSounds = new SoundType[]{ SoundType.e_STALK_CLOSE_IN };
+        toolTip = "This guy should go to jail, clearly what they do isn't legal. Especially the killing part, that might be bad.";
+        hearingRadius = 10;
     }
 
     public override void Initialize(int level = 1)
@@ -82,8 +81,12 @@ public class aa_Stalk : ActiveAttack
                     // Attempt to assign a new target
                     new Action_StalkAssignTarget(this),
                     // End the stalk phase due to lack of players
-                    new Action_StalkReset(this),
-                    new Action_CounterChange(n_StalkCounter, Action_CounterChange.ChangeType.SET, -1)
+                    new Sequence(new List<Node>()
+                    {
+                        new Action_StalkRemoveTarget(this),
+                        new Action_CounterChange(n_StalkCounter, Action_CounterChange.ChangeType.SET, -1),
+                        new Action_DebugMessage("Count Reset")
+                    })
                 })
             }),
             new Sequence(new List<Node>()
@@ -95,7 +98,7 @@ public class aa_Stalk : ActiveAttack
                     new Sequence(new List<Node>()
                     {
                         new Check_InPlayerSight(this, owner, playerSightRange, playerSightAngle),
-                        new Action_Wait(0.25f),
+                        new Action_Wait(0.5f),
                         new Action_WarpAway(this,owner.navAgent),
                         new Action_CounterChange(n_StalkCounter, Action_CounterChange.ChangeType.SUBTRACT, 1)
                     }),
@@ -105,7 +108,7 @@ public class aa_Stalk : ActiveAttack
                         new Check_TargetInRange(this, owner.transform, 4),
                         new Action_StalkAttackTarget(owner, this),
                         new Action_Wait(3),
-                        new Action_StalkReset(this),
+                        new Action_StalkRemoveTarget(this),
                         new Action_CounterChange(n_StalkCounter, Action_CounterChange.ChangeType.SET, -1),
                         new Action_WarpAway(this,owner.navAgent),
                     }),

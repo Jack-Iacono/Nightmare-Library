@@ -7,11 +7,6 @@ using static AudioManager;
 
 public class aa_Warden : ActiveAttack
 {
-    protected new string name = "Rush";
-    protected new SoundType[] ignoreSounds = { SoundType.e_STALK_CLOSE_IN };
-    protected new string toolTip = "I couldn't even tell you if I wanted to";
-    protected new float hearingRadius = 100;
-
     public EnemyNavNode areaCenter { get; private set; } = null;
     protected int baseSensorCount = 2;
     protected int sensorCount = 2;
@@ -38,6 +33,7 @@ public class aa_Warden : ActiveAttack
     {
         name = "Warden";
         toolTip = "He guards something, just not sure what";
+        ignoreSounds = new SoundType[]{ SoundType.e_STALK_CLOSE_IN };
 
         diff = wanderRange / ringCount;
         hearingRadius = 1000;

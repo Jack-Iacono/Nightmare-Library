@@ -115,52 +115,62 @@ public static class EnemyNavGraph
         PriorityQueue<EnemyNavNode> priorityQueue = new PriorityQueue<EnemyNavNode>();
         priorityQueue.Insert(new PriorityQueue<EnemyNavNode>.Element(closest, 0));
 
+        // A list of all the nodes that are valid in this context
+        List<EnemyNavNode> validNodes = new List<EnemyNavNode>();
+
         while (priorityQueue.Count > 0)
         {
+            // PREVENT STORING VALUES FROM NODES NOT YET EXPLORED SEVERAL TIMES
+
             int dist = priorityQueue.Front();
             EnemyNavNode current = priorityQueue.Extract();
 
             RaycastHit hit;
             Ray playerToNode = new Ray(playerTrans.position, (current.position - playerTrans.position).normalized);
 
-            bool valid = false;
-
             // Check if this is the closest node, if so, get rid of it
             // Could I do all of this in one if statement, yes, do I want to do that, no
             if (current != closest)
             {
+                Debug.Log(current.name);
+
                 // Check if the node is out of view
                 if (Vector3.Dot(playerTrans.forward, playerToNode.direction) <= 0.65f)
                 {
-                    valid = true;
+                    validNodes.Add(current);
                 }
                 // Check to see if there is something in between the player and the selected node
                 else if (Physics.Raycast(playerToNode.origin, playerToNode.direction, out hit, Vector3.Distance(playerTrans.position, current.position), 1 << 6 | 1 << 9))
                 {
+                    Debug.Log(hit.collider.name);
                     // Check to make sure that something is in between this object and the player
                     if (hit.collider.gameObject != player.gameObject)
                     {
-                        valid = true;
+                        validNodes.Add(current);
                     }
                 }
             }
+            
+            // Add this node to the list of nodes that have been checked
+            viewedNeighbors.Add(current);
+            Debug.Log("Adding " + current.name + " to viewed");
 
-            if (valid)
-                return current;
-            else
+            // Send in all nodes that haven't been visited yet
+            foreach (EnemyNavNode node in current.neighbors.Keys)
             {
-                viewedNeighbors.Add(current);
-
-                // Send in all nodes that haven't been visited yet
-                foreach(EnemyNavNode node in current.neighbors.Keys)
+                if (!viewedNeighbors.Contains(node))
                 {
-                    if(!viewedNeighbors.Contains(node))
-                        priorityQueue.Insert(new PriorityQueue<EnemyNavNode>.Element(node, dist + (int)current.neighbors[node]));
+                    Debug.Log("Adding " + node.name + " to priority Queue");
+                    priorityQueue.Insert(new PriorityQueue<EnemyNavNode>.Element(node, dist + (int)current.neighbors[node]));
                 }
             }
         }
-        
-        // If no nodes are valid, just return a random neighbor
+
+        // If there are valid nodes, pick a random one
+        if (validNodes.Count > 0)
+            return validNodes[Random.Range(0, validNodes.Count)];
+
+        // If no nodes are valid, just return a random neighbor of he closest node
         return closest.GetRandomNeighbor(null);
     }
     public static EnemyNavNode[] GetClosestNodePair(Vector3 pos)

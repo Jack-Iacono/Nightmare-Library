@@ -10,9 +10,6 @@ public class Action_WarpBehindPlayer : Node
     private Transform transform;
     private Enemy enemy;
 
-    private float speed;
-    private float acceleration;
-
     private bool hasWarped = false;
 
     private AudioClip warpSound;
@@ -22,13 +19,11 @@ public class Action_WarpBehindPlayer : Node
     // This is used to dynamically get the player regardless of the parent's class type
     private WarpBehindTargetDelegate GetTarget;
 
-    public Action_WarpBehindPlayer(Enemy enemy, WarpBehindTargetDelegate playerDelegate, float speed = 20, float acceleration = 400)
+    public Action_WarpBehindPlayer(Enemy enemy, WarpBehindTargetDelegate playerDelegate)
     {
         this.enemy = enemy;
         navAgent = enemy.navAgent;
         transform = navAgent.transform;
-        this.speed = speed;
-        this.acceleration = acceleration;
 
         GetTarget = playerDelegate;
     }

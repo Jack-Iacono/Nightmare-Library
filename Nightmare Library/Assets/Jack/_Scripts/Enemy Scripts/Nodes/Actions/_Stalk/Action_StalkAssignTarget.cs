@@ -19,8 +19,6 @@ public class Action_StalkAssignTarget : Node
         // Makes the owner enter it's stalking phase
         if (owner.BeginStalking())
         {
-            Debug.Log("Assigned Target");
-
             status = Status.SUCCESS;
             return status;
         }

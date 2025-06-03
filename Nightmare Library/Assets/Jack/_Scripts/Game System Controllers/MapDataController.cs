@@ -6,8 +6,8 @@ public class MapDataController : MonoBehaviour
 {
     public static MapDataController Instance { get; private set; }
 
-    public Vector3 playerSpawnPoint;
-    public List<Vector3> enemySpawnPoints;
+    public Transform playerSpawnPoint;
+    public List<Transform> enemySpawnPoints;
 
     public delegate void OnMapDataLoadedDelegate();
     public static OnMapDataLoadedDelegate OnMapDataLoaded;
@@ -24,7 +24,7 @@ public class MapDataController : MonoBehaviour
 
     public static Vector3 GetRandomEnemySpawnPoint()
     {
-        return Instance.enemySpawnPoints[Random.Range(0, Instance.enemySpawnPoints.Count)];
+        return Instance.enemySpawnPoints[Random.Range(0, Instance.enemySpawnPoints.Count)].position;
     }
 
     private void OnDestroy()

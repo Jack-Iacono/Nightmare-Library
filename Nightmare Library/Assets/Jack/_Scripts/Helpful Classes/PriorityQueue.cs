@@ -28,6 +28,11 @@ public class PriorityQueue <T>
         {
             return a.priority < b.priority;
         }
+
+        public bool Contains(T a)
+        {
+            return value.Equals(a);
+        }
     }
 
     public PriorityQueue()
@@ -125,6 +130,16 @@ public class PriorityQueue <T>
         }
 
         Debug.Log(s);
+    }
+
+    public bool Contains(T value)
+    {
+        foreach(Element e in heap)
+        {
+            if (e.Contains(value))
+                return true;
+        }
+        return false;
     }
 
 

@@ -84,8 +84,7 @@ public class aa_Stalk : ActiveAttack
                     new Sequence(new List<Node>()
                     {
                         new Action_StalkRemoveTarget(this),
-                        new Action_CounterChange(n_StalkCounter, Action_CounterChange.ChangeType.SET, -1),
-                        new Action_DebugMessage("Count Reset")
+                        new Action_CounterChange(n_StalkCounter, Action_CounterChange.ChangeType.SET, -1)
                     })
                 })
             }),
@@ -115,7 +114,6 @@ public class aa_Stalk : ActiveAttack
                     // Warp behind and approach
                     new Sequence(new List<Node>()
                     {
-                        new Action_WarpBehindPlayer(owner, GetCurrentTarget),
                         new Action_PlaySound(AudioManager.SoundType.e_STALK_CLOSE_IN, GetCurrentTargetPosition),
                         n_AttackWait,
                         n_CloseIn
@@ -126,6 +124,7 @@ public class aa_Stalk : ActiveAttack
             new Sequence(new List<Node>()
             {
                 n_WanderTime,
+                new Action_WarpBehindPlayer(owner, GetCurrentTarget),
                 new Action_StalkAssignTarget(this)
             })
         });

@@ -109,7 +109,8 @@ public static class EnemyNavGraph
     {
         EnemyNavNode closest = GetClosestNavPoint(player.transform.position);
         Transform playerTrans = player.transform;
-        List<EnemyNavNode> viewedNeighbors = new List<EnemyNavNode>();
+
+        List<EnemyNavNode> viewedNodes = new List<EnemyNavNode>();
 
         // Create a queue to hold all the neighbors being viewed
         PriorityQueue<EnemyNavNode> priorityQueue = new PriorityQueue<EnemyNavNode>();
@@ -118,10 +119,9 @@ public static class EnemyNavGraph
         // A list of all the nodes that are valid in this context
         List<EnemyNavNode> validNodes = new List<EnemyNavNode>();
 
-        while (priorityQueue.Count > 0)
+        while (priorityQueue.Count > 0 && validNodes.Count < 5)
         {
-            // PREVENT STORING VALUES FROM NODES NOT YET EXPLORED SEVERAL TIMES
-
+            // Distance represents amount of neighbors away from the closest node
             int dist = priorityQueue.Front();
             EnemyNavNode current = priorityQueue.Extract();
 
@@ -132,8 +132,6 @@ public static class EnemyNavGraph
             // Could I do all of this in one if statement, yes, do I want to do that, no
             if (current != closest)
             {
-                Debug.Log(current.name);
-
                 // Check if the node is out of view
                 if (Vector3.Dot(playerTrans.forward, playerToNode.direction) <= 0.65f)
                 {
@@ -151,17 +149,16 @@ public static class EnemyNavGraph
                 }
             }
             
-            // Add this node to the list of nodes that have been checked
-            viewedNeighbors.Add(current);
-            Debug.Log("Adding " + current.name + " to viewed");
+            // This node has been viewed already
+            viewedNodes.Add(current);
 
             // Send in all nodes that haven't been visited yet
             foreach (EnemyNavNode node in current.neighbors.Keys)
             {
-                if (!viewedNeighbors.Contains(node))
+                if (!viewedNodes.Contains(node) && !priorityQueue.Contains(node))
                 {
-                    Debug.Log("Adding " + node.name + " to priority Queue");
-                    priorityQueue.Insert(new PriorityQueue<EnemyNavNode>.Element(node, dist + (int)current.neighbors[node]));
+                    priorityQueue.Insert(new PriorityQueue<EnemyNavNode>.Element(node, dist + 1));
+                    viewedNodes.Add(node);
                 }
             }
         }

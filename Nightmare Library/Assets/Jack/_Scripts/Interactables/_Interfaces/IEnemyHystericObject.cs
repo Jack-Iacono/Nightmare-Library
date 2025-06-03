@@ -6,5 +6,5 @@ public interface IEnemyHystericObject
 {
     // Used for easy referencing
     public static Dictionary<GameObject, IEnemyHystericObject> instances = new Dictionary<GameObject, IEnemyHystericObject>();
-    public void ExecuteHystericInteraction();
+    public void ExecuteHystericInteraction(Enemy user);
 }

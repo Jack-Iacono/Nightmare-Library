@@ -53,7 +53,7 @@ public class ev_Hysterics : Evidence
             {
                 if (IEnemyHystericObject.instances.ContainsKey(col[i].gameObject))
                 {
-                    IEnemyHystericObject.instances[col[i].gameObject].ExecuteHystericInteraction();
+                    IEnemyHystericObject.instances[col[i].gameObject].ExecuteHystericInteraction(owner);
 
                     interactReady = false;
                     interactCooldownTimer = interactCooldownTime;

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using static AudioManager;
 
@@ -31,11 +32,14 @@ public abstract class Attack
         if(hearingRadius == -1)
             return false;
 
-        // Check if the sound's radius and the hearing radius overlap, allowing the enemy to hear the sound
-        if(Vector3.Distance(data.transform.position, owner.transform.position) <= hearingRadius + data.radius)
+        if (!ignoreSounds.Contains(data.soundType))
         {
-            // Could add raycast here to detratc from volume if heard through wall
-            return true;
+            // Check if the sound's radius and the hearing radius overlap, allowing the enemy to hear the sound
+            if (Vector3.Distance(data.transform.position, owner.transform.position) <= hearingRadius + data.radius)
+            {
+                // Could add raycast here to detratc from volume if heard through wall
+                return true;
+            }
         }
 
         return false;

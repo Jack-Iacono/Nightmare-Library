@@ -41,6 +41,9 @@ public class Node_AlertGoto : Node
     public Node_AlertGoto(AlertNodeVariables data, Enemy enemy)
     {
         this.data = data;
+        this.enemy = enemy;
+        transform = enemy.transform;
+        agent = enemy.GetComponent<NavMeshAgent>(); 
     }
     public override Status Check(float dt)
     {

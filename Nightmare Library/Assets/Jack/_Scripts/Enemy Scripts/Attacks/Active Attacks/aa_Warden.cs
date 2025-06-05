@@ -32,7 +32,7 @@ public class aa_Warden : ActiveAttack
     {
         name = "Warden";
         toolTip = "He guards something, just not sure what";
-        ignoreSounds = new SoundType[] { SoundType.e_STALK_CLOSE_IN };
+        ignoreSounds = new SoundType[] { SoundType.e_STALK_CLOSE_IN, SoundType.e_WARDEN_SENSOR_STEP };
 
         diff = wanderRange / ringCount;
         hearingRadius = 1000;
@@ -119,7 +119,7 @@ public class aa_Warden : ActiveAttack
     {
         // Bypasses the typical hearing range check
         // Check that the sound is within the warden's area of partol
-        if (!DeskController.PointInOffice(data.transform.position) && Vector3.Distance(data.transform.position, areaCenter.position) < wanderRange)
+        if (base.DetectSound(data) && !DeskController.PointInOffice(data.transform.position) && Vector3.Distance(data.transform.position, areaCenter.position) < wanderRange)
         {
             alertNodeVariables.queue.Clear();
             alertNodeVariables.queue.Add(data.transform.position);

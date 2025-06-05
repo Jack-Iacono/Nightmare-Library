@@ -23,7 +23,7 @@ public class WardenSensorController : HoldableItem
             if (p.gameObject == other.gameObject)
             {
                 NotifySensorTriggered();
-                audioController.Play(AudioManager.SoundType.e_WARDEN_SENSOR_STEP);
+                audioController.Play(AudioManager.SoundType.e_WARDEN_SENSOR_STEP, false);
                 break;
             }
         }

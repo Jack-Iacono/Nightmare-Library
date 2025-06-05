@@ -114,7 +114,7 @@ public class aa_Rush : ActiveAttack
 
     public override bool DetectSound(AudioSourceController.SourceData data)
     {
-        if (!ignoreSounds.Contains(data.soundType) && base.DetectSound(data))
+        if (base.DetectSound(data))
         {
             if (recentAudioSources.Count < 3)
                 recentAudioSources.Add(data);

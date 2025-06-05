@@ -174,7 +174,7 @@ public class PlayerController : MonoBehaviour
             if (currentInput.y != 0)
             {
                 if(isAlive)
-                    audioSource.Play(AudioManager.SoundType.p_JUMP);
+                    audioSource.Play(AudioManager.SoundType.p_JUMP, true);
                 currentMove.y = jumpHeight;
             }
 

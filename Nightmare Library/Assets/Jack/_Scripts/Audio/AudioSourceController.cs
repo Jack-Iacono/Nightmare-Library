@@ -75,7 +75,6 @@ public class AudioSourceController : MonoBehaviour
     public void Play(SoundType type, bool fromNetwork = false)
     {
         AudioData chosenAudio = AudioManager.GetAudioData(type);
-        Debug.Log("Test");
         SetAudioSourceData(chosenAudio, type);
         Play(fromNetwork);
     }

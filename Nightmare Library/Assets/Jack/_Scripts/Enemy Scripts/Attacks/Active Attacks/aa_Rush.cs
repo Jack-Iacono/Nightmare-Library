@@ -18,13 +18,13 @@ public class aa_Rush : ActiveAttack
     public EnemyNavNode currentNode { get; protected set; }
 
     // These methods allow the enemy to update the values for attacks during level up
-    private Action_Wait n_AtNodePauseN;
-    private Action_RushGoToTarget n_RushTargetN;
+    private Node_Wait n_AtNodePauseN;
+    private Node_RushGoToTarget n_RushTargetN;
 
-    private Action_Wait n_AtNodePauseI;
-    private Action_RushGoToTarget n_RushTargetI;
+    private Node_Wait n_AtNodePauseI;
+    private Node_RushGoToTarget n_RushTargetI;
 
-    private Check_Counter n_PathCompleteCounter;
+    private Node_CheckCounter n_PathCompleteCounter;
 
     public List<EnemyNavNode> visitedNodes = new List<EnemyNavNode>();
 
@@ -49,13 +49,13 @@ public class aa_Rush : ActiveAttack
         owner.navAgent.Warp(currentNode.position);
 
         // References stored so that they can have values changed later
-        n_AtNodePauseN = new Action_Wait(baseReachGoalPauseMin, baseReachGoalPauseMax);
-        n_RushTargetN = new Action_RushGoToTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
+        n_AtNodePauseN = new Node_Wait(baseReachGoalPauseMin, baseReachGoalPauseMax);
+        n_RushTargetN = new Node_RushGoToTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
-        n_AtNodePauseI = new Action_Wait(0.1f, 0.5f);
-        n_RushTargetI = new Action_RushGoToTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
+        n_AtNodePauseI = new Node_Wait(0.1f, 0.5f);
+        n_RushTargetI = new Node_RushGoToTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
 
-        n_PathCompleteCounter = new Check_Counter(1, Check_Counter.EvalType.GREATER_EQUAL);
+        n_PathCompleteCounter = new Node_CheckCounter(1, Node_CheckCounter.EvalType.GREATER_EQUAL);
 
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -63,28 +63,28 @@ public class aa_Rush : ActiveAttack
             // Attack any player that gets within range
             new Sequence(new List<Node>()
             {
-                new Check_InPlayerRange(owner, 3),
-                new Action_AttackInRange(owner, 3)
+                new Node_CheckInPlayerRange(owner, 3),
+                new Node_AttackInRange(owner, 3)
             }),
             // Area patrol from hearing noise
             new Sequence(new List<Node>()
             {
-                new Check_ConditionAudioSourcePresent(this),
-                new Action_RushBeginInvestigation(this),
+                new Node_CheckAudioSourcePresent(this),
+                new Node_RushBeginInvestigation(this),
                 new Selector(new List<Node>()
                 {
                     new Sequence(new List<Node>()
                     {
-                        new CheckConditionRushInvestigationEnd(this),
-                        new Action_Wait(1),
-                        new Action_RushEndInvestigation(this)
+                        new Node_CheckRushInvestigationEnd(this),
+                        new Node_Wait(1),
+                        new Node_RushEndInvestigation(this)
                     }),
                     new Sequence(new List<Node>()
                     {
                         n_RushTargetI,
                         n_AtNodePauseI,
-                        new Action_RushPathComplete(this, false),
-                        new Action_Running()
+                        new Node_RushPathComplete(this, false),
+                        new Node_Running()
                     })
                 }),
             }),
@@ -94,17 +94,17 @@ public class aa_Rush : ActiveAttack
                 new Sequence(new List<Node>()
                 {
                     n_PathCompleteCounter,
-                    new Action_Wait(9),
-                    new Action_PlaySound(AudioManager.SoundType.e_STALK_CLOSE_IN, owner.transform),
-                    new Action_Wait(2),
-                    new Action_CounterChange(n_PathCompleteCounter, Action_CounterChange.ChangeType.RESET)
+                    new Node_Wait(9),
+                    new Node_PlaySound(AudioManager.SoundType.e_STALK_CLOSE_IN, owner.transform),
+                    new Node_Wait(2),
+                    new Node_ChangeCounter(n_PathCompleteCounter, Node_ChangeCounter.ChangeType.RESET)
                 }),
                 new Sequence(new List<Node>
                 {
                     n_RushTargetN,
                     n_AtNodePauseN,
-                    new Action_RushPathComplete(this, true),
-                    new Action_CounterChange(n_PathCompleteCounter, Action_CounterChange.ChangeType.ADD, 1)
+                    new Node_RushPathComplete(this, true),
+                    new Node_ChangeCounter(n_PathCompleteCounter, Node_ChangeCounter.ChangeType.ADD, 1)
                 }),
             })
         });

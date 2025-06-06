@@ -13,20 +13,24 @@ public class aa_Rush : ActiveAttack
     private float baseAtNodePause = 0.1f;
     private float baseRushSpeed = 150;
 
-    public List<EnemyNavNode> path = new List<EnemyNavNode>();
-    public List<EnemyNavNode> nodeQueue { get; protected set; } = new List<EnemyNavNode>();
-    public EnemyNavNode currentNode { get; protected set; }
-
     // These methods allow the enemy to update the values for attacks during level up
     private Node_Wait n_AtNodePauseN;
-    private Node_RushGoToTarget n_RushTargetN;
+    private Node_PathTraverse n_RushTargetN;
 
     private Node_Wait n_AtNodePauseI;
-    private Node_RushGoToTarget n_RushTargetI;
+    private Node_PathTraverse n_RushTargetI;
 
     private Node_CheckCounter n_PathCompleteCounter;
 
     public List<EnemyNavNode> visitedNodes = new List<EnemyNavNode>();
+
+    // TEMPORARY so that I can save quick
+    public EnemyNavNode currentNode;
+    public List<EnemyNavNode> nodeQueue;
+    public void SetNodeQueue(List<EnemyNavNode> nodeQueue)
+    {
+
+    }
 
     public aa_Rush(Enemy owner) : base(owner)
     {
@@ -40,22 +44,21 @@ public class aa_Rush : ActiveAttack
     {
         base.Initialize(level);
 
-        // Why is this here?
-        SetCurrentNode(EnemyNavGraph.GetRandomNavPoint());
-        RestartNodeQueue();
-        SetCurrentPath();
-
         owner.navAgent = owner.GetComponent<NavMeshAgent>();
-        owner.navAgent.Warp(currentNode.position);
+
+        PathNodeData normalPathData = new PathNodeData(owner);
+        PathNodeData investigatePathData = new PathNodeData(owner);
 
         // References stored so that they can have values changed later
         n_AtNodePauseN = new Node_Wait(baseReachGoalPauseMin, baseReachGoalPauseMax);
-        n_RushTargetN = new Node_RushGoToTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
+        n_RushTargetN = new Node_PathTraverse(normalPathData, baseAtNodePause, baseRushSpeed);
 
         n_AtNodePauseI = new Node_Wait(0.1f, 0.5f);
-        n_RushTargetI = new Node_RushGoToTarget(this, owner.navAgent, baseAtNodePause, baseRushSpeed);
+        n_RushTargetI = new Node_PathTraverse(investigatePathData, baseAtNodePause, baseRushSpeed);
 
         n_PathCompleteCounter = new Node_CheckCounter(1, Node_CheckCounter.EvalType.GREATER_EQUAL);
+
+        
 
         // Establises the Behavior Tree and its logic
         Node root = new Selector(new List<Node>()
@@ -81,9 +84,10 @@ public class aa_Rush : ActiveAttack
                     }),
                     new Sequence(new List<Node>()
                     {
+                        new Node_PathSet(investigatePathData),
                         n_RushTargetI,
                         n_AtNodePauseI,
-                        new Node_RushPathComplete(this, false),
+                        new Node_PathComplete(investigatePathData, false),
                         new Node_Running()
                     })
                 }),
@@ -101,9 +105,10 @@ public class aa_Rush : ActiveAttack
                 }),
                 new Sequence(new List<Node>
                 {
+                    new Node_PathSet(normalPathData),
                     n_RushTargetN,
                     n_AtNodePauseN,
-                    new Node_RushPathComplete(this, true),
+                    new Node_PathComplete(normalPathData, false),
                     new Node_ChangeCounter(n_PathCompleteCounter, Node_ChangeCounter.ChangeType.ADD, 1)
                 }),
             })
@@ -125,105 +130,11 @@ public class aa_Rush : ActiveAttack
 
         return false;
     }
-
-    public EnemyNavNode GetNextPathNode()
-    {
-        if(path.Count > 0)
-        {
-            EnemyNavNode node = path[0];
-            path.RemoveAt(0);
-            return node;
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Readys the nodeQueue and currentNode for the next path
-    /// </summary>
-    public void PathComplete(bool getNewNodes = true)
-    {
-        SetCurrentNode(nodeQueue[0]);
-        nodeQueue.RemoveAt(0);
-
-        if (nodeQueue.Count > 0)
-        {
-            if (getNewNodes)
-            {
-                EnemyNavNode tempNode = currentNode.GetRandomNeighbor(visitedNodes);
-
-                // If valid node was found, continue with that, if not, clear the visited nodes and pick again
-                if (tempNode != null)
-                {
-                    nodeQueue.Add(tempNode);
-                }
-                else
-                {
-                    RestartNodeQueue();
-                }
-            }
-        }
-        else
-        {
-            // Run as a fresh start with a random far patrol point
-            RestartNodeQueue();
-        }
-
-        // Get the new path
-        SetCurrentPath();
-    }
-    /// <summary>
-    /// Sets the path to the one given and adjusts the path accordingly
-    /// </summary>
-    /// <param name="nodeQueue"></param>
-    public void SetNodeQueue(List<EnemyNavNode> nodeQueue)
-    {
-        this.nodeQueue = new List<EnemyNavNode>(nodeQueue);
-        visitedNodes.Clear();
-    }
-    
-    /// <summary>
-    /// Sets the current node as visited and assigns the current node to the value
-    /// </summary>
-    /// <param name="node"></param>
-    private void SetCurrentNode(EnemyNavNode node)
-    {
-        currentNode = node;
-        visitedNodes.Add(currentNode);
-    }
-    /// <summary>
-    /// Gets an all new set of nodes based on the current node
-    /// </summary>
-    public void RestartNodeQueue()
-    {
-        visitedNodes.Clear();
-        nodeQueue.Clear();
-
-        nodeQueue.Add(EnemyNavGraph.GetFarthestNavPoint(currentNode.position));
-        nodeQueue.Add(currentNode.GetRandomNeighbor(null));
-    }
-    
-    /// <summary>
-    /// Sets the current path based on the node and nodeQueue
-    /// </summary>
-    private void SetCurrentPath()
-    {
-        string s = string.Empty;
-
-        // Get the path that the enemy will now follow
-        path = EnemyNavGraph.GetPathToPoint(currentNode, nodeQueue[0]);
-
-        // For in editor visual
-        for (int i = 0; i < path.Count - 1; i++)
-        {
-            path[i].RayToNode(path[i + 1]);
-        }
-    }
-
     protected override void OnLevelChange(int level)
     {
         base.OnLevelChange(level);
 
         n_AtNodePauseN.OnLevelChange(baseReachGoalPauseMin, baseReachGoalPauseMax);
-        n_RushTargetN.OnLevelChange(baseAtNodePause, baseRushSpeed);
+        //n_RushTargetN.OnLevelChange(baseAtNodePause, baseRushSpeed);
     }
 }

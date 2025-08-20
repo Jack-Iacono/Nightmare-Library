@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8442388106246838097}
   - component: {fileID: 7762392870221435717}
   - component: {fileID: 8799906079680766521}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Culdron_Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 1992463889516908209}
   - component: {fileID: 7918106132542216011}
   - component: {fileID: 4438442252130095172}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: p_CauldronProjector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -167,7 +167,7 @@ GameObject:
   - component: {fileID: 5006105351556233888}
   - component: {fileID: 8986778489765008038}
   - component: {fileID: 3059324330944326993}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Projector_Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}

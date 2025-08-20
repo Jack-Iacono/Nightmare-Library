@@ -91,7 +91,7 @@ public class PlayerController : MonoBehaviour
             mainPlayerInstance = this;
 
         // Teleport the player to the spawn point of the map
-        Warp(MapDataController.Instance.playerSpawnPoint);
+        Warp(MapDataController.Instance.playerSpawnPoint.position);
 
         // Registers the player to warp to the map start when the map is loaded
         MapDataController.OnMapDataLoaded += OnMapDataLoaded;
@@ -102,7 +102,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnMapDataLoaded()
     {
-        Warp(MapDataController.Instance.playerSpawnPoint);
+        Warp(MapDataController.Instance.playerSpawnPoint.position);
     }
     public void Warp(Vector3 pos)
     {
@@ -174,7 +174,7 @@ public class PlayerController : MonoBehaviour
             if (currentInput.y != 0)
             {
                 if(isAlive)
-                    audioSource.Play(AudioManager.SoundType.p_JUMP);
+                    audioSource.Play(AudioManager.SoundType.p_JUMP, true);
                 currentMove.y = jumpHeight;
             }
 

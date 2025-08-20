@@ -254,34 +254,34 @@ public class HoldableItemNetwork : NetworkBehaviour
 
     #region Throw
 
-    protected virtual void OnThrow(Vector3 force, bool fromNetwork)
+    protected virtual void OnThrow(Vector3 force, Vector3 rotForce, bool fromNetwork)
     {
         if (!fromNetwork)
         {
             // Owner will be server
             if (!IsOwner)
             {
-                TransmitThrowServerRpc(NetworkManager.LocalClientId, parent.trans.position, force, parent.trans.rotation);
+                TransmitThrowServerRpc(NetworkManager.LocalClientId, parent.trans.position, parent.trans.rotation, force, rotForce);
             }
             else
-                ConsumeThrowClientRpc(NetworkManager.LocalClientId, parent.trans.position, force, parent.trans.rotation);
+                ConsumeThrowClientRpc(NetworkManager.LocalClientId, parent.trans.position, parent.trans.rotation, force, rotForce);
         }
     }
     [ServerRpc(RequireOwnership = false)]
-    protected virtual void TransmitThrowServerRpc(ulong sender, Vector3 pos, Vector3 force, Quaternion rot)
+    protected virtual void TransmitThrowServerRpc(ulong sender, Vector3 pos, Quaternion rot, Vector3 force, Vector3 rotForce)
     {
-        parent.Throw(pos, force, rot.eulerAngles, true);
+        parent.Throw(pos, rot.eulerAngles, force, Vector3.zero,true);
 
         // Tell the game to update the transform
         currentUpdateFrame = updateTransformFrequency;
 
-        ConsumeThrowClientRpc(sender, pos, force, rot);
+        ConsumeThrowClientRpc(sender, pos, rot, force, rotForce);
     }
     [ClientRpc]
-    protected virtual void ConsumeThrowClientRpc(ulong sender, Vector3 pos, Vector3 force, Quaternion rot)
+    protected virtual void ConsumeThrowClientRpc(ulong sender, Vector3 pos, Quaternion rot, Vector3 force, Vector3 rotForce)
     {
         if (NetworkManager.LocalClientId != sender && !NetworkManager.IsServer)
-            parent.Throw(pos, force, rot.eulerAngles,true);
+            parent.Throw(pos, rot.eulerAngles, force, rotForce, true);
     }
 
     #endregion

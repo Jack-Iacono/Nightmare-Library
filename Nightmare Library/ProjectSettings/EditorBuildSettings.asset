@@ -15,7 +15,7 @@ EditorBuildSettings:
     path: Assets/Jack/Scenes/scn_PreGame.unity
     guid: 33c2848f3c4fd264292ce04c6176ecb5
   - enabled: 1
-    path: Assets/Jack/Scenes/scn_GameTest.unity
+    path: Assets/Jack/Scenes/scn_TestGame.unity
     guid: 3ead0ef480f5cdc4483c990f1b0a322b
   - enabled: 1
     path: Assets/Jack/Scenes/scn_UniversalGameFunction.unity

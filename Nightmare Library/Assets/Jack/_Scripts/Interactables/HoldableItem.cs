@@ -63,7 +63,7 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
     public event OnPickupDelegate OnPickup;
     public delegate void OnPlaceDelegate(bool fromNetwork = false);
     public event OnPlaceDelegate OnPlace;
-    public delegate void OnThrowDelegate(Vector3 force, bool fromNetwork = false);
+    public delegate void OnThrowDelegate(Vector3 force, Vector3 rotForce, bool fromNetwork = false);
     public event OnThrowDelegate OnThrow;
 
     public delegate void OnBoolChangeDelegate(bool b);
@@ -162,7 +162,7 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
         // Alert that this object has been placed
         OnPlace?.Invoke(fromNetwork);
     }
-    public virtual void Throw(Vector3 pos, Vector3 force, Vector3 rot, bool fromNetwork = false)
+    public virtual void Throw(Vector3 pos, Vector3 rot, Vector3 force, Vector3 rotForce, bool fromNetwork = false)
     {
         trans.position = pos;
         trans.rotation = Quaternion.Euler(rot);
@@ -172,22 +172,24 @@ public class HoldableItem : MonoBehaviour, IEnemyHystericObject
         {
             rb.isKinematic = false;
             rb.AddForce(force, ForceMode.Impulse);
+            rb.AddTorque(rotForce, ForceMode.Impulse);
         }
 
         SetHeld(false, fromNetwork);
 
-        OnThrow?.Invoke(force, fromNetwork);
+        OnThrow?.Invoke(force, rotForce, fromNetwork);
     }
-    public virtual void ExecuteHystericInteraction()
+    public virtual void ExecuteHystericInteraction(Enemy user)
     {
         Throw(
             trans.position,
+            transform.rotation.eulerAngles,
+            (trans.position - user.transform.position) + Vector3.up * 10,
             new Vector3
-                (UnityEngine.Random.Range(0, 1),
+                (UnityEngine.Random.Range(0, 1f),
                 UnityEngine.Random.Range(0.1f, 1),
-                UnityEngine.Random.Range(0, 1)
-                ) * 10,
-            transform.rotation.eulerAngles
+                UnityEngine.Random.Range(0, 1f)
+                ) * 4
             );
     }
 

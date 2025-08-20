@@ -19,7 +19,7 @@ public class SceneController : MonoBehaviour
         {
             { m_Scene.MAIN_MENU, new SceneData("scn_MainMenu", SceneData.Type.MAP) },
             { m_Scene.GAME, new SceneData("scn_GameLib", SceneData.Type.MAP) },
-            { m_Scene.GAME_TEST, new SceneData("scn_GameTest", SceneData.Type.MAP) },
+            { m_Scene.GAME_TEST, new SceneData("scn_TestGame", SceneData.Type.MAP) },
             { m_Scene.PREGAME, new SceneData("scn_PreGame", SceneData.Type.MAP) },
             { m_Scene.UNIVERSAL, new SceneData("scn_UniversalGameFunction", SceneData.Type.UTIL) },
             { m_Scene.GAME_SYS, new SceneData("scn_GameSystems", SceneData.Type.UTIL) }

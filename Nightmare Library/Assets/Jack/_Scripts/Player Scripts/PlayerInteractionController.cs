@@ -116,7 +116,7 @@ public class PlayerInteractionController : MonoBehaviour
         // Process Throwing first since you don't need to raycast for it
         if (currentHoldableItem != null && isThrow)
         {
-            currentHoldableItem.Throw(currentHoldableItem.trans.position, ray.direction * 10 + Vector3.up, transform.rotation.eulerAngles);
+            currentHoldableItem.Throw(currentHoldableItem.trans.position, currentHoldableItem.trans.rotation.eulerAngles, ray.direction * 10 + Vector3.up, Vector3.zero);
             inventoryCont.RemoveCurrentItem();
             currentHoldableItem = null;
             actionBuffering = true;
@@ -157,14 +157,14 @@ public class PlayerInteractionController : MonoBehaviour
             // If there is no action buffering and there is some input being processed
             if(!actionBuffering && isActive)
             {
-                // Check
+                // Check for clicking or pickup first
                 if (isClick && interactionTypes[0] == true)
                 {
                     IClickable.instances[hitObject].Click();
 
                     actionBuffering = true;
                 } 
-                else if (isPickup && interactionTypes[1] == true &&inventoryCont.HasOpenSlot())
+                else if (isPickup && interactionTypes[1] == true && inventoryCont.HasOpenSlot())
                 {
                     HoldableItem.instances[hitObject].Pickup();
                     inventoryCont.AddItem(HoldableItem.instances[hitObject]);
@@ -284,7 +284,7 @@ public class PlayerInteractionController : MonoBehaviour
                 {
                     //NavMeshHit hit;
                     //NavMesh.SamplePosition(transform.position + new Vector3(0,i,0), out hit, 10, NavMesh.AllAreas);
-                    item.Throw(transform.position + new Vector3(0, i, 0), Vector3.up * 5, transform.rotation.eulerAngles);
+                    item.Throw(transform.position + new Vector3(0, i, 0), transform.rotation.eulerAngles, Vector3.up * 5, Vector3.zero);
                 }
             }
             inventoryCont.ClearInventory();

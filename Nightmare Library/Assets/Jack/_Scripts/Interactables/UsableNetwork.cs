@@ -7,14 +7,14 @@ using UnityEngine;
 [RequireComponent(typeof(UsableController))]
 public class UsableNetwork : HoldableItemNetwork
 {
-    UsableController parent;
+    UsableController useableParent;
 
     protected override void Awake()
     {
         base.Awake();
 
-        parent = GetComponent<UsableController>();
-        parent.OnUse += OnParentUse;
+        useableParent = GetComponent<UsableController>();
+        useableParent.OnUse += OnParentUse;
     }
 
     private void OnParentUse(bool fromNetwork)
@@ -34,7 +34,7 @@ public class UsableNetwork : HoldableItemNetwork
     [ServerRpc(RequireOwnership = false)]
     private void OnParentUseServerRpc(ulong sender)
     {
-        parent.Use(true);
+        useableParent.Use(true);
         OnParentUseClientRpc(sender);
     }
     [ClientRpc]
@@ -42,7 +42,7 @@ public class UsableNetwork : HoldableItemNetwork
     {
         if(sender != NetworkManager.LocalClientId)
         {
-            parent.Use();
+            useableParent.Use();
         }
     }
 }
